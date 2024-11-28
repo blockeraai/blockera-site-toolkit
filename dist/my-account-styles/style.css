@@ -1,0 +1,97 @@
+.blockera-consent-container {
+    background-color: #ffffff;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+.blockera-consent-welcome {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+}
+
+.blockera-consent-welcome strong {
+    text-decoration: underline;
+}
+
+.blockera-consent-link {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.blockera-consent-link a {
+    color: #1739fd;
+    text-decoration: none;
+}
+
+.blockera-consent-form button[type="submit"]{
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.blockera-consent-form .blockera-consent-fields {
+    display: flex;
+    flex-direction: column;
+}
+
+.blockera-consent-form .blockera-consent-fields label {
+    margin: 0;
+}
+
+.blockera-consent-field {
+    display: flex;
+    margin: 1rem 0;
+    justify-content: space-between;
+}
+
+.blockera-consent-field * {
+    cursor: pointer;
+}
+
+.blockera-consent-form .blockera-consent-fields .blockera-consent-field {
+    border: solid 1px #dddddd;
+    border-radius: 5px;
+    padding: 20px 10px;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.1s;
+}
+
+.blockera-consent-description {
+    color: #8a8a8a;
+    line-height: 1.5;
+    font-size: 14px;
+    display: block;
+    text-align: justify;
+}
+
+.blockera-consent-description a {
+    color: #1739fd;
+}
+
+.blockera-consent-form .blockera-consent-fields .blockera-consent-field:hover, .blockera-consent-form .blockera-consent-fields .blockera-consent-field.active {
+    border-color: #1739fd;
+}
+
+.blockera-consent-form .button-secondary {
+    background-color: #fff;
+    color: #333;
+}
+
+.blockera-consent-form .button-secondary:hover {
+    color: #1739fd;
+}
+
+.blockera-consent-form .button-primary {
+    background-color: #1739fd;
+    color: #fff;
+}
+
+.blockera-consent-form .button-primary:hover {
+    background-color: #2344f9;
+}
