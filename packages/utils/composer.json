@@ -1,0 +1,15 @@
+{
+	"name": "blockera/utils",
+	"version": "1.0.0",
+	"description": "The utilities for JavaScript and PHP blockera applications.",
+	"autoload": {
+		"psr-4": {
+			"Blockera\\Utils\\": "php/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Blockera\\Utils\\Tests\\": "php/tests/"
+		}
+	}
+}
