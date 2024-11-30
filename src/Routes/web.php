@@ -30,6 +30,7 @@ add_action(
                 exit;
             }
 
+            // Redirect to license manager page.
             wp_redirect(add_query_arg($_GET, home_url('/my-account/license-manager/')));
 
             // Stop further WordPress execution for this request.
