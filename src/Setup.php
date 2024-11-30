@@ -108,15 +108,15 @@ class Setup extends Application
     /**
      * Set $migrations The instance of Migrations object.
      *
-     * @param  Command[] $migrations The array of migrations instances.
+     * @param  Command $migrations The array of migrations instances.
      *
      * @return self
      */
-    public function setMigrations(array $migrations): self
+    public function setMigrations(Command $migrations): self
     {
-        $this->migrations = $migrations;
+        self::$migrations = $migrations;
 
-        return $this;
+        return self::getInstance();
     }
 
     /**
