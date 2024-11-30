@@ -47,11 +47,15 @@ class AccessTokenTable implements Migration
     {
         global $wpdb;
 
-        $wpdb->query('DROP TABLE IF EXISTS ' . $wpdb->prefix . $this->getTableName());
+        $result = $wpdb->query('DROP TABLE IF EXISTS ' . $wpdb->prefix . $this->getTableName());
 
-
+        if ($result === false && class_exists(\WP_CLI::class)) {
+            $error = $wpdb->last_error;
+            \WP_CLI::success("Failed to drop table: " . $error);
+        } elseif (class_exists(\WP_CLI::class)) {
         if (class_exists(\WP_CLI::class)) {
             \WP_CLI::success("The {$this->getTableName()} table has been drop ✅");
+        }
         }
     }
 

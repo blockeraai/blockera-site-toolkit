@@ -50,13 +50,10 @@ add_action('plugins_loaded', function () use ($setup): void {
 });
 
 // Initialize the database commands.
-if (defined('WP_DEBUG') && WP_DEBUG && class_exists(\WP_CLI::class)) {
+if (BSA_PLUGIN_MODE === 'dev' && class_exists(\WP_CLI::class)) {
     $db = new Database();
     $db->migrate($migrations);
-    $db->fresh($migrations);
-}
 
-if (BSA_PLUGIN_MODE === 'dev') {
     $whoops = new \Whoops\Run;
     $whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
     $whoops->register();
