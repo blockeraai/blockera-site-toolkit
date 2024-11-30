@@ -11,7 +11,9 @@ trait CommandTrait
         global $wpdb;
 
         if (!$this instanceof Migration) {
-            \WP_CLI::error("🚨 ERROR: Table was not valid!");
+            if (class_exists(\WP_CLI::class)) {
+                \WP_CLI::error("🚨 ERROR: Table was not valid!");
+            }
 
             return;
         }
@@ -19,6 +21,8 @@ trait CommandTrait
         $table_name = $wpdb->prefix . $this->getTableName();
         $wpdb->query("TRUNCATE TABLE $table_name");
 
-        \WP_CLI::success("Table {$table_name} has been reset ✅");
+        if (class_exists(\WP_CLI::class)) {
+            \WP_CLI::success("Table {$table_name} has been reset ✅");
+        }
     }
 }

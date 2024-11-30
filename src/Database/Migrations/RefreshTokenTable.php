@@ -29,12 +29,13 @@ class RefreshTokenTable implements Migration
     FOREIGN KEY (access_token) REFERENCES ' . $wpdb->prefix . 'auth_access_tokens(access_token) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;');
 
-        if ($result === false) {
-            $error = $wpdb->last_error;
-            \WP_CLI::success("Failed to create table: " . $error);
-            // throw new \Exception("Failed to create table: " . $error);
-        } elseif (class_exists(\WP_CLI::class)) {
-            \WP_CLI::success("The {$this->getTableName()} table has been create ✅");
+        if ($result === false && class_exists(\WP_CLI::class)) {
+            if (false === $result) {
+                $error = $wpdb->last_error;
+                \WP_CLI::success("Failed to create table: " . $error);
+            } else {
+                \WP_CLI::success("The {$this->getTableName()} table has been create ✅");
+            }
         }
     }
 

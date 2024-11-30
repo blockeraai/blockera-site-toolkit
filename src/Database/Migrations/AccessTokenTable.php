@@ -29,7 +29,7 @@ class AccessTokenTable implements Migration
     FOREIGN KEY (client_id) REFERENCES ' . $wpdb->prefix . 'auth_clients(client_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;');
 
-        if ($result === false) {
+        if ($result === false && class_exists(\WP_CLI::class)) {
             $error = $wpdb->last_error;
             \WP_CLI::success("Failed to create table: " . $error);
             // throw new \Exception("Failed to create table: " . $error);
