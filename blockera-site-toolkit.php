@@ -23,6 +23,7 @@ use BlockeraAI\SiteToolkit\Database\Migrations;
 define('BSA_PLUGIN_FILE', __FILE__);
 define('BSA_PLUGIN_URL', plugin_dir_url(BSA_PLUGIN_FILE));
 define('BSA_PLUGIN_DIR', plugin_dir_path(BSA_PLUGIN_FILE));
+define('BSA_PLUGIN_MODE', 'dev');
 
 $migrations = [
     new Migrations\ClientsTable(),
@@ -35,7 +36,7 @@ $migrations = [
  */
 $setup = Setup::getInstance();
 
-$setup->setMigrations($migrations)->mount()->unmount();
+$setup->setMigrations(new Migrations($migrations))->mount()->unmount();
 
 /**
  * Initialize the plugin.
@@ -49,8 +50,14 @@ add_action('plugins_loaded', function () use ($setup): void {
 });
 
 // Initialize the database commands.
-if (defined('WP_DEBUG') && WP_DEBUG && class_exists(WP_CLI::class)) {
+if (defined('WP_DEBUG') && WP_DEBUG && class_exists(\WP_CLI::class)) {
     $db = new Database();
     $db->migrate($migrations);
     $db->fresh($migrations);
+}
+
+if (BSA_PLUGIN_MODE === 'dev') {
+    $whoops = new \Whoops\Run;
+    $whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
+    $whoops->register();
 }
