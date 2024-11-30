@@ -45,7 +45,7 @@ class AppServiceProvider extends ServiceProvider
                 new AuthCodeGrant(
                     new AuthCodeRepository(),
                     new RefreshTokenRepository(),
-                    new \DateInterval('PT10M') // Authorization codes expire in 10 minutes.
+                    new \DateInterval('PT1M') // Authorization codes expire in 1 minutes.
                 ),
                 new \DateInterval('P1Y') // Access tokens expire in 1 year.
             );
@@ -182,8 +182,8 @@ class AppServiceProvider extends ServiceProvider
 
         $authRequest = new \WP_REST_Request('POST', '/auth/v1/authorize');
 
-        $client_id = $response['data']['client_id'];
-        $client_secret = $response['data']['client_secret'];
+        $client_id = $response['data']->client_id;
+        $client_secret = $response['data']->client_secret;
 
         $authRequest->set_query_params(array_merge($_GET, compact('client_id')));
 
