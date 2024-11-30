@@ -193,4 +193,9 @@ class Setup extends Application
     {
         return BSA_PLUGIN_DIR;
     }
+
+    public function isDebug(): bool
+    {
+        return defined('BSA_PLUGIN_MODE') && 'dev' === BSA_PLUGIN_MODE;
+    }
 }
