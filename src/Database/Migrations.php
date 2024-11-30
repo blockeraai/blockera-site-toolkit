@@ -45,6 +45,6 @@ class Migrations implements Contracts\Command
     {
         array_map(static function (Migration $migration): void {
             $migration->down();
-        }, $this->migrations);
+        }, array_reverse($this->migrations));
     }
 }

@@ -6,6 +6,11 @@ use BlockeraAI\SiteToolkit\Database\Contracts\Migration;
 
 trait CommandTrait
 {
+    /**
+     * Fresh method to reset the table.
+     *
+     * @return void
+     */
     public function fresh(): void
     {
         global $wpdb;
