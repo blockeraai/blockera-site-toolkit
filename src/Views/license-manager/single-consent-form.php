@@ -15,7 +15,7 @@ View::load('license-manager.form-start', compact('url', 'whoIs'), ['root-path' =
         <span title="<?php echo esc_attr($tooltip); ?>">
             <?php View::load('icons.circle-info', [], ['root-path' => $root_path]); ?>
         </span>
-        <input name="subscription" id="<?php echo esc_attr($subscription_id) ?>" type="hidden" value="<?php echo esc_attr($subscription_id) ?>">
+        <input name="subscription_id" id="<?php echo esc_attr($subscription_id) ?>" type="hidden" value="<?php echo esc_attr($subscription_id) ?>">
     </label>
 </div>
 <?php

@@ -14,6 +14,7 @@ add_filter('query_vars', 'registerVars');
 function registerVars(array $vars): array
 {
     $vars[] = 'authorize';
+    $vars[] = 'register-license';
 
     return $vars;
 }
@@ -34,6 +35,23 @@ add_action(
             wp_redirect(add_query_arg($_GET, home_url('/my-account/license-manager/')));
 
             // Stop further WordPress execution for this request.
+            exit;
+        }
+
+        if (get_query_var('register-license')) {
+            $request = new \WP_REST_Request('POST', '/auth/v1/licenses/create');
+            $request->set_body_params($_POST);
+            $request->set_header('referer', home_url());
+
+            $responseObject = rest_do_request($request);
+
+            bsaValidateResponse($responseObject);
+
+            $responseObject->get_data();
+
+            // Redirect back to the client application after successful license registration.
+            wp_redirect(add_query_arg(['connectedWithYourAccount' => 'true'], $_POST['redirect_uri']));
+
             exit;
         }
     }

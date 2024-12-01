@@ -6,5 +6,5 @@
             <?php _e(' wants to connect to your account, allow it to do this?', 'blockera-site-toolkit'); ?>
         </span>
     </p>
-    <form action="<?php echo rest_url('auth/v1/license-manager/create'); ?>" method="post" class="blockera-consent-form">
+    <form action="<?php echo home_url('/register-license'); ?>" method="post" class="blockera-consent-form">
         <div class="blockera-consent-fields">
