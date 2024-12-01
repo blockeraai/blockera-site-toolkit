@@ -102,7 +102,7 @@ class ClientController
         if (!empty($params['domain'])) {
             global $wpdb;
 
-            $record = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}auth_clients WHERE domain = %s", $params['domain']));
+            $record = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}auth_clients WHERE domain = %s", $params['domain']), ARRAY_A);
 
             if ($record) {
                 $this->errors['duplicate_client'] = [
