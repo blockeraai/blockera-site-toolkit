@@ -34,7 +34,7 @@ class RefreshTokenTable implements Migration
                 $error = $wpdb->last_error;
                 \WP_CLI::success("Failed to create table: " . $error);
             } else {
-                \WP_CLI::success("The {$this->getTableName()} table has been create ✅");
+                \WP_CLI::success("The {$this->getTableName()} table has been created ✅");
             }
         }
     }
@@ -54,7 +54,7 @@ class RefreshTokenTable implements Migration
             $error = $wpdb->last_error;
             \WP_CLI::success("Failed to drop table: " . $error);
         } elseif (class_exists(\WP_CLI::class)) {
-            \WP_CLI::success("The {$this->getTableName()} table has been drop ✅");
+            \WP_CLI::success("The {$this->getTableName()} table has been dropped ✅");
         }
     }
 
