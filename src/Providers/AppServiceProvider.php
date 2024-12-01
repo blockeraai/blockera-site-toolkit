@@ -95,7 +95,7 @@ class AppServiceProvider extends ServiceProvider
         add_filter('woocommerce_account_menu_items', [$this, 'addLicenseManagerPage']);
 
         // Add content for the Blockera OAuth page.
-        add_action('woocommerce_account_license-manager_endpoint', [$this, 'renderLicenseManagerView']);
+        add_action('woocommerce_account_license-manager_endpoint', [$this->app->make(LicenseManagerController::class), 'render']);
 
         // Flush rewrite rules to ensure new endpoints are registered.
         flush_rewrite_rules();
@@ -114,7 +114,7 @@ class AppServiceProvider extends ServiceProvider
 
         $response = (new ClientController())->update($request);
 
-        $this->validateResponse($response);
+        bsaValidateResponse($response);
     }
 
     /**
@@ -176,14 +176,14 @@ class AppServiceProvider extends ServiceProvider
         $registrationClientResponse = rest_do_request($request);
 
         // Validate the request and handle any errors.
-        $this->validateResponse($registrationClientResponse);
+        bsaValidateResponse($registrationClientResponse);
 
         $response = $registrationClientResponse->get_data();
 
         $authRequest = new \WP_REST_Request('POST', '/auth/v1/authorize');
 
-        $client_id = $response['data']->client_id;
-        $client_secret = $response['data']->client_secret;
+        $client_id = $response['data']['client_id'];
+        $client_secret = $response['data']['client_secret'];
 
         $authRequest->set_query_params(array_merge($_GET, compact('client_id')));
 
@@ -192,7 +192,7 @@ class AppServiceProvider extends ServiceProvider
         $authResponse = rest_do_request($authRequest);
 
         // Validate the request and handle any errors.
-        $this->validateResponse($authResponse);
+        bsaValidateResponse($authResponse);
 
         $data = $authResponse->get_data();
 
@@ -210,36 +210,6 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Validates a REST API response and handles any errors by displaying them and exiting.
-     *
-     * @param \WP_REST_Response $response The response object to validate.
-     * @return void
-     */
-    protected function validateResponse(\WP_REST_Response $response): void
-    {
-        if (is_wp_error($response)) {
-            wp_die($response->get_error_message());
-            exit;
-        }
-
-        $data = $response->get_data();
-
-        if (400 === $response->get_status()) {
-            foreach ($data['errors'] as $error) {
-                wp_die($error);
-            }
-
-            exit;
-        }
-
-        if (200 !== $response->get_status()) {
-            wp_die($data['message']);
-
-            exit;
-        }
-    }
-
-    /**
      * Add the License Manager menu item to the woocommerce my account menu items.
      *
      * @param array $menu_items The menu items array.
@@ -251,15 +221,5 @@ class AppServiceProvider extends ServiceProvider
         $menu_items['license-manager'] = __('License Manager', 'blockera-site-toolkit');
 
         return $menu_items;
-    }
-
-    /**
-     * Render the license manager view template.
-     *
-     * @return void
-     */
-    public function renderLicenseManagerView(): void
-    {
-        $this->app->make(LicenseManagerController::class)->render();
     }
 }
