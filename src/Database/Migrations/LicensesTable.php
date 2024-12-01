@@ -1,0 +1,62 @@
+<?php
+
+namespace BlockeraAI\SiteToolkit\Database\Migrations;
+
+use BlockeraAI\SiteToolkit\Database\Traits\CommandTrait;
+use BlockeraAI\SiteToolkit\Database\Contracts\Migration;
+
+class LicensesTable implements Migration
+{
+    use CommandTrait;
+
+    /**
+     * Up method.
+     *
+     * @return void
+     */
+    public function up(): void
+    {
+        global $wpdb;
+
+        $result = $wpdb->query('CREATE TABLE IF NOT EXISTS ' . $wpdb->prefix . $this->getTableName() . ' (
+    id BIGINT(20) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    client_id VARCHAR(80) NOT NULL,
+    subscription_id BIGINT NOT NULL,
+    UNIQUE KEY client_subscription (client_id, subscription_id),
+    FOREIGN KEY (client_id) REFERENCES ' . $wpdb->prefix . 'auth_clients(client_id) ON DELETE CASCADE,
+    FOREIGN KEY (subscription_id) REFERENCES ' . $wpdb->prefix . 'yith_ywsbs_stats(subscription_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;');
+
+        if ($result === false && class_exists(\WP_CLI::class)) {
+            $error = $wpdb->last_error;
+            \WP_CLI::success("Failed to create table: " . $error);
+            // throw new \Exception("Failed to create table: " . $error);
+        } elseif (class_exists(\WP_CLI::class)) {
+            \WP_CLI::success("The {$this->getTableName()} table has been created ✅");
+        }
+    }
+
+    /**
+     * Down method.
+     *
+     * @return void
+     */
+    public function down(): void
+    {
+        global $wpdb;
+
+        $result = $wpdb->query('DROP TABLE IF EXISTS ' . $wpdb->prefix . $this->getTableName());
+
+        if ($result === false && class_exists(\WP_CLI::class)) {
+            $error = $wpdb->last_error;
+            \WP_CLI::success("Failed to drop table: " . $error);
+        } elseif (class_exists(\WP_CLI::class)) {
+            \WP_CLI::success("The {$this->getTableName()} table has been dropped ✅");
+        }
+    }
+
+    public function getTableName(): string
+    {
+        return 'auth_licenses';
+    }
+}

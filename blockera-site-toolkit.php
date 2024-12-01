@@ -29,6 +29,7 @@ $migrations = [
     new Migrations\ClientsTable(),
     new Migrations\AccessTokenTable(),
     new Migrations\RefreshTokenTable(),
+    new Migrations\LicensesTable(),
 ];
 
 /**
