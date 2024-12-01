@@ -57,6 +57,7 @@ class Setup extends Application
     public function rewriteRules(): void
     {
         add_rewrite_rule('^authorize$', 'index.php?authorize=true', 'top');
+        add_rewrite_rule('^register-license$', 'index.php?register-license=true', 'top');
     }
 
     /**

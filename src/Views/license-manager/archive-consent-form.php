@@ -21,7 +21,7 @@ foreach ($subscriptions as $subscription_post): ?>
     <div class="blockera-consent-field">
         <label for="<?php echo esc_attr($subscription_id) ?>">
             <span>
-                <input name="subscription" id="<?php echo esc_attr($subscription_id) ?>" type="radio" value="<?php echo esc_attr($subscription_id) ?>">
+                <input name="subscription_id" id="<?php echo esc_attr($subscription_id) ?>" type="radio" value="<?php echo esc_attr($subscription_id) ?>">
                 <span><?php echo $subscription_name ?></span>
             </span>
             <span title="<?php echo esc_attr($tooltip); ?>">

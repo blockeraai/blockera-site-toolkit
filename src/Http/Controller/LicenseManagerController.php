@@ -4,9 +4,59 @@ namespace BlockeraAI\SiteToolkit\Http\Controller;
 
 use Blockera\Utils\View;
 use Blockera\Utils\Utils;
+use BlockeraAI\SiteToolkit\Repositories\LicenseRepository;
+use BlockeraAI\SiteToolkit\Repositories\AccessTokenRepository;
 
 class LicenseManagerController
 {
+    /**
+     * Array to store error messages during license validation and management.
+     *
+     * @var array
+     */
+    protected array $errors = [];
+
+    protected LicenseRepository $licenseRepository;
+
+    public function __construct(LicenseRepository $licenseRepository)
+    {
+        $this->licenseRepository = $licenseRepository;
+    }
+
+    /**
+     * Check if the user has permission to access the license manager.
+     * Validates nonce, handles cancellation, and verifies access token.
+     *
+     * @param \WP_REST_Request $request The request object.
+     *
+     * @return bool true on success, false on otherwise!
+     */
+    public function permission(\WP_REST_Request $request): bool
+    {
+        if (!wp_verify_nonce($request->get_param('_wpnonce'), 'wp_rest')) {
+            return false;
+        }
+
+        if ('cancel' === $request->get_param('action')) {
+            wp_redirect($request->get_param('redirect_uri'));
+            exit;
+        }
+
+        $parsedURL = parse_url($request->get_header('referer'));
+
+        if (home_url() === $parsedURL['scheme'] . '://' . $parsedURL['host']) {
+            return true;
+        }
+
+        $accessTokenRepo = new AccessTokenRepository();
+
+        if ($accessTokenRepo->isAccessTokenRevoked($request->get_param('access_token'))) {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * Render the license manager view template.
      *
@@ -70,5 +120,62 @@ class LicenseManagerController
         $subscription = ywsbs_get_subscription($subscription_id);
 
         return !empty($subscription_statuses[$subscription->get_status()]) && 'active' === $subscription_statuses[$subscription->get_status()];
+    }
+
+    /**
+     * Create a new license for the current client.
+     *
+     * @param \WP_REST_Request $request The request object.
+     * @param LicenseRepository $licenseRepository The license repository object.
+     *
+     * @return \WP_REST_Response The response object.
+     */
+    public function create(\WP_REST_Request $request)
+    {
+        $this->validate($request->get_params());
+
+        if (!empty($this->errors)) {
+            return new \WP_REST_Response([
+                'code' => 400,
+                'success' => false,
+                'errors' => $this->errors,
+            ], 400);
+        }
+
+        try {
+            $result = $this->licenseRepository->create([
+                'client_id' => $request->get_param('client_id'),
+                'subscription_id' => (int)$request->get_param('subscription_id'),
+            ]);
+        } catch (\Exception $e) {
+            return new \WP_REST_Response([
+                'code' => 500,
+                'success' => false,
+                'errors' => [
+                    'database_error' => __('Client already exists!', 'blockera-site-toolkit'),
+                ],
+            ], 500);
+        }
+
+        return new \WP_REST_Response([
+            'code' => 200,
+            'success' => true,
+            'data' => $result,
+        ], 200);
+    }
+
+    protected function validate(array $params): void
+    {
+        $requiredParams = [
+            'scopes' => __('Scopes field is required!', 'blockera-site-toolkit'),
+            'client_id' => __('Client ID field is required!', 'blockera-site-toolkit'),
+            'subscription_id' => __('Subscription field is required!', 'blockera-site-toolkit'),
+        ];
+
+        foreach ($requiredParams as $key => $errorMessage) {
+            if (empty($params[$key])) {
+                $this->errors[$key] = $errorMessage;
+            }
+        }
     }
 }
