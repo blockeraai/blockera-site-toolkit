@@ -58,6 +58,7 @@ class Setup extends Application
     {
         add_rewrite_rule('^authorize$', 'index.php?authorize=true', 'top');
         add_rewrite_rule('^register-license$', 'index.php?register-license=true', 'top');
+        add_rewrite_rule('^my-account\/license-manager\/add$', 'index.php?license-action=add', 'top');
     }
 
     /**
