@@ -24,9 +24,13 @@ trait CommandTrait
         }
 
         $table_name = $wpdb->prefix . $this->getTableName();
-        $wpdb->query("TRUNCATE TABLE $table_name");
+        $wpdb->query("SET FOREIGN_KEY_CHECKS=0");
+        $result = $wpdb->query("TRUNCATE TABLE $table_name");
+        $wpdb->query("SET FOREIGN_KEY_CHECKS=1");
 
-        if (class_exists(\WP_CLI::class)) {
+        if (false === $result && class_exists(\WP_CLI::class)) {
+            \WP_CLI::error("🚨 ERROR: Failed to truncate table {$wpdb->last_error}");
+        } elseif (class_exists(\WP_CLI::class)) {
             \WP_CLI::success("Table {$table_name} has been reset ✅");
         }
     }
