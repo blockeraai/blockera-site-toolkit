@@ -123,13 +123,13 @@ class Utils
 	 */
 	public static function extractDomainName(string $url, $with_scheme = false): string
 	{
-		$parsed_redirect_to = parse_url(home_url($url));
+		$parsed_url = parse_url(home_url($url));
 
-		if (empty($parsed_redirect_to['query'])) {
+		if (empty($parsed_url['query'])) {
 			return '';
 		}
 
-		parse_str($parsed_redirect_to['query'], $params);
+		parse_str($parsed_url['query'], $params);
 
 		$parsed_redirect_uri = parse_url($url);
 
@@ -138,5 +138,36 @@ class Utils
 		}
 
 		return $parsed_redirect_uri['host'];
+	}
+
+	/**
+	 * Extract the 'paramName' parameter from a URL's query string
+	 *
+	 * @param string $url The URL to extract the 'paramName' parameter from.	
+	 * @param string $param The parameter to extract from the URL.
+	 *
+	 * @return string The 'paramName' parameter value if found, otherwise an empty string.
+	 */
+	public static function extractParamFromURL(string $url, string $param): string
+	{
+		$parsed_url = parse_url($url);
+
+		if (empty($parsed_url['query'])) {
+			return '';
+		}
+
+		parse_str($parsed_url['query'], $params);
+
+		return $params[$param] ?? '';
+	}
+
+	/**
+	 * Gets the current page URL including query parameters
+	 *
+	 * @return string The current page URL including query parameters.
+	 */
+	public static function getCurrentPageURL(): string
+	{
+		return home_url($_SERVER['REQUEST_URI']);
 	}
 }
