@@ -49,11 +49,11 @@ class ClientRepository implements \League\OAuth2\Server\Repositories\ClientRepos
      * Get the client by field name and value.
      *
      * @param string $field The field name.
-     * @param mixed $value The field value.
+     * @param string $value The field value.
      *
      * @return \stdClass|null The client object or null if not found.
      */
-    public function getClientBy(string $field, $value): ?\stdClass
+    public function getClientBy(string $field, string $value): ?\stdClass
     {
         $table = $this->wpdb->prefix . 'auth_clients';
         $client = $this->wpdb->get_row(
