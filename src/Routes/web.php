@@ -1,5 +1,8 @@
 <?php
 
+use Blockera\Utils\Utils;
+use BlockeraAI\SiteToolkit\Repositories\ClientRepository;
+
 $setup = $this;
 
 // Register query variable.
@@ -14,6 +17,7 @@ add_filter('query_vars', 'registerVars');
 function registerVars(array $vars): array
 {
     $vars[] = 'authorize';
+    $vars[] = 'license-action';
     $vars[] = 'register-license';
 
     return $vars;
@@ -53,6 +57,42 @@ add_action(
             wp_redirect(add_query_arg(['connectedWithYourAccount' => 'true'], $_POST['redirect_uri']));
 
             exit;
+        }
+
+        if ('add' === get_query_var('license-action')) {
+            $clientRepository = $setup->make(ClientRepository::class);
+
+            $client = $clientRepository->getClientBy('domain', $_POST['domain']);
+
+            if (!$client) {
+                $_POST['redirect_uri'] = $_SERVER['HTTP_REFERER'];
+
+                $_POST = array_merge(
+                    $_POST,
+                    bsaDoRegisterClientRequest($setup, false)
+                );
+            }
+
+            $request = new \WP_REST_Request('POST', '/auth/v1/licenses/register');
+            $request->set_body_params($client ? array_merge($_POST, (array)$client) : $_POST);
+            $request->set_header('referer', home_url());
+
+            $responseObject = rest_do_request($request);
+
+            bsaValidateResponse($responseObject);
+
+            $data = $responseObject->get_data();
+
+            if ($data['success']) {
+                wp_redirect($_POST['redirect_uri'] . '?registered-client=true');
+            }
+            // TODO: implements view
+        }
+
+        $fromClientSettings = str_ends_with(Utils::getCurrentPageURL(), 'connect-with-account');
+
+        if (!empty($_GET['state']) && !empty($_GET['response_type']) && !empty($_GET['approval_prompt']) && is_user_logged_in() && $fromClientSettings) {
+            bsaDoRegisterClientRequest($setup);
         }
     }
 );
