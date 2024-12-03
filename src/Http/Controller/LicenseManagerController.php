@@ -4,6 +4,7 @@ namespace BlockeraAI\SiteToolkit\Http\Controller;
 
 use Blockera\Utils\View;
 use Blockera\Utils\Utils;
+use BlockeraAI\SiteToolkit\Repositories\UserRepository;
 use BlockeraAI\SiteToolkit\Repositories\LicenseRepository;
 use BlockeraAI\SiteToolkit\Repositories\AccessTokenRepository;
 
@@ -91,20 +92,35 @@ class LicenseManagerController
         $whoIs = Utils::extractDomainName($_GET['redirect_uri'] ?? '');
         $url = Utils::extractDomainName($_GET['redirect_uri'] ?? '', true);
 
-        if (empty($_GET['redirect_uri']) && count($subscriptions)) {
-            View::load('license-manager.activates', [], ['root-path' => $root_path]);
+        if (empty($_GET['redirect_uri']) && count($subscriptions) && empty($_GET['registered-client']) && empty($whoIs)) {
+            View::load('license-manager.register-client', compact('subscriptions', 'root_path'), ['root-path' => $root_path]);
         } elseif (empty($_GET['redirect_uri']) && !count($subscriptions)) {
             View::load('license-manager.404', [], ['root-path' => $root_path]);
-        } elseif (1 === count($subscriptions)) {
+        } elseif (1 === count($subscriptions) && !empty($whoIs)) {
             $subscription_post = $subscriptions[0];
             $subscription_id = is_numeric($subscription_post) ? $subscription_post : $subscription_post->ID;
 
             View::load('license-manager.single-consent-form', compact('url', 'whoIs', 'subscription_id', 'subscription_statuses'), ['root-path' => $root_path]);
-        } elseif (1 < count($subscriptions)) {
+        } elseif (1 < count($subscriptions) && !empty($whoIs)) {
             View::load('license-manager.archive-consent-form', compact('url', 'whoIs', 'subscriptions', 'subscription_statuses'), ['root-path' => $root_path]);
-        } else {
-            View::load('license-manager.404', [], ['root-path' => $root_path]);
         }
+    }
+
+    public function renderClients(): void
+    {
+        // Compatible with the yith-woocommerce-subscription-premium plugin.
+        if (!function_exists('ywsbs_get_status') || !function_exists('YWSBS_Subscription_Helper')) {
+            return;
+        }
+
+        $root_path = BSA_PLUGIN_DIR . '/src/Views/';
+        $subscription_statuses = ywsbs_get_status();
+
+        $user = new UserRepository();
+
+        $clients = $user->getClients(get_current_user_id());
+
+        View::load('license-manager.registered-clients', compact('clients', 'subscription_statuses'), ['root-path' => $root_path]);
     }
 
     /**
@@ -130,7 +146,41 @@ class LicenseManagerController
      *
      * @return \WP_REST_Response The response object.
      */
-    public function create(\WP_REST_Request $request)
+    public function create(\WP_REST_Request $request): \WP_REST_Response
+    {
+        $this->validate($request->get_params());
+
+        if (!empty($this->errors)) {
+            return new \WP_REST_Response([
+                'code' => 400,
+                'success' => false,
+                'errors' => $this->errors,
+            ], 400);
+        }
+
+        try {
+            $result = $this->licenseRepository->create([
+                'client_id' => $request->get_param('client_id'),
+                'subscription_id' => (int)$request->get_param('subscription_id'),
+            ]);
+        } catch (\Exception $e) {
+            return new \WP_REST_Response([
+                'code' => 500,
+                'success' => false,
+                'errors' => [
+                    'database_error' => __('Client already exists!', 'blockera-site-toolkit'),
+                ],
+            ], 500);
+        }
+
+        return new \WP_REST_Response([
+            'code' => 200,
+            'success' => true,
+            'data' => $result,
+        ], 200);
+    }
+
+    public function register(\WP_REST_Request $request): \WP_REST_Response
     {
         $this->validate($request->get_params());
 
