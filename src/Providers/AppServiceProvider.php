@@ -5,7 +5,6 @@ namespace BlockeraAI\SiteToolkit\Providers;
 use BlockeraAI\SiteToolkit\Setup;
 use League\OAuth2\Server\CryptKey;
 use Blockera\Bootstrap\ServiceProvider;
-use Psr\Http\Message\ResponseInterface;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\PasswordGrant;
@@ -13,8 +12,9 @@ use BlockeraAI\SiteToolkit\Repositories\UserRepository;
 use BlockeraAI\SiteToolkit\Repositories\ScopeRepository;
 use BlockeraAI\SiteToolkit\Repositories\ClientRepository;
 use BlockeraAI\SiteToolkit\Repositories\AuthCodeRepository;
-use BlockeraAI\SiteToolkit\Http\Controller\ClientController;
+use BlockeraAI\SiteToolkit\Http\Middlewares\RefererMiddleware;
 use BlockeraAI\SiteToolkit\Repositories\AccessTokenRepository;
+use BlockeraAI\SiteToolkit\Http\Middlewares\MiddlewarePipeline;
 use BlockeraAI\SiteToolkit\Repositories\RefreshTokenRepository;
 use BlockeraAI\SiteToolkit\Http\Controller\LicenseManagerController;
 
@@ -60,6 +60,9 @@ class AppServiceProvider extends ServiceProvider
 
             // Set the OAuth server.
             $this->app->setServer($authServer);
+
+            $this->app->singleton(MiddlewarePipeline::class);
+            $this->app->singleton(RefererMiddleware::class);
         }
     }
 
@@ -70,10 +73,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if ($this->app instanceof Setup) {
-            // Register REST API routes.
-            $this->app->registerRoutes();
+        if (!$this->app instanceof Setup) {
+            return;
         }
+
+        // Register REST API routes.
+        $this->app->registerRoutes();
 
         add_filter('http_request_host_is_external', function ($is_external, $host) {
             if (str_ends_with($host, 'localhost') || str_ends_with($host, '127.0.0.1') || str_ends_with($host, '.test')) {
@@ -83,130 +88,23 @@ class AppServiceProvider extends ServiceProvider
             return $is_external;
         }, 10, 2);
 
-        add_action('blockera-site-toolkit/rest/post/authorize', [$this, 'doUpdateClient'], 10, 3);
+        add_action('blockera-site-toolkit/rest/post/authorize', 'bsaDoUpdateClient', 10, 3);
 
         // Doing register client request if user is logged in.
-        is_user_logged_in() && $this->doRegisterClientRequest();
+        is_user_logged_in() && bsaDoRegisterClientRequest($this->app);
 
         // Add endpoint for the Blockera License Manager page.
         add_rewrite_endpoint('license-manager', EP_ROOT | EP_PAGES);
+        add_rewrite_endpoint('license-manager-clients', EP_ROOT | EP_PAGES);
 
         // Add Blockera License Manager page to woocommerce my account menu.
         add_filter('woocommerce_account_menu_items', [$this, 'addLicenseManagerPage']);
 
         // Add content for the Blockera OAuth page.
         add_action('woocommerce_account_license-manager_endpoint', [$this->app->make(LicenseManagerController::class), 'render']);
-
+        add_action('woocommerce_account_license-manager-clients_endpoint', [$this->app->make(LicenseManagerController::class), 'renderClients']);
         // Flush rewrite rules to ensure new endpoints are registered.
         flush_rewrite_rules();
-    }
-
-    public function doUpdateClient(ResponseInterface $responseInterface, string $grantType, string $clientId): void
-    {
-        parse_str(parse_url($responseInterface->getHeader('Location')[0])['query'], $params);
-
-        $request = new \WP_REST_Request('POST', 'auth/v1/client/update');
-
-        $params['client_id'] = $clientId;
-        $params['grant_type'] = $grantType;
-
-        $request->set_body_params($params);
-
-        $response = (new ClientController())->update($request);
-
-        bsaValidateResponse($response);
-    }
-
-    /**
-     * Get the register client request parameters.
-     *
-     * @return array
-     */
-    protected function getRegisterClientParams(): array
-    {
-        parse_str(parse_url($_SERVER['HTTP_REFERER'])['query'], $params);
-
-        $redirect_to = $params['redirect_to'];
-        $parsed_redirect_to = parse_url(home_url($redirect_to));
-
-        if (empty($parsed_redirect_to['query'])) {
-            return [];
-        }
-
-        parse_str($parsed_redirect_to['query'], $params);
-
-        $parsed_redirect_uri = parse_url($params['redirect_uri']);
-        $domain = "{$parsed_redirect_uri['scheme']}://{$parsed_redirect_uri['host']}";
-
-        // Sanitize and get form data.
-        $redirect_uri = esc_url_raw($params['redirect_uri']);
-        $grant_types = 'authorization_code';
-        // Get the current logged in user identifier.
-        $user_id = wp_get_current_user()->ID;
-        // Generate client_id and client_secret.
-        $client_id = wp_generate_uuid4();
-        $client_secret = wp_generate_password(32, false);
-
-        return compact('user_id', 'client_id', 'client_secret', 'domain', 'redirect_uri', 'redirect_to');
-    }
-
-    /**
-     * Set the blockera authentication status in database.
-     *
-     * @return void
-     */
-    public function doRegisterClientRequest(): void
-    {
-        if (!isset($_SERVER['HTTP_REFERER']) || false === strpos($_SERVER['HTTP_REFERER'], urlencode('authorize/?'))) {
-            return;
-        }
-
-        $params = $this->getRegisterClientParams();
-
-        if (empty($params)) {
-            return;
-        }
-
-        $request = new \WP_REST_Request('POST', '/auth/v1/client/register');
-
-        $request->set_body_params($params);
-
-        $request->set_header('X-WP-Nonce', wp_create_nonce('wp_rest'));
-
-        $registrationClientResponse = rest_do_request($request);
-
-        // Validate the request and handle any errors.
-        bsaValidateResponse($registrationClientResponse);
-
-        $response = $registrationClientResponse->get_data();
-
-        $authRequest = new \WP_REST_Request('POST', '/auth/v1/authorize');
-
-        $client_id = $response['data']['client_id'];
-        $client_secret = $response['data']['client_secret'];
-
-        $authRequest->set_query_params(array_merge($_GET, compact('client_id')));
-
-        $authRequest->set_header('X-WP-Nonce', wp_create_nonce('wp_rest'));
-
-        $authResponse = rest_do_request($authRequest);
-
-        // Validate the request and handle any errors.
-        bsaValidateResponse($authResponse);
-
-        $data = $authResponse->get_data();
-
-        if (302 !== $data->getStatusCode()) {
-            return;
-        }
-
-        $redirect_uri = $data->getHeader('Location')[0];
-
-        // Redirect to the client page.
-        wp_redirect($redirect_uri . "&client_id=$client_id&client_secret=$client_secret&redirect_to=" . urlencode(home_url($params['redirect_to'])), 302);
-
-        // Stop further WordPress execution for this request.
-        exit;
     }
 
     /**
@@ -219,6 +117,7 @@ class AppServiceProvider extends ServiceProvider
     public function addLicenseManagerPage(array $menu_items): array
     {
         $menu_items['license-manager'] = __('License Manager', 'blockera-site-toolkit');
+        $menu_items['license-manager-clients'] = __('Your activated domains', 'blockera-site-toolkit');
 
         return $menu_items;
     }
