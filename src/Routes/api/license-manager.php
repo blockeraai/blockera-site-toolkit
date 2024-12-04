@@ -11,12 +11,6 @@ register_rest_route('auth/v1', '/licenses/create', [
     'permission_callback' => [$licensesController, 'permission'],
 ]);
 
-register_rest_route('auth/v1', '/licenses/register', [
-    'methods' => 'POST',
-    'callback' => [$licensesController, 'register'],
-    'permission_callback' => [$licensesController, 'permission'],
-]);
-
 register_rest_route('auth/v1', '/licenses', [
     'methods' => 'GET',
     'callback' => [$licensesController, 'index'],

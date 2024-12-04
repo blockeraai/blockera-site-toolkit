@@ -73,7 +73,7 @@ add_action(
                 );
             }
 
-            $request = new \WP_REST_Request('POST', '/auth/v1/licenses/register');
+            $request = new \WP_REST_Request('POST', '/auth/v1/licenses/create');
             $request->set_body_params($client ? array_merge($_POST, (array)$client) : $_POST);
             $request->set_header('referer', home_url());
 

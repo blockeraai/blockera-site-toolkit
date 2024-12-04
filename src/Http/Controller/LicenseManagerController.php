@@ -180,40 +180,6 @@ class LicenseManagerController
         ], 200);
     }
 
-    public function register(\WP_REST_Request $request): \WP_REST_Response
-    {
-        $this->validate($request->get_params());
-
-        if (!empty($this->errors)) {
-            return new \WP_REST_Response([
-                'code' => 400,
-                'success' => false,
-                'errors' => $this->errors,
-            ], 400);
-        }
-
-        try {
-            $result = $this->licenseRepository->create([
-                'client_id' => $request->get_param('client_id'),
-                'subscription_id' => (int)$request->get_param('subscription_id'),
-            ]);
-        } catch (\Exception $e) {
-            return new \WP_REST_Response([
-                'code' => 500,
-                'success' => false,
-                'errors' => [
-                    'database_error' => __('Client already exists!', 'blockera-site-toolkit'),
-                ],
-            ], 500);
-        }
-
-        return new \WP_REST_Response([
-            'code' => 200,
-            'success' => true,
-            'data' => $result,
-        ], 200);
-    }
-
     protected function validate(array $params): void
     {
         $requiredParams = [
