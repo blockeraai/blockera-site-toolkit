@@ -1,0 +1,9 @@
+# By default, all `node_modules` are ignored.
+
+build
+dist
+test
+vendor
+wordpress*
+*.js
+node_modules

@@ -17,27 +17,22 @@ if (!defined('ABSPATH')) {
 require __DIR__ . '/vendor/autoload.php';
 
 use BlockeraAI\SiteToolkit\Setup;
-use BlockeraAI\SiteToolkit\Commands\Database;
-use BlockeraAI\SiteToolkit\Database\Migrations;
+
+// Env Loading ...
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->safeLoad();
 
 define('BSA_PLUGIN_FILE', __FILE__);
 define('BSA_PLUGIN_URL', plugin_dir_url(BSA_PLUGIN_FILE));
 define('BSA_PLUGIN_DIR', plugin_dir_path(BSA_PLUGIN_FILE));
 define('BSA_PLUGIN_MODE', 'dev');
 
-$migrations = [
-    new Migrations\ClientsTable(),
-    new Migrations\AccessTokenTable(),
-    new Migrations\RefreshTokenTable(),
-    new Migrations\LicensesTable(),
-];
-
 /**
  * @var Setup $setup
  */
 $setup = Setup::getInstance();
 
-$setup->setMigrations(new Migrations($migrations))->mount()->unmount();
+$setup->mount()->unmount();
 
 /**
  * Initialize the plugin.
@@ -50,12 +45,8 @@ add_action('plugins_loaded', function () use ($setup): void {
     });
 });
 
-// Initialize the database commands.
-if (BSA_PLUGIN_MODE === 'dev' && class_exists(\WP_CLI::class)) {
-    $db = new Database();
-    $db->migrate($migrations);
-
-    $whoops = new \Whoops\Run;
-    $whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
-    $whoops->register();
+if('true' === bsaGetConfig('debug')){
+	$whoops = new \Whoops\Run();
+	$whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler());
+	$whoops->register();
 }
