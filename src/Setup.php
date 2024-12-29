@@ -3,10 +3,11 @@
 namespace BlockeraAI\SiteToolkit;
 
 use Blockera\Bootstrap\Application;
+use League\OAuth2\Server\ResourceServer;
 use League\OAuth2\Server\AuthorizationServer;
 use BlockeraAI\SiteToolkit\Providers\AssetsProvider;
-use BlockeraAI\SiteToolkit\Database\Contracts\Command;
 use BlockeraAI\SiteToolkit\Providers\AppServiceProvider;
+use League\OAuth2\Server\Middleware\ResourceServerMiddleware;
 
 class Setup extends Application
 {
@@ -15,14 +16,14 @@ class Setup extends Application
      *
      * @var AuthorizationServer The OAuth server instance.
      */
-    private AuthorizationServer $server;
+    private AuthorizationServer $authorizationServer;
 
     /**
-     * Migrations instance.
+     * Store the resource server instance.
      *
-     * @var Command $migrations The instance of Migrations object.
+     * @var ResourceServer The resource server instance.
      */
-    protected static Command $migrations;
+    private ResourceServer $resourceServer;
 
     /**
      * Setup constructor.
@@ -39,26 +40,14 @@ class Setup extends Application
     }
 
     /**
-     * Initializing Blockera Site Toolkit Setup.
-     *
-     * @return void
-     */
-    public function init(): void
-    {
-        // Configuring the OAuth server.
-        add_action('init', [$this, 'configServer']);
-    }
-
-    /**
      * Adds a rewrite rule that transforms a URL structure to a set of query vars.
      *
      * @return void
      */
     public function rewriteRules(): void
     {
-        add_rewrite_rule('^authorize$', 'index.php?authorize=true', 'top');
-        add_rewrite_rule('^register-license$', 'index.php?register-license=true', 'top');
-        add_rewrite_rule('^my-account\/license-manager\/add$', 'index.php?license-action=add', 'top');
+        add_rewrite_rule('^authorize/?$', 'index.php?authorize=true', 'top');
+        add_rewrite_rule('^consent-form/?$', 'index.php?consent-form=true', 'top');
     }
 
     /**
@@ -98,30 +87,6 @@ class Setup extends Application
     }
 
     /**
-     * Get the OAuth server instance.
-     *
-     * @return  AuthorizationServer
-     */
-    public function getServer(): AuthorizationServer
-    {
-        return $this->server;
-    }
-
-    /**
-     * Set $migrations The instance of Migrations object.
-     *
-     * @param  Command $migrations The array of migrations instances.
-     *
-     * @return self
-     */
-    public function setMigrations(Command $migrations): self
-    {
-        self::$migrations = $migrations;
-
-        return self::getInstance();
-    }
-
-    /**
      * Mounting the plugin ...
      *
      * @return self
@@ -144,9 +109,6 @@ class Setup extends Application
         // Rewrite rules.
         $this->rewriteRules();
         flush_rewrite_rules();
-
-        // Executing the migrations.
-        self::$migrations->execute();
     }
 
     /**
@@ -157,21 +119,45 @@ class Setup extends Application
     public function unmount(): self
     {
         // Register uninstall hook.
-        register_uninstall_hook(BSA_PLUGIN_FILE, [self::class, 'uninstall']);
+        register_deactivation_hook(BSA_PLUGIN_FILE, 'flush_rewrite_rules');
 
         return $this;
     }
 
     /**
-     * Uninstall the plugin.
+     * Get the resource server instance.
+     *
+     * @return ResourceServer
+     */
+    public function getResourceServer(): ResourceServer
+    {
+        if (!$this->resourceServer) {
+            $this->make(ResourceServerMiddleware::class, [$this->resourceServer]);
+        }
+
+        return $this->resourceServer;
+    }
+
+    /**
+     * Set the resource server instance.
+     *
+     * @param ResourceServer $server The resource server instance.
      *
      * @return void
      */
-    public static function uninstall(): void
+    public function setResourceServer(ResourceServer $server): void
     {
-        flush_rewrite_rules();
+        $this->resourceServer = $server;
+    }
 
-        self::$migrations->undo();
+    /**
+     * Get the OAuth server instance.
+     *
+     * @return  AuthorizationServer
+     */
+    public function getAuthorizationServer(): AuthorizationServer
+    {
+        return $this->authorizationServer;
     }
 
     /**
@@ -181,21 +167,36 @@ class Setup extends Application
      *
      * @return void
      */
-    public function setServer(AuthorizationServer $server)
+    public function setAuthorizationServer(AuthorizationServer $server)
     {
-        $this->server = $server;
+        $this->authorizationServer = $server;
     }
 
+    /**
+     * Get the plugin URL.
+     *
+     * @return string
+     */
     public function getURL(): string
     {
         return BSA_PLUGIN_URL;
     }
 
+    /**
+     * Get the plugin path.
+     *
+     * @return string
+     */
     public function getPath(): string
     {
         return BSA_PLUGIN_DIR;
     }
 
+    /**
+     * Check if the plugin is in debug mode.
+     *
+     * @return bool true if the plugin is in debug mode, false otherwise.
+     */
     public function isDebug(): bool
     {
         return defined('BSA_PLUGIN_MODE') && 'dev' === BSA_PLUGIN_MODE;

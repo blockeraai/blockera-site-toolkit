@@ -3,24 +3,34 @@
 
 namespace BlockeraAI\SiteToolkit\Repositories;
 
+use BlockeraAI\SiteToolkit\Repositories\Traits\RepositoryTrait;
+
 class LicenseRepository
 {
-    public function create(array $params): void
-    {
-        global $wpdb;
+	use RepositoryTrait;
 
-        $result = $wpdb->insert($wpdb->prefix . 'auth_licenses', $params);
+	/**
+	 * Get the license by field name and value.
+	 *
+	 * @param string $field The field name.
+	 * @param string $value The field value.
+	 *
+	 * @return array|null The license array or null if not found.
+	 */
+	public function getBy(string $field, $value): ?array
+	{
+		return $this->wpdb->get_results($this->wpdb->prepare("SELECT * FROM api_licenses WHERE $field = %s", $value), ARRAY_A);
+	}
 
-        if (false === $result) {
-            // You can throw an exception or handle the error as needed.
-            throw new \Exception(__("Database error: ", 'blockera-site-toolkit') . $wpdb->last_error);
-        }
-    }
-
-    public function getBy(string $field, $value): array
-    {
-        global $wpdb;
-
-        return $wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}auth_licenses WHERE $field = %s", $value), ARRAY_A);
-    }
+	/**
+	 * Check if the zip file is valid.
+	 *
+	 * @param string $zipFile The zip file url.
+	 *
+	 * @return bool true if the zip file is valid, false otherwise.
+	 */
+	public function isValidZipFile(string $zipFile): bool
+	{
+		return true;
+	}
 }

@@ -1,18 +1,23 @@
 <?php
 
-use BlockeraAI\SiteToolkit\Repositories\LicenseRepository;
 use BlockeraAI\SiteToolkit\Http\Controller\LicenseManagerController;
 
-$licensesController = new LicenseManagerController(new LicenseRepository());
+$licensesController = new LicenseManagerController($this);
 
 register_rest_route('auth/v1', '/licenses/create', [
-    'methods' => 'POST',
-    'callback' => [$licensesController, 'create'],
-    'permission_callback' => [$licensesController, 'permission'],
+	'methods' => 'POST',
+	'callback' => [$licensesController, 'create'],
+	'permission_callback' => [$licensesController, 'permission'],
 ]);
 
 register_rest_route('auth/v1', '/licenses', [
-    'methods' => 'GET',
-    'callback' => [$licensesController, 'index'],
-    'permission_callback' => [$licensesController, 'permission'],
+	'methods' => 'GET',
+	'callback' => [$licensesController, 'index'],
+	'permission_callback' => [$licensesController, 'permission'],
+]);
+
+register_rest_route('auth/v1', '/license/delete', [
+	'methods' => 'POST',
+	'callback' => [$licensesController, 'delete'],
+	'permission_callback' => [$licensesController, 'permission'],
 ]);

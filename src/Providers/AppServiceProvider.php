@@ -3,122 +3,160 @@
 namespace BlockeraAI\SiteToolkit\Providers;
 
 use BlockeraAI\SiteToolkit\Setup;
-use League\OAuth2\Server\CryptKey;
 use Blockera\Bootstrap\ServiceProvider;
-use League\OAuth2\Server\AuthorizationServer;
-use League\OAuth2\Server\Grant\AuthCodeGrant;
-use League\OAuth2\Server\Grant\PasswordGrant;
-use BlockeraAI\SiteToolkit\Repositories\UserRepository;
-use BlockeraAI\SiteToolkit\Repositories\ScopeRepository;
-use BlockeraAI\SiteToolkit\Repositories\ClientRepository;
-use BlockeraAI\SiteToolkit\Repositories\AuthCodeRepository;
+use BlockeraAI\SiteToolkit\Meta\Factory as Meta;
+use BlockeraAI\SiteToolkit\Guard\SecureDownloadManager;
+use BlockeraAI\SiteToolkit\Http\Controller\ProductController;
 use BlockeraAI\SiteToolkit\Http\Middlewares\RefererMiddleware;
-use BlockeraAI\SiteToolkit\Repositories\AccessTokenRepository;
 use BlockeraAI\SiteToolkit\Http\Middlewares\MiddlewarePipeline;
-use BlockeraAI\SiteToolkit\Repositories\RefreshTokenRepository;
-use BlockeraAI\SiteToolkit\Http\Controller\LicenseManagerController;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register the service provider.
-     *
-     * @return void
-     */
-    public function register(): void
-    {
-        if ($this->app instanceof Setup) {
+	/**
+	 * Register the service provider.
+	 *
+	 * @return void
+	 */
+	public function register(): void
+	{
+		$this->app->singleton(MiddlewarePipeline::class);
+		$this->app->singleton(RefererMiddleware::class);
 
-            // Configure the OAuth server.
-            $privateKey = new CryptKey(BSA_PLUGIN_DIR . 'private.key', null, false);
-            $encryptionKey = 'CRNkX6YdtGYbjbpSsz/xjMRrO9wct+flivtmaGEHn0E=';
+		// $this->app->singleton(SecureDownloadManager::class, function (Application $app) {
+		//     return new SecureDownloadManager($app, new SecureDownloadRepository());
+		// });
+	}
 
-            $authServer = new AuthorizationServer(
-                new ClientRepository(),
-                new AccessTokenRepository(),
-                new ScopeRepository(),
-                $privateKey,
-                $encryptionKey
-            );
+	/**
+	 * Boot the service provider.
+	 *
+	 * @return void
+	 */
+	public function boot(): void
+	{
+		if (!$this->app instanceof Setup) {
+			return;
+		}
 
-            $authServer->enableGrantType(
-                new AuthCodeGrant(
-                    new AuthCodeRepository(),
-                    new RefreshTokenRepository(),
-                    new \DateInterval('PT1M') // Authorization codes expire in 1 minutes.
-                ),
-                new \DateInterval('P1Y') // Access tokens expire in 1 year.
-            );
+		// Process download zip file request.
+		if (!empty($_GET['action']) && 'download' === $_GET['action'] && !empty($_GET['token']) && !empty($_GET['hash'])) {
+			$this->app->make(SecureDownloadManager::class)->processDownload($_GET['token'], $_GET['hash']);
+		}
 
-            $authServer->enableGrantType(
-                new PasswordGrant(
-                    new UserRepository(),
-                    new RefreshTokenRepository()
-                ),
-                new \DateInterval('PT1H') // Access tokens expire in 1 hour.
-            );
+		// Register REST API routes.
+		$this->app->registerRoutes();
 
-            // Set the OAuth server.
-            $this->app->setServer($authServer);
+		add_filter('http_request_host_is_external', function ($is_external, $host) {
+			if (str_ends_with($host, 'localhost') || str_ends_with($host, '127.0.0.1') || str_ends_with($host, '.test')) {
+				return true;
+			}
 
-            $this->app->singleton(MiddlewarePipeline::class);
-            $this->app->singleton(RefererMiddleware::class);
-        }
-    }
+			return $is_external;
+		}, 10, 2);
 
-    /**
-     * Boot the service provider.
-     *
-     * @return void
-     */
-    public function boot(): void
-    {
-        if (!$this->app instanceof Setup) {
-            return;
-        }
+		// Doing register client request if user is logged in.
+		if (is_user_logged_in() && isset($_GET['state'], $_GET['response_type'], $_GET['approval_prompt'], $_GET['redirect_uri']) && filter_var($_GET['redirect_uri'], FILTER_VALIDATE_URL)) {
+			$this->dispatchLoginEvents();
+		}
 
-        // Register REST API routes.
-        $this->app->registerRoutes();
+		add_filter('woocommerce_account_menu_items', [$this, 'reorderMenuItems'], 9e2);
+		add_filter('woocommerce_locate_template', [$this, 'overrideTemplates'], 10, 2);
 
-        add_filter('http_request_host_is_external', function ($is_external, $host) {
-            if (str_ends_with($host, 'localhost') || str_ends_with($host, '127.0.0.1') || str_ends_with($host, '.test')) {
-                return true;
-            }
+		if (is_admin()) {
+			// FIXME: Refactor this.
+			$this->app->make(Meta::class);
+		}
 
-            return $is_external;
-        }, 10, 2);
+		add_action('save_post_product', [$this->app->make(ProductController::class), 'save'], 9e8, 3);
+	}
 
-        add_action('blockera-site-toolkit/rest/post/authorize', 'bsaDoUpdateClient', 10, 3);
+	/**
+	 * Dispatch login events.
+	 *
+	 * @return void
+	 */
+	protected function dispatchLoginEvents(): void
+	{
+		$user_id = get_current_user_id();
+		$user_info_cache_key = 'blockera_api_user_info';
+		$client_info_cache_key = 'blockera_api_client_info';
 
-        // Doing register client request if user is logged in.
-        is_user_logged_in() && bsaDoRegisterClientRequest($this->app);
+		if (!empty(get_user_meta($user_id, $client_info_cache_key))) {
+			return;
+		}
 
-        // Add endpoint for the Blockera License Manager page.
-        add_rewrite_endpoint('license-manager', EP_ROOT | EP_PAGES);
-        add_rewrite_endpoint('license-manager-clients', EP_ROOT | EP_PAGES);
+		$userCredentials = bsaGetUserAccessToken();
 
-        // Add Blockera License Manager page to woocommerce my account menu.
-        add_filter('woocommerce_account_menu_items', [$this, 'addLicenseManagerPage']);
+		$params = bsaGetRegisterClientParams();
 
-        // Add content for the Blockera OAuth page.
-        add_action('woocommerce_account_license-manager_endpoint', [$this->app->make(LicenseManagerController::class), 'render']);
-        add_action('woocommerce_account_license-manager-clients_endpoint', [$this->app->make(LicenseManagerController::class), 'renderClients']);
-        // Flush rewrite rules to ensure new endpoints are registered.
-        flush_rewrite_rules();
-    }
+		$client = bsaDoStoreClient($params, $userCredentials['token_type'] . ' ' . $userCredentials['access_token']);
 
-    /**
-     * Add the License Manager menu item to the woocommerce my account menu items.
-     *
-     * @param array $menu_items The menu items array.
-     * 
-     * @return array Updated menu items array.
-     */
-    public function addLicenseManagerPage(array $menu_items): array
-    {
-        $menu_items['license-manager'] = __('License Manager', 'blockera-site-toolkit');
-        $menu_items['license-manager-clients'] = __('Your activated domains', 'blockera-site-toolkit');
+		if (empty($client)) {
+			return;
+		}
 
-        return $menu_items;
-    }
+		$client_id = $client['client_id'];
+		$client_secret = $client['client_secret'];
+
+		$params = [
+			'params' => $params,
+			'authorization' => $userCredentials['token_type'] . ' ' . $userCredentials['access_token'],
+		];
+
+		$authorizeResponse = bsaDoAuthorization($client_id, $client_secret, $params);
+
+		if (empty($authorizeResponse)) {
+			delete_user_meta($user_id, $user_info_cache_key);
+			delete_user_meta($user_id, $client_info_cache_key);
+
+			return;
+		}
+
+		// Redirect to the client page.
+		wp_redirect($authorizeResponse['redirect_to_client'] . "&client_id=$client_id&client_secret=$client_secret&redirect_to=" . urlencode($authorizeResponse['redirect_to_consent_page']), 302);
+		// Stop further WordPress execution for this request.
+		exit;
+	}
+
+	/**
+	 * Reorder the subscription menu item to the woocommerce my account menu items.
+	 *
+	 * @param array $items The menu items array.
+	 * 
+	 * @return array Updated menu items array.
+	 */
+	public function reorderMenuItems(array $items): array
+	{
+		unset($items['subscriptions']);
+		// unset($items['downloads']);
+
+		$new_items = [];
+
+		foreach ($items as $key => $item) {
+			$new_items[$key] = $item;
+
+			if ($key === 'dashboard') {
+				$new_items['subscriptions'] = __('Subscriptions', 'blockera-site-toolkit');
+			}
+		}
+
+		return $new_items;
+	}
+
+	/**
+	 * Override the default woocommerce templates.
+	 *
+	 * @param string $template The template path.
+	 * @param string $templateName The template name.
+	 * 
+	 * @return string The template path.
+	 */
+	public function overrideTemplates(string $template, string $templateName): string
+	{
+		if ('myaccount/my-subscriptions-view.php' === $templateName && false !== strpos($_SERVER['REQUEST_URI'], 'my-account/my-subscription')) {
+			return BSA_PLUGIN_DIR . '/src/Views/subscriptions.php';
+		}
+
+		return $template;
+	}
 }
