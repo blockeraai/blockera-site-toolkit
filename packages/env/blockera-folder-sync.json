@@ -1,0 +1,10 @@
+{
+	"name": "blockera/env",
+	"path": "packages/env",
+	"dependent": {
+		"repositories": [
+			"https://github.com/blockeraai/blockera.git",
+			"https://github.com/blockeraai/blockera-site-toolkit.git"
+		]
+	}
+}

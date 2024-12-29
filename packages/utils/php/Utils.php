@@ -126,7 +126,7 @@ class Utils
 		$parsed_url = parse_url(home_url($url));
 
 		if (empty($parsed_url['query'])) {
-			return '';
+			return $with_scheme && !empty($parsed_url['scheme']) && !empty($parsed_url['host']) ? "{$parsed_url['scheme']}://{$parsed_url['host']}" : $parsed_url['host'] ?? '';
 		}
 
 		parse_str($parsed_url['query'], $params);
