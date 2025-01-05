@@ -49,21 +49,23 @@ class SubscriptionRepository
 	{
 		$subscription_statuses = ywsbs_get_status();
 		$subscription = ywsbs_get_subscription($subscription_id);
-		$subscription_name = sprintf('%s - %s', $subscription->get_number(), $subscription->get('product_name'));
-		$subscription_status = $subscription_statuses[$subscription->get_status()];
-		$next_payment_due_date = (! in_array($subscription_status, array('paused', 'cancelled'), true) && $subscription->get('payment_due_date')) ? date_i18n(wc_date_format(), $subscription->get('payment_due_date')) : '<span class="empty-date">-</span>';
-		$start_date = ($subscription->get('start_date')) ? date_i18n(wc_date_format(), $subscription->get('start_date')) : '<div class="empty-date">-</div>';
-		$end_date = ($subscription->get('end_date')) ? date_i18n(wc_date_format(), $subscription->get('end_date')) : false;
-		$end_date = ! $end_date && ($subscription->get('expired_date')) ? date_i18n(wc_date_format(), $subscription->get('expired_date')) : '<div class="empty-date">-</div>';
+		$name = sprintf('%s - %s', $subscription->get_number(), $subscription->get('product_name'));
+		$status = $subscription_statuses[$subscription->get_status()];
+		$nextPaymentDueDate = (! in_array($status, array('paused', 'cancelled'), true) && $subscription->get('payment_due_date')) ? date_i18n(wc_date_format(), $subscription->get('payment_due_date')) : '<span class="empty-date">-</span>';
+		$startDate = ($subscription->get('start_date')) ? date_i18n(wc_date_format(), $subscription->get('start_date')) : '<div class="empty-date">-</div>';
+		$endDate = ($subscription->get('end_date')) ? date_i18n(wc_date_format(), $subscription->get('end_date')) : false;
+		$endDate = ! $endDate && ($subscription->get('expired_date')) ? date_i18n(wc_date_format(), $subscription->get('expired_date')) : '<div class="empty-date">-</div>';
 		$description = empty($subscription->get('post_content')) ? $subscription->get('post_content') : $subscription->get('post_excerpt');
 		$downloads = get_post_meta($subscription->get('variation_id'), '_downloadable_files', true);
 		$productId = $subscription->get('product_id');
 		$productVersion = get_post_meta($productId, 'product_version', true);
 
-		$file = is_array($downloads) ? $this->getLatestVersionFile($downloads): [];
+		$file = is_array($downloads) ? $this->getLatestVersionFile($downloads) : [];
 		$versionId = $file['id'] ?? null;
+		$productName = get_the_title($productId);
+		$id = $subscription->get('id');
 
-		return compact('subscription_name', 'subscription_status', 'next_payment_due_date', 'start_date', 'end_date', 'description', 'productId', 'productVersion', 'versionId');
+		return compact('id', 'name', 'description', 'status', 'nextPaymentDueDate', 'startDate', 'endDate', 'productName', 'productId', 'productVersion', 'versionId');
 	}
 
 	/**
