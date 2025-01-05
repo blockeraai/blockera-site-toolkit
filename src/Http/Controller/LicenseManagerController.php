@@ -109,8 +109,8 @@ class LicenseManagerController
 				$subscriptionInfo = $subscriptionRepository->getSubscriptionInfo($subscription['subscription_id']);
 
 				return array_merge([
-					'id' => $subscription['license'],
 					'domain' => $subscription['domain'],
+					'subscriberId' => $subscription['license'],
 				], $subscriptionInfo);
 			}, $body['data']['subscriptions']);
 		} catch (\Exception $e) {
