@@ -141,7 +141,7 @@ class ProductController
 				$payload .= '--' . $boundary . '--';
 
 				$response = wp_remote_post(
-					bsaGetConfig('BSA_API_BASE_URL') . '/downloads-manager/v1/upload',
+					bsaGetConfig('BSA_API_BASE_URL') . '/files/v1/upload',
 					[
 						'timeout' => 30,
 						'sslverify' => false,
