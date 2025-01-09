@@ -59,13 +59,13 @@ class SubscriptionRepository
 		$downloads = get_post_meta($subscription->get('variation_id'), '_downloadable_files', true);
 		$productId = $subscription->get('product_id');
 		$productVersion = get_post_meta($productId, 'product_version', true);
-
+		$thumbnail = get_the_post_thumbnail_url($productId);
 		$file = is_array($downloads) ? $this->getLatestVersionFile($downloads) : [];
 		$versionId = $file['id'] ?? null;
 		$productName = get_the_title($productId);
 		$id = $subscription->get('id');
 
-		return compact('id', 'name', 'description', 'status', 'nextPaymentDueDate', 'startDate', 'endDate', 'productName', 'productId', 'productVersion', 'versionId');
+		return compact('id', 'name', 'description', 'status', 'thumbnail', 'nextPaymentDueDate', 'startDate', 'endDate', 'productName', 'productId', 'productVersion', 'versionId');
 	}
 
 	/**
