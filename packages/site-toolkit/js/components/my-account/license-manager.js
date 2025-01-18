@@ -9,14 +9,14 @@ import type { MixedElement } from 'react';
  * Internal dependencies
  */
 import { Header } from './header';
-import { SubscriptionInformation } from './subscription-information';
+import { LicenseInformation } from './license-information';
 
 /**
  * Card component.
  *
  * @returns {JSX.Element}
  */
-export const SubscriptionManager = ({
+export const LicenseManager = ({
 	productTitle,
 	productColor,
 	productLogo,
@@ -53,11 +53,11 @@ export const SubscriptionManager = ({
 }): MixedElement => {
 	return (
 		<div
-			className="subscription-manager"
+			className="license-manager"
 			style={{
 				'--blockera-product-color': productColor,
-				'--blockera-subscription-card-border-color': '#CFE0FF',
-				'--blockera-subscription-information-row-border-color': '#F7F7F7',
+				'--blockera-license-card-border-color': '#CFE0FF',
+				'--blockera-license-information-row-border-color': '#F7F7F7',
 			}}
 		>
 			<Header
@@ -69,7 +69,7 @@ export const SubscriptionManager = ({
 				updatedOn={updatedOn}
 			/>
 
-			<SubscriptionInformation
+			<LicenseInformation
 				subscriptionId={subscriptionId}
 				plan={plan}
 				version={productVersion}

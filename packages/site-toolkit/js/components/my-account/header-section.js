@@ -28,14 +28,12 @@ export const HeaderSection = ({
 }) => {
 	return (
 		<Flex justifyContent="space-between" alignItems="center">
-			<h3 className="subscription-card-title">
+			<h3 className="license-card-title">
 				<Icon {...icon} />
 				{title}
 			</h3>
 			{description && (
-				<p>
-					{description}
-				</p>
+				<p className="license-card-description">{description}</p>
 			)}
 		</Flex>
 	);

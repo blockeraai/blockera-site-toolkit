@@ -26,6 +26,34 @@ class Setup extends Application
     private ResourceServer $resourceServer;
 
     /**
+     * Store the plugin directory.
+     *
+     * @var string
+     */
+    private string $pluginDir;
+
+    /**
+     * Store the plugin URL.
+     *
+     * @var string
+     */
+    private string $pluginUrl;
+
+    /**
+     * Store the plugin mode.
+     *
+     * @var string
+     */
+    private string $pluginMode;
+
+    /**
+     * Store the plugin file.
+     *
+     * @var string
+     */
+    private string $pluginFile;
+
+    /**
      * Setup constructor.
      */
     public function __construct()
@@ -40,6 +68,80 @@ class Setup extends Application
     }
 
     /**
+     * Set the plugin directory.
+     *
+     * @param string $pluginDir The plugin directory.
+     * @return void
+     */
+    public function setPluginDir(string $pluginDir): void
+    {
+        $this->pluginDir = $pluginDir;
+    }
+
+    /**
+     * Set the plugin URL.
+     *
+     * @param string $pluginUrl The plugin URL.
+     * @return void
+     */
+    public function setPluginUrl(string $pluginUrl): void
+    {
+        $this->pluginUrl = $pluginUrl;
+    }
+
+    /**
+     * Get the plugin URL.
+     *
+     * @return string
+     */
+    public function getIURL(): string
+    {
+        return $this->pluginUrl;
+    }
+
+    /**
+     * Set the plugin mode.
+     *
+     * @param string $pluginMode The plugin mode.
+     * @return void
+     */
+    public function setPluginMode(string $pluginMode): void
+    {
+        $this->pluginMode = $pluginMode;
+    }
+
+    /**
+     * Get the plugin mode.
+     *
+     * @return string
+     */
+    public function getPluginMode(): string
+    {
+        return $this->pluginMode;
+    }
+
+    /**
+     * Set the plugin file.
+     *
+     * @param string $pluginFile The plugin file.
+     * @return void
+     */
+    public function setPluginFile(string $pluginFile): void
+    {
+        $this->pluginFile = $pluginFile;
+    }
+
+    /**
+     * Get the plugin file.
+     *
+     * @return string
+     */
+    public function getPluginFile(): string
+    {
+        return $this->pluginFile;
+    }
+
+    /**
      * Adds a rewrite rule that transforms a URL structure to a set of query vars.
      *
      * @return void
@@ -48,6 +150,10 @@ class Setup extends Application
     {
         add_rewrite_rule('^authorize/?$', 'index.php?authorize=true', 'top');
         add_rewrite_rule('^consent-form/?$', 'index.php?consent-form=true', 'top');
+
+		global $wp_rewrite;
+
+		$wp_rewrite->flush_rules();
     }
 
     /**
@@ -62,7 +168,7 @@ class Setup extends Application
         // Rewrite rule to transform url specific page to query vars.
         $this->rewriteRules();
 
-        $web_filename = BSA_PLUGIN_DIR . '/src/Routes/web.php';
+        $web_filename = $this->getPath() . '/packages/site-toolkit/php/Routes/web.php';
 
         if (file_exists($web_filename)) {
             // Require the web routes.
@@ -78,11 +184,11 @@ class Setup extends Application
 
     public function registerRestRoutes(): void
     {
-        $api_filename = BSA_PLUGIN_DIR . '/src/Routes/api.php';
+        $apiFilename = $this->getPath() . '/packages/site-toolkit/php/Routes/api.php';
 
-        if (file_exists($api_filename)) {
+        if (file_exists($apiFilename)) {
             // Require the API routes.
-            require_once BSA_PLUGIN_DIR . '/src/Routes/api.php';
+            require_once $apiFilename;
         }
     }
 
@@ -94,7 +200,7 @@ class Setup extends Application
     public function mount(): self
     {
         // Register activation and deactivation hooks.
-        register_activation_hook(BSA_PLUGIN_FILE, [$this, 'activate']);
+        register_activation_hook($this->getPluginFile(), [$this, 'activate']);
 
         return $this;
     }
@@ -119,7 +225,7 @@ class Setup extends Application
     public function unmount(): self
     {
         // Register uninstall hook.
-        register_deactivation_hook(BSA_PLUGIN_FILE, 'flush_rewrite_rules');
+        register_deactivation_hook($this->getPluginFile(), 'flush_rewrite_rules');
 
         return $this;
     }
@@ -173,23 +279,23 @@ class Setup extends Application
     }
 
     /**
-     * Get the plugin URL.
-     *
-     * @return string
-     */
-    public function getURL(): string
-    {
-        return BSA_PLUGIN_URL;
-    }
-
-    /**
      * Get the plugin path.
      *
      * @return string
      */
     public function getPath(): string
     {
-        return BSA_PLUGIN_DIR;
+        return $this->pluginDir;
+    }
+
+    /**
+     *Get the plugin url.
+     *
+     * @return string
+     */
+    public function getURL(): string
+    {
+        return $this->pluginUrl;
     }
 
     /**
@@ -199,6 +305,6 @@ class Setup extends Application
      */
     public function isDebug(): bool
     {
-        return defined('BSA_PLUGIN_MODE') && 'dev' === BSA_PLUGIN_MODE;
+        return 'dev' === $this->getPluginMode();
     }
 }

@@ -5,7 +5,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import type { MixedElement } from 'react';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
@@ -14,25 +14,29 @@ import apiFetch from '@wordpress/api-fetch';
 import { Icon } from '@blockera/icons';
 import {
 	Flex,
+	Modal,
 	Button,
-	ControlContextProvider,
+	Tooltip,
 	InputControl,
+	ControlContextProvider,
 } from '@blockera/controls';
 import { isLocalhost } from '@blockera/utils';
 
 /**
  * Internal dependencies
  */
+import { Table } from './table';
 import { HeaderSection } from './header-section';
 
 const Header = (): MixedElement => (
 	<>
-		<span>{__('Website', 'blockera')}</span>
-		<span>{__('Action', 'blockera')}</span>
+		<strong className="table-title">{__('Website', 'blockera')}</strong>
+		<strong className="table-title">{__('Action', 'blockera')}</strong>
 	</>
 );
 
 const Row = ({
+	num,
 	website,
 	websiteId,
 	websites,
@@ -43,6 +47,7 @@ const Row = ({
 	onChange = null,
 	blockeraaiNonce,
 }: {
+	num: number,
 	website: string,
 	websiteId: string,
 	remainingDomains?: number,
@@ -53,70 +58,107 @@ const Row = ({
 	websites?: { [key: string]: string },
 	blockeraaiNonce?: string,
 }): MixedElement => {
+	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 	const name = `${subscriptionId}-${website}-domain`;
+	const handleDelete = () => {
+		apiFetch({
+			path: 'auth/v1/license/delete',
+			method: 'POST',
+			headers: {
+				'X-Blockera-Nonce': blockeraaiNonce,
+			},
+			data: {
+				domain: website,
+				domain_id: websiteId,
+			},
+		})
+			.then((response) => {
+				if (!response?.success) {
+					return;
+				}
+
+				if ('object' === typeof websites) {
+					const newWebsites = Object.fromEntries(
+						Object.entries(websites).filter(
+							([key]) => key !== websiteId
+						)
+					);
+
+					if ('function' === typeof setWebsites) {
+						setWebsites(newWebsites);
+					}
+
+					if (
+						'function' === typeof setRemainingDomains &&
+						remainingDomains
+					) {
+						setRemainingDomains(remainingDomains + 1);
+					}
+				}
+			})
+			.catch((error) => {
+				console.log(error);
+			});
+	};
 
 	return (
-		<Flex
-			alignItems="center"
-			justifyContent="space-between"
-			className="subscription-websites"
-		>
-			<ControlContextProvider
-				value={{
-					name,
-					value: website,
-				}}
-			>
-				<InputControl
-					id={name}
-					type="text"
-					defaultValue={website}
-					{...{
-						...(onChange ? { onChange } : {}),
-					}}
-				/>
-			</ControlContextProvider>
+		<>
+			{isDeleteModalOpen && (
+				<Modal
+					className="delete-modal"
+					size="large"
+					headerTitle={__(
+						'Are you sure, you want to delete this website?',
+						'blockera'
+					)}
+					onRequestClose={() => setIsDeleteModalOpen(false)}
+				>
+					<p>
+						{__(
+							'Removing this domain will deactivate Blockera Pro features on this site. You can reassign it to another site later if needed. Proceed with caution.',
+							'blockera'
+						)}
+					</p>
+					<Flex>
+						<Button onClick={() => setIsDeleteModalOpen(false)}>
+							{__('No', 'blockera')}
+						</Button>
+						<Button onClick={handleDelete}>
+							{__('Yes, Remove', 'blockera')}
+						</Button>
+					</Flex>
+				</Modal>
+			)}
+			<span className="domain">
+				<span className="number">{num}</span>
+				{website}
+				{isLocalhost(website) && (
+					<Tooltip
+						placement="top"
+						position="top"
+						text={__(
+							'This domain is recognized as a development domain and is excluded from your subscription’s active domain count.',
+							'blockera'
+						)}
+					>
+						<Icon icon="info" library="wp" />
+					</Tooltip>
+				)}
+			</span>
 			{'function' === typeof setWebsites && (
 				<Button
+					className="delete-row"
 					variant="secondary"
 					size="small"
 					icon="trash"
 					onClick={() => {
-						apiFetch({
-							path: 'auth/v1/license/delete',
-							method: 'POST',
-							headers: {
-								'X-Blockera-Nonce': blockeraaiNonce,
-							},
-							data: {
-								domain: website,
-								domain_id: websiteId,
-							},
-						})
-							.then((response) => {
-								if (!response?.success) {
-									return;
-								}
-
-								if ('object' === typeof websites) {
-									const newWebsites = Object.fromEntries(
-										Object.entries(websites).filter(
-											([key]) => key !== websiteId
-										)
-									);
-									setWebsites(newWebsites);
-									setRemainingDomains(remainingDomains + 1);
-								}
-							})
-							.catch((error) => {
-								console.log(error);
-							});
+						setIsDeleteModalOpen(true);
 					}}
 				>
 					{__('Delete', 'blockera')}
 				</Button>
 			)}
-		</Flex>
+		</>
 	);
 };
 
@@ -142,133 +184,52 @@ export const WebsitesManager = ({
 	const [remainingDomains, setRemainingDomains] = useState(
 		0 < maxDomains ? maxDomains - activatedCount : 0
 	);
-	const [newDomain, setNewDomain] = useState('');
 	const [websites, setWebsites] = useState(activeWebsites);
 	const { blockeraaiNonce, blockeraUserAccessToken } = window;
-	const [isShowingWebsiteInputBox, setIsShowingWebsiteInputBox] =
-		useState(false);
 
 	return (
-		<Flex
-			gap={20}
-			className="subscription-card-separator"
-			direction="column"
-		>
+		<Flex gap={20} className="license-card-separator" direction="column">
 			<HeaderSection
 				icon={{
-					icon: 'settings',
+					icon: 'cog',
 					library: 'wp',
 				}}
 				title={__('Active Websites', 'blockera')}
 				description={
+					'(' +
 					remainingDomains +
+					')' +
 					__(' Production domain remaning', 'blockera')
 				}
 			/>
-			<Flex
-				style={{ backgroundColor: '#F7F7F7' }}
-				justifyContent="space-between"
-			>
-				<Header />
-			</Flex>
-			{Object.entries(websites)?.map(
-				([websiteId, website]: [string, string]) => (
-					<Row
-						website={website}
-						websites={websites}
-						websiteId={websiteId}
-						setWebsites={setWebsites}
-						subscriptionId={subscriptionId}
-						blockeraaiNonce={blockeraaiNonce}
-						remainingDomains={remainingDomains}
-						setRemainingDomains={setRemainingDomains}
-					/>
-				)
-			)}
-			<Flex justifyContent="space-between" alignItems="center">
-				<Button
-					className="subscription-button-primary"
-					disabled={remainingDomains <= 0}
-					variant="primary"
-					size="small"
-					icon="plus"
-					onClick={() => {
-						setIsShowingWebsiteInputBox(true);
-					}}
-				>
-					{__('Add Website', 'blockera')}
-				</Button>
-				{isShowingWebsiteInputBox && (
-					<>
+
+			<Table
+				headerBackground="#F7F7F7"
+				cols={[
+					<strong className="table-title">
+						{__('Website', 'blockera')}
+					</strong>,
+					<strong className="table-title">
+						{__('Action', 'blockera')}
+					</strong>,
+				]}
+				rows={Object.entries(websites)?.map(
+					([websiteId, website]: [string, string], index) => (
 						<Row
-							websiteId={0}
-							website={newDomain}
+							num={index + 1}
+							website={website}
+							websites={websites}
+							websiteId={websiteId}
+							setWebsites={setWebsites}
 							subscriptionId={subscriptionId}
-							onChange={(domain) => {
-								setNewDomain(domain);
-							}}
+							blockeraaiNonce={blockeraaiNonce}
+							remainingDomains={remainingDomains}
+							setRemainingDomains={setRemainingDomains}
 						/>
-						{hasError && (
-							<span style={{ color: 'red', fontSize: '12px' }}>
-								{errorMessage}
-							</span>
-						)}
-						<Button
-							variant="primary"
-							size="small"
-							onClick={() => {
-								apiFetch({
-									path: 'auth/v1/licenses/create',
-									method: 'POST',
-									headers: {
-										'X-Blockera-Nonce': blockeraaiNonce,
-									},
-									data: {
-										domain: newDomain,
-										subscription_id: subscriptionId,
-									},
-								})
-									.then((response) => {
-										if (response?.success) {
-											setIsShowingWebsiteInputBox(false);
-											setWebsites({
-												...websites,
-												[response?.data?.id]:
-													response?.data?.domain,
-											});
-											setNewDomain('');
-
-											if (
-												remainingDomains > 0 &&
-												!isLocalhost(
-													response?.data?.domain
-												)
-											) {
-												setRemainingDomains(
-													remainingDomains - 1
-												);
-											}
-
-											setError({
-												hasError: false,
-												errorMessage: '',
-											});
-										}
-									})
-									.catch((error) => {
-										setError({
-											hasError: true,
-											errorMessage: Object.values(
-												error?.errors
-											).join(', '),
-										});
-									});
-							}}
-						>
-							{__('Add', 'blockera')}
-						</Button>
-					</>
+					)
 				)}
+			/>
+			<Flex justifyContent="space-between" alignItems="center">
 				{remainingDomains <= 0 && (
 					<span>
 						{__(

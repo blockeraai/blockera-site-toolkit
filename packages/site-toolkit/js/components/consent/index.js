@@ -43,45 +43,45 @@ const AttachIcon = ({ fill }: { fill: string }) => (
 	</svg>
 );
 
-type SubscriptionProps = {
+type LicenseProps = {
 	productLogo: string,
 	plan: string,
-	subscriptionId: number,
+	licenseId: number,
 	productColor: string,
 	productTitle: string,
 	status: string,
 	maxDomains: number,
 	expiryDate: string,
 	activeWebsites: Array<string>,
-	onChange: (subscriptionId: number) => void,
+	onChange: (licenseId: number) => void,
 };
 
-const Subscription = ({
+const License = ({
 	productTitle,
 	productColor,
 	productLogo,
-	subscriptionId,
+	licenseId,
 	plan,
 	maxDomains,
 	expiryDate,
 	activeWebsites,
 	status,
 	onChange,
-}: SubscriptionProps): MixedElement => {
+}: LicenseProps): MixedElement => {
 	const [isActive, setIsActive] = useState(false);
 	const remainingDomains = maxDomains - activeWebsites.length;
 
-	const onActiveChange = (subscriptionId: number) => {
+	const onActiveChange = (licenseId: number) => {
 		setIsActive(!isActive);
-		onChange(subscriptionId);
+		onChange(licenseId);
 	};
 
 	return (
-		<div className="subscription-box-wrapper">
+		<div className="license-box-wrapper">
 			<Flex
-				className="subscription-card-separator product-header"
+				className="license-card-separator product-header"
 				alignItems="center"
-				className="subscription"
+				className="license"
 				justifyContent="space-between"
 			>
 				<Flex alignItems="center">
@@ -118,7 +118,7 @@ const Subscription = ({
 						labelType={'self'}
 						id={`toggle${plan.replace(/\s+/g, '')}`}
 						defaultValue={isActive}
-						onChange={() => onActiveChange(subscriptionId)}
+						onChange={() => onActiveChange(licenseId)}
 					/>
 				</ControlContextProvider>
 			</Flex>
@@ -131,7 +131,7 @@ export const ConsentForm = ({
 	clientUrl,
 	redirectUrl,
 	consentNonce,
-	subscriptions,
+	licenses,
 	clientWebsite,
 }: {
 	clientId: string,
@@ -139,9 +139,9 @@ export const ConsentForm = ({
 	redirectUrl: string,
 	consentNonce: string,
 	clientWebsite: string,
-	subscriptions: Array<SubscriptionProps>,
+	licenses: Array<LicenseProps>,
 }): MixedElement => {
-	const [pickedSubscription, setPickedSubscription] = useState(null);
+	const [pickedLicense, setPickedLicense] = useState(null);
 
 	const handleConnect = useCallback(() => {
 		apiFetch({
@@ -154,14 +154,14 @@ export const ConsentForm = ({
 			data: {
 				domain: clientUrl,
 				client_id: clientId,
-				subscription_id: pickedSubscription,
+				license_id: pickedLicense,
 			},
 		}).then((response) => {
 			if (response?.success) {
 				window.location.href = redirectUrl + '&connectedWithYourAccount=true';
 			}
 		});
-	}, [pickedSubscription]);
+	}, [pickedLicense]);
 
 	return (
 		<Flex direction="column" className="consent-form" gap="3rem">
@@ -177,11 +177,11 @@ export const ConsentForm = ({
 			<div>
 				<AttachIcon fill="#0047EB" />
 			</div>
-			{subscriptions?.map((subscription: SubscriptionProps) => (
-				<Subscription
-					key={subscription.productTitle}
-					{...subscription}
-					onChange={setPickedSubscription}
+			{licenses?.map((license: LicenseProps) => (
+				<License
+					key={license.productTitle}
+					{...license}
+					onChange={setPickedLicense}
 				/>
 			))}
 			<Button
