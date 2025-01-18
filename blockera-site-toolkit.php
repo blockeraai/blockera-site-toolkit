@@ -31,6 +31,10 @@ define('BSA_PLUGIN_MODE', 'dev');
  * @var Setup $setup
  */
 $setup = Setup::getInstance();
+$setup->setPluginDir(BSA_PLUGIN_DIR);
+$setup->setPluginUrl(BSA_PLUGIN_URL);
+$setup->setPluginMode(BSA_PLUGIN_MODE);
+$setup->setPluginFile(BSA_PLUGIN_FILE);
 
 $setup->mount()->unmount();
 
