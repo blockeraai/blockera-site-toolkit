@@ -43,7 +43,7 @@ add_action(
 
             wp_head();
 
-            include Setup::getInstance()->getPath() . '/packages/site-toolkit/php/Views/consent-form.php';
+            include Setup::getInstance()->getPath() . '/vendor/blockera/site-toolkit/php/Views/consent-form.php';
 
             wp_footer();
 

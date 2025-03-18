@@ -58,16 +58,16 @@ class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider
             );
 
             add_action('wp_enqueue_scripts', function () {
-                // Enqueue Gutenberg component styles and scripts
+                // Enqueue Gutenberg component styles and scripts.
                 wp_enqueue_script(
-                    'gutenberg-components', // Unique handle
-                    includes_url('/js/dist/components.min.js'), // URL to the Gutenberg components script
-                    ['wp-element', 'wp-i18n', 'wp-api-fetch'], // Dependencies
-                    false, // Version (false for default)
-                    true  // Load in the footer
+                    'gutenberg-components',
+                    includes_url('/js/dist/components.min.js'),
+                    ['wp-element', 'wp-i18n', 'wp-api-fetch'],
+                    false,
+                    true
                 );
 
-                // Optionally enqueue style dependencies
+                // Optionally enqueue style dependencies.
                 wp_enqueue_style(
                     'wp-components-style',
                     includes_url('/css/dist/components/style.min.css'),
