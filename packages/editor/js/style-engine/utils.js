@@ -53,10 +53,15 @@ export const injectHelpersToCssGenerators = (
 export const computedCssDeclarations = (
 	styleDefinitions: Object,
 	blockProps: {
+		state: string,
 		clientId: string,
+		currentBlock: string,
 		attributes: Object,
 		blockName: string,
-	}
+		supports?: Object,
+		blockeraStyleEngineConfig?: Object,
+	},
+	pickedSelector: string
 ): Array<string> => {
 	const output = [];
 
@@ -78,7 +83,8 @@ export const computedCssDeclarations = (
 				const cssGenerator = new CssGenerators(
 					styleKey,
 					definition,
-					blockProps
+					blockProps,
+					pickedSelector
 				);
 
 				const rules = cssGenerator.rules();
@@ -122,15 +128,10 @@ export const createCssDeclarations = (
 		return '';
 	}
 
-	const {
-		properties: _props,
-		// TODO: remove hard codes.
-		// options = { important: true }
-	} = declaration;
+	const { properties: _props, options } = declaration;
 
 	return getProperties({
-		// TODO: remove hard codes.
-		options: { important: true },
+		options,
 		properties: _props,
 	}).join('\n');
 };
@@ -246,16 +247,37 @@ export const replaceVariablesValue = (params: {
  * Combine css declaration for same selectors.
  *
  * @param {Array<CssRule>} cssRules the css rules.
+ * @param {Array<CssRule>} inlineCssRules the prepared inline css rules.
+ *
  * @return {Array<CssRule>} the combined css declarations linked with same css selector.
  */
 export const combineDeclarations = (
-	cssRules: Array<CssRule>
+	cssRules: Array<CssRule>,
+	inlineCssRules: Array<CssRule>
 ): Array<CssRule> => {
 	const combinedObjects: { [key: string]: CssRule } = {};
 
 	if (!Array.isArray(cssRules)) {
 		return Object.values(combinedObjects);
 	}
+
+	inlineCssRules.forEach((item) => {
+		const { selector, declarations } = item;
+
+		// Skip cssRule with empty selector or declarations stack.
+		if (!declarations.length || !selector) {
+			return;
+		}
+
+		if (combinedObjects[selector]) {
+			combinedObjects[selector].declarations = [
+				...(combinedObjects[selector].declarations || []),
+				...declarations,
+			];
+		} else {
+			combinedObjects[selector] = { selector, declarations };
+		}
+	});
 
 	cssRules.forEach((item) => {
 		const { selector, declarations } = item;

@@ -6,6 +6,7 @@
 import { select } from '@wordpress/data';
 import type { MixedElement } from 'react';
 import { applyFilters } from '@wordpress/hooks';
+import { useState, useEffect } from '@wordpress/element';
 
 /**
  * Blockera dependencies
@@ -29,6 +30,23 @@ import { combineDeclarations } from '../utils';
 export const StateStyle = (
 	props: StateStyleProps
 ): Array<MixedElement> | MixedElement => {
+	const [breakpoints, setBreakpoints] = useState({});
+	const { getBreakpoints } = select('blockera/editor');
+
+	useEffect(() => {
+		const loadBreakpoints = () => {
+			const points = getBreakpoints();
+			if (Object.keys(points).length === 0) {
+				// If still empty, retry after a short delay.
+				setTimeout(loadBreakpoints, 100);
+			} else {
+				setBreakpoints(points);
+			}
+		};
+
+		loadBreakpoints();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 	// Filtered allowed states to generate stylesheet.
 	// in free version allowed just "normal" and "hover".
 	const allowedStates = ['normal', 'hover'];
@@ -40,8 +58,11 @@ export const StateStyle = (
 			).includes(state)
 	);
 
-	const { getBreakpoints } = select('blockera/editor');
-	const breakpoints = getBreakpoints();
+	// Move "normal" state to last position to ensure other states like "hover" or "active"
+	// can properly override the base styles when those states are activated.
+	if (states.length > 1) {
+		states.push(states.splice(0, 1)[0]);
+	}
 
 	const devicesCssStyles: { [key: TBreakpoint]: Array<MixedElement> } = {};
 
@@ -49,13 +70,16 @@ export const StateStyle = (
 		const breakpoint = breakpoints[name];
 		const { type } = breakpoint;
 
-		const stylesheet = combineDeclarations(
+		const combinedDeclarations = combineDeclarations(
 			getComputedCssProps({
 				...props,
 				states,
 				currentBreakpoint: type,
-			})
-		).map(
+			}),
+			props.inlineStyles
+		);
+
+		const stylesheet = combinedDeclarations.map(
 			(
 				{ selector, declarations }: Object,
 				index: number

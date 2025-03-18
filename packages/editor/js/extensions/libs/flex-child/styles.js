@@ -27,6 +27,7 @@ export const FlexChildStyles = ({
 	masterState,
 	currentBlock,
 	activeDeviceType,
+	supports: blockSupports,
 	selectors: blockSelectors,
 	defaultAttributes: attributes,
 	attributes: currentBlockAttributes,
@@ -38,6 +39,7 @@ export const FlexChildStyles = ({
 		blockeraFlexChildOrder,
 	} = config.flexChildConfig;
 	const blockProps = {
+		state,
 		clientId,
 		blockName,
 		attributes: currentBlockAttributes,
@@ -52,6 +54,7 @@ export const FlexChildStyles = ({
 		currentBlock,
 		blockSelectors,
 		activeDeviceType,
+		supports: blockSupports,
 		className: currentBlockAttributes?.className,
 	};
 	const staticDefinitionParams = {
@@ -122,7 +125,8 @@ export const FlexChildStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}
@@ -156,7 +160,8 @@ export const FlexChildStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}
@@ -208,7 +213,8 @@ export const FlexChildStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}

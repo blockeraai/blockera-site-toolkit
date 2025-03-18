@@ -4,20 +4,18 @@ namespace Blockera\Bootstrap;
 
 use Blockera\WordPress\AssetsLoader;
 
-abstract class AssetsProvider extends ServiceProvider
-{
+abstract class AssetsProvider extends ServiceProvider {
 
 	/**
 	 * Register any application services.
 	 *
 	 * @return void
 	 */
-	public function register(): void
-	{
+	public function register(): void {
 
 		$this->app->bind(
 			$this->getId(),
-			function (Application $app, array $args = []) {
+			function ( Application $app, array $args = [] ) {
 
 				return new AssetsLoader(
 					$app,
@@ -26,10 +24,10 @@ abstract class AssetsProvider extends ServiceProvider
 						[
 							'id'         => $this->getId(),
 							'root'       => [
-								'url'  => $this->getURL(),
-								'path' => $this->getPath(),
+								'url'  => blockera_core_config( 'app.root_url' ),
+								'path' => blockera_core_config( 'app.root_path' ),
 							],
-							'debug-mode' => $app->isDebug(),
+							'debug-mode' => blockera_core_config( 'app.debug' ),
 						],
 						$args['extra-args']
 					)
@@ -50,8 +48,7 @@ abstract class AssetsProvider extends ServiceProvider
 	 *
 	 * @return array the assets list to load on page.
 	 */
-	protected function getAssets(): array
-	{
+	protected function getAssets(): array {
 
 		return [];
 	}
@@ -59,23 +56,21 @@ abstract class AssetsProvider extends ServiceProvider
 	/**
 	 * @return string The loader identify.
 	 */
-	abstract public function getId(): string;
+	abstract public function getId():string;
 
 	/**
 	 * @return string the blockera plugin root URL.
 	 */
-	protected function getURL(): string
-	{
+	protected function getURL(): string {
 
-		return $this->app->getURL();
+		return blockera_core_config( 'app.root_url' );
 	}
 
 	/**
 	 * @return string the blockera plugin root PATH.
 	 */
-	protected function getPATH(): string
-	{
+	protected function getPATH(): string {
 
-		return $this->app->getPath();
+		return blockera_core_config( 'app.root_path' );
 	}
 }

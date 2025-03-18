@@ -1,4 +1,5 @@
 // @flow
+export * from './image';
 export * from './avatar';
 export * from './feature-wrapper';
 export { Switch } from './switch';
@@ -87,3 +88,4 @@ export { default as MaskControl } from './mask-control';
 export { default as LayoutMatrixControl } from './layout-matrix-control';
 export { RendererControl } from './renderer-control';
 export { default as CodeControl } from './code-control';
+export { BlockeraLoading } from './blockera-loading';
