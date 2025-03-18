@@ -89,6 +89,7 @@ export default function InputControl({
 		isSetValueAddon,
 		ValueAddonControl,
 		ValueAddonPointer,
+		valueAddonControlProps,
 	} = useValueAddon({
 		types: controlAddonTypes,
 		value,
@@ -197,10 +198,18 @@ export default function InputControl({
 					min={min}
 					max={max}
 					drag={drag}
-					float={float}
 					arrows={arrows}
 					size={size}
 					children={children}
+					onVariableShortcut={
+						variableTypes && variableTypes.length > 0
+							? () => {
+									valueAddonControlProps.setOpen(
+										'var-picker'
+									);
+							  }
+							: undefined
+					}
 					onChange={(newValue: ContextUnitInput): void => {
 						const { inputValue, unitValue } = newValue;
 

@@ -17,16 +17,22 @@ import {
 	getPostDynamicValueItemsBy,
 	getSiteDynamicValueItemsBy,
 	getUserDynamicValueItemsBy,
+	getColorsTitle,
 	getColors,
 	getFontSizes,
+	getFontSizesTitle,
+	getLinearGradientsTitle,
 	getLinearGradients,
+	getRadialGradientsTitle,
 	getRadialGradients,
 	getSpacings,
+	getSpacingsTitle,
 	getVariable,
+	getWidthSizesTitle,
 	getWidthSizes,
 	type VariableCategory,
 } from '@blockera/data';
-import { isBlockTheme, isObject, isUndefined } from '@blockera/utils';
+import { isObject, isUndefined } from '@blockera/utils';
 import { Icon } from '@blockera/icons';
 
 /**
@@ -257,56 +263,51 @@ export function getVariableCategory(
 	switch (category) {
 		case 'font-size':
 			return {
-				label: isBlockTheme()
-					? __('Theme Font Sizes', 'blockera')
-					: __('Editor Font Sizes', 'blockera'),
+				label: getFontSizesTitle(),
 				items: getFontSizes(),
+				type: 'font-size',
 			};
 
 		case 'linear-gradient':
 			return {
-				label: isBlockTheme()
-					? __('Theme Linear Gradients', 'blockera')
-					: __('Editor Linear Gradients', 'blockera'),
+				label: getLinearGradientsTitle(),
 				items: getLinearGradients(),
+				type: 'linear-gradient',
 			};
 
 		case 'radial-gradient':
 			return {
-				label: isBlockTheme()
-					? __('Theme Radial Gradients', 'blockera')
-					: __('Editor Radial Gradients', 'blockera'),
+				label: getRadialGradientsTitle(),
 				items: getRadialGradients(),
+				type: 'radial-gradient',
 			};
 
 		case 'width-size':
 			return {
-				label: isBlockTheme()
-					? __('Theme Width & Height Sizes', 'blockera')
-					: __('Width & Height Sizes', 'blockera'),
+				label: getWidthSizesTitle(),
 				items: getWidthSizes(),
+				type: 'width-size',
 			};
 
 		case 'spacing':
 			return {
-				label: isBlockTheme()
-					? __('Theme Spacing Sizes', 'blockera')
-					: __('Editor Spacing Sizes', 'blockera'),
+				label: getSpacingsTitle(),
 				items: getSpacings(),
+				type: 'spacing',
 			};
 
 		case 'color':
 			return {
-				label: isBlockTheme()
-					? __('Theme Colors', 'blockera')
-					: __('Editor Colors', 'blockera'),
+				label: getColorsTitle(),
 				items: getColors(),
+				type: 'color',
 			};
 	}
 
 	return {
 		label: '',
 		items: [],
+		type: '',
 		notFound: true,
 	};
 }

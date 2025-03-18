@@ -455,25 +455,39 @@ export function prepareBlockCssSelector(params: {
 }
 
 /**
- * Appending recieved root css selector into base block css selector.
+ * Appending received root css selector into base block css selector.
  *
  * @param {string} selector the prepared block css selector order by support identifier or query.
  * @param {string} root the root block css selector.
- * @return {string} The css selector with include recieved root selector.
+ * @return {string} The css selector with include received root selector.
  */
 const appendRootBlockCssSelector = (selector: string, root: string): string => {
-	// Assume recieved selector is invalid.
+	// Assume received selector is invalid.
 	if (!selector || isEmpty(selector.trim())) {
 		return root;
 	}
 
-	// Assume recieved selector is another reference to root, so we should concat together.
-	if (/(wp-block[a-z-_A-Z]+)/g.test(selector)) {
-		return `${root}${selector}`;
+	// Assume received selector is another reference to root, so we should concat together.
+	const matches = /(wp-block[a-z-_A-Z]+)/g.exec(selector);
+	if (matches) {
+		// If selector contains a direct child combinator (>), append root after the selector
+		// Example: ".wp-block-foo > .child" becomes ".wp-block-foo > .child.wp-block-bar"
+		if (/\s>\s(\w|\.|#)/.test(selector)) {
+			return `${selector}${root}, ${root}${selector}`;
+		}
+
+		const subject = matches[0];
+		const regexp = new RegExp('^.\\b' + subject + '\\b', 'gi');
+
+		return `${selector.replace(regexp, `${root}.${subject}`)}`;
 	}
 
-	// Assume received selector is html tag name!
-	if (!/\.|\s/.test(selector)) {
+	// If selector has combinators (space, >, +, ~) or starts with a-z html tag name,
+	// and not starts with space,
+	if (
+		!selector.startsWith(' ') &&
+		(/[\s>+~]/.test(selector) || /^[a-z]/.test(selector))
+	) {
 		return `${selector}${root}`;
 	}
 

@@ -2,8 +2,7 @@
 
 namespace Blockera\Utils;
 
-class Utils
-{
+class Utils {
 
 	/**
 	 * Kebab-case is a naming convention where words are separated by hyphens (-).
@@ -12,20 +11,19 @@ class Utils
 	 *
 	 * @return string the kebab case string.
 	 */
-	public static function kebabCase(string $string): string
-	{
+	public static function kebabCase( string $string ): string {
 
 		// Insert hyphens before uppercase letters.
-		$string = preg_replace('/([a-z])([A-Z])/', '$1-$2', $string);
+		$string = preg_replace( '/([a-z])([A-Z])/', '$1-$2', $string );
 
 		// Convert to lowercase first.
-		$string = strtolower($string);
+		$string = strtolower( $string );
 
 		// Replace non-word characters with hyphens.
-		$string = preg_replace('/[^a-z0-9]+/', '-', $string);
+		$string = preg_replace( '/[^a-z0-9]+/', '-', $string );
 
 		// Remove leading and trailing hyphens.
-		return trim($string, '-');
+		return trim( $string, '-' );
 	}
 
 	/**
@@ -54,10 +52,9 @@ class Utils
 	 *
 	 * @return string The modified CSS selector with the prefix applied to the specified part and the suffix added as a new selector.
 	 */
-	public static function modifySelectorPos(string $selector, string $part, array $args = []): string
-	{
+	public static function modifySelectorPos( string $selector, string $part, array $args = [] ): string {
 
-		if (empty($part)) {
+		if ( empty( $part ) ) {
 
 			return $selector;
 		}
@@ -67,38 +64,38 @@ class Utils
 		$suffix = $args['suffix'] ?? '';
 
 		// Split the selector by commas.
-		$selectors = explode(',', $selector);
+		$selectors = explode( ',', $selector );
 
 		// Initialize an array to store modified selectors.
 		$modifiedSelectors = [];
 
 		// Loop through each part of the selector.
-		foreach ($selectors as $sel) {
+		foreach ( $selectors as $sel ) {
 			// Trim any extra whitespace from the current selector part.
-			$trimmedSel = trim($sel);
+			$trimmedSel = trim( $sel );
 
 			// Check if the current selector contains the part (like ".wp-block-sample").
-			if (strpos($trimmedSel, $part) !== false) {
+			if ( strpos( $trimmedSel, $part ) !== false ) {
 				// Remove dot.
-				$partWithoutDot = substr($part, 1);
+				$partWithoutDot = substr( $part, 1 );
 
 				// Regular expression pattern to detecting a specific part of selector.
-				$pattern = '/\.\b' . preg_quote($partWithoutDot, '/') . '\b(?!\w+|-|_)/';
+				$pattern = '/\.\b' . preg_quote( $partWithoutDot, '/' ) . '\b(?!\w+|-|_)/';
 
 				// Add the prefix around the part.
-				$modifiedWithPrefix = preg_replace($pattern, $prefix . $part, $trimmedSel);
+				$modifiedWithPrefix = preg_replace( $pattern, $prefix . $part, $trimmedSel );
 
 				// Add the modified selector to the array with the prefix.
-				if (! in_array($modifiedWithPrefix, $modifiedSelectors, true)) {
+				if ( ! in_array( $modifiedWithPrefix, $modifiedSelectors, true ) ) {
 					$modifiedSelectors[] = $modifiedWithPrefix;
 				}
 
 				// If a suffix is provided, create a new selector and add it as a separate selector.
-				if (! empty($suffix)) {
-					$modifiedWithSuffix = preg_replace($pattern, $part . $suffix, $trimmedSel);
+				if ( ! empty( $suffix ) ) {
+					$modifiedWithSuffix = preg_replace( $pattern, $part . $suffix, $trimmedSel );
 
 					// Add the modified selector to the array with the suffix.
-					if (! in_array($modifiedWithSuffix, $modifiedSelectors, true)) {
+					if ( ! in_array( $modifiedWithSuffix, $modifiedSelectors, true ) ) {
 
 						$modifiedSelectors[] = $modifiedWithSuffix;
 					}
@@ -110,64 +107,83 @@ class Utils
 		}
 
 		// Join the modified selectors with commas and return.
-		return implode(', ', $modifiedSelectors);
+		return implode( ', ', $modifiedSelectors );
 	}
 
 	/**
-	 * Extracts the domain name from a URL, including the scheme (e.g. https://example.com) if $with_scheme is true.
+	 * Convert a string to snake case.
 	 *
-	 * @param string $url The URL to extract the domain name from.	
-	 * @param bool $with_scheme Whether to include the scheme (http/https) in the returned domain name
+	 * @param string $string The string to convert to snake case.
 	 *
-	 * @return string The domain name including the scheme (e.g. https://example.com).
+	 * @return string The snake case string.
 	 */
-	public static function extractDomainName(string $url, $with_scheme = false): string
-	{
-		$parsed_url = parse_url(home_url($url));
+	public static function snakeCase( string $string ): string {
 
-		if (empty($parsed_url['query'])) {
-			return $with_scheme && !empty($parsed_url['scheme']) && !empty($parsed_url['host']) ? "{$parsed_url['scheme']}://{$parsed_url['host']}" : $parsed_url['host'] ?? '';
-		}
-
-		parse_str($parsed_url['query'], $params);
-
-		$parsed_redirect_uri = parse_url($url);
-
-		if ($with_scheme) {
-			return "{$parsed_redirect_uri['scheme']}://{$parsed_redirect_uri['host']}";
-		}
-
-		return $parsed_redirect_uri['host'];
-	}
-
-	/**
-	 * Extract the 'paramName' parameter from a URL's query string
-	 *
-	 * @param string $url The URL to extract the 'paramName' parameter from.	
-	 * @param string $param The parameter to extract from the URL.
-	 *
-	 * @return string The 'paramName' parameter value if found, otherwise an empty string.
-	 */
-	public static function extractParamFromURL(string $url, string $param): string
-	{
-		$parsed_url = parse_url($url);
-
-		if (empty($parsed_url['query'])) {
+		// Handle empty strings.
+		if ( empty( $string ) ) {
 			return '';
 		}
 
-		parse_str($parsed_url['query'], $params);
+		// Convert camelCase to snake_case.
+		$pattern     = '/(?<!^)[A-Z]/';
+		$replacement = '_$0';
+		$string      = preg_replace( $pattern, $replacement, $string );
 
-		return $params[$param] ?? '';
+		// Convert to lowercase.
+		$string = strtolower( $string );
+
+		// Replace any remaining non-alphanumeric characters with underscores.
+		$string = preg_replace( '/[^a-z0-9]+/', '_', $string );
+
+		// Remove leading/trailing underscores.
+		return trim( $string, '_' );
 	}
 
 	/**
-	 * Gets the current page URL including query parameters
+	 * Check if plugin is installed.
 	 *
-	 * @return string The current page URL including query parameters.
+	 * @param string $plugin_slug The slug of the plugin.
+	 *
+	 * @return bool true if the plugin is installed, false otherwise.
 	 */
-	public static function getCurrentPageURL(): string
-	{
-		return home_url($_SERVER['REQUEST_URI']);
+	public static function isPluginInstalled( string $plugin_slug ): bool {
+
+		$installed_plugins = get_plugins();
+
+		return isset( $installed_plugins[ $plugin_slug . '/' . $plugin_slug . '.php' ] );
+	}
+
+	/**
+	 * Convert a string to pascal case.
+	 *
+	 * @param string $string The string to convert to pascal case.
+	 *
+	 * @return string The pascal case string.
+	 */
+	public static function pascalCase( string $string ): string {
+
+		$parsed_string = explode( '-', $string );
+
+		return implode(
+            '', 
+            array_map(
+                function( string $item ):string {
+                    return ucfirst( $item );
+                },
+                $parsed_string
+            )
+		);
+	}
+
+	/**
+	 * Convert a string to camel case.
+	 *
+	 * @param string $string The string to convert to camel case.
+	 *
+	 * @return string The camel case string.
+	 */
+	public static function camelCase( string $string ): string {
+
+		return lcfirst( self::pascalCase( $string ) );
 	}
 }

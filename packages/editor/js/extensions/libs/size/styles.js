@@ -17,18 +17,19 @@ import {
 	getCompatibleBlockCssSelector,
 	computedCssDeclarations,
 } from '../../../style-engine';
-import { getBlockSupportCategory, getBlockSupportFallback } from '../../utils';
-
-const supports = getBlockSupportCategory('size');
+import { getBlockSupportFallback } from '../../utils';
+import { WidthGenerator } from './css-generators/width-generator';
 
 export const SizeStyles = ({
 	state,
 	config,
 	clientId,
+	supports,
 	blockName,
 	masterState,
 	currentBlock,
 	activeDeviceType,
+	supports: blockSupports,
 	selectors: blockSelectors,
 	defaultAttributes: attributes,
 	attributes: currentBlockAttributes,
@@ -44,12 +45,17 @@ export const SizeStyles = ({
 		blockeraOverflow,
 		blockeraRatio,
 		blockeraFit,
+		blockeraBoxSizing,
 	} = config.sizeConfig;
 	const blockProps = {
+		state,
+		supports,
 		clientId,
 		blockName,
 		attributes: currentBlockAttributes,
+		currentBlock,
 	};
+
 	const sharedParams = {
 		...props,
 		state,
@@ -59,6 +65,7 @@ export const SizeStyles = ({
 		currentBlock,
 		blockSelectors,
 		activeDeviceType,
+		supports: blockSupports,
 		className: currentBlockAttributes?.className,
 	};
 	const staticDefinitionParams = {
@@ -70,20 +77,6 @@ export const SizeStyles = ({
 	const styleGroup: Array<CssRule> = [];
 
 	if (isActiveField(blockeraWidth) && currentBlockAttributes?.blockeraWidth) {
-		const width = getValueAddonRealValue(
-			currentBlockAttributes.blockeraWidth
-		);
-		let value = '';
-
-		if (width !== attributes.blockeraWidth.default) {
-			value = width;
-		} else if (
-			!isUndefined(currentBlockAttributes.width) &&
-			!isEmpty(currentBlockAttributes.width)
-		) {
-			value = currentBlockAttributes.width;
-		}
-
 		const pickedSelector = getCompatibleBlockCssSelector({
 			...sharedParams,
 			query: 'blockeraWidth',
@@ -100,14 +93,13 @@ export const SizeStyles = ({
 				{
 					blockeraWidth: [
 						{
-							...staticDefinitionParams,
-							properties: {
-								width: value,
-							},
+							type: 'function',
+							function: WidthGenerator,
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}
@@ -144,7 +136,8 @@ export const SizeStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -182,7 +175,8 @@ export const SizeStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -231,7 +225,8 @@ export const SizeStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -269,7 +264,8 @@ export const SizeStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -307,7 +303,8 @@ export const SizeStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -345,15 +342,18 @@ export const SizeStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
 	}
 
 	if (isActiveField(blockeraRatio) && currentBlockAttributes?.blockeraRatio) {
-		const ratio = currentBlockAttributes.blockeraRatio.value;
-		if (ratio !== attributes.blockeraRatio.default.value) {
+		const ratio =
+			currentBlockAttributes.blockeraRatio.value ||
+			currentBlockAttributes.blockeraRatio.val;
+		if (ratio !== attributes.blockeraRatio.default.val) {
 			let value = '';
 
 			switch (ratio) {
@@ -398,7 +398,8 @@ export const SizeStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -430,7 +431,8 @@ export const SizeStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}
@@ -471,9 +473,49 @@ export const SizeStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
+	}
+
+	if (
+		isActiveField(blockeraBoxSizing) &&
+		currentBlockAttributes?.blockeraBoxSizing
+	) {
+		if (
+			currentBlockAttributes.blockeraBoxSizing !==
+			attributes.blockeraBoxSizing.default
+		) {
+			const pickedSelector = getCompatibleBlockCssSelector({
+				...sharedParams,
+				query: 'blockeraBoxSizing',
+				support: 'blockeraBoxSizing',
+				fallbackSupportId: getBlockSupportFallback(
+					supports,
+					'blockeraBoxSizing'
+				),
+			});
+
+			styleGroup.push({
+				selector: pickedSelector,
+				declarations: computedCssDeclarations(
+					{
+						blockeraBoxSizing: [
+							{
+								properties: {
+									'box-sizing':
+										currentBlockAttributes.blockeraBoxSizing,
+								},
+								...staticDefinitionParams,
+							},
+						],
+					},
+					blockProps,
+					pickedSelector
+				),
+			});
+		}
 	}
 
 	return styleGroup;

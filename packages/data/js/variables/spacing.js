@@ -5,6 +5,7 @@
  */
 import { default as memoize } from 'fast-memoize';
 import { select } from '@wordpress/data';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Blockera dependencies
@@ -36,16 +37,21 @@ export const getSpacings: () => Array<VariableItem> = memoize(
 				theme: themeName,
 			};
 
-			return getBlockEditorSettings()?.__experimentalFeatures?.spacing?.spacingSizes?.theme.map(
-				(item) => {
-					return {
-						name: item.name,
-						id: item.slug,
-						value: item.size,
-						reference,
-					};
-				}
-			);
+			if (
+				getBlockEditorSettings()?.__experimentalFeatures?.spacing
+					?.spacingSizes?.theme !== undefined
+			) {
+				return getBlockEditorSettings()?.__experimentalFeatures?.spacing?.spacingSizes?.theme.map(
+					(item) => {
+						return {
+							name: item?.name || item.slug,
+							id: item.slug,
+							value: item.size,
+							reference,
+						};
+					}
+				);
+			}
 		}
 
 		const spaces =
@@ -58,13 +64,38 @@ export const getSpacings: () => Array<VariableItem> = memoize(
 
 		return spaces.map((item) => {
 			return {
-				name: item.name,
+				name: item?.name || item.slug,
 				id: item.slug,
 				value: item.size,
 			};
 		});
 	}
 );
+
+export const getSpacingsTitle: () => string = memoize(function (): string {
+	if (isBlockTheme()) {
+		if (
+			!isUndefined(
+				getBlockEditorSettings()?.__experimentalFeatures?.spacing
+					?.spacingSizes?.theme
+			)
+		) {
+			const { getCurrentTheme } = select('blockera/data');
+
+			const theme = getCurrentTheme();
+
+			if (!isUndefined(theme?.name?.rendered)) {
+				return sprintf(
+					// translators: it's the product name (a theme or plugin name)
+					__('%s Spacing Sizes', 'blockera'),
+					theme?.name?.rendered
+				);
+			}
+		}
+	}
+
+	return __('Editor Spacing Sizes', 'blockera');
+});
 
 export const getSpacing: (id: string) => ?VariableItem = memoize(function (
 	id: string
