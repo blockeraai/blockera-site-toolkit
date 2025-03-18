@@ -25,7 +25,9 @@ $dotenv->safeLoad();
 define('BSA_PLUGIN_FILE', __FILE__);
 define('BSA_PLUGIN_URL', plugin_dir_url(BSA_PLUGIN_FILE));
 define('BSA_PLUGIN_DIR', plugin_dir_path(BSA_PLUGIN_FILE));
+### BEGIN AUTO-GENERATED DEFINES
 define('BSA_PLUGIN_MODE', 'dev');
+### END AUTO-GENERATED DEFINES
 
 /**
  * @var Setup $setup
