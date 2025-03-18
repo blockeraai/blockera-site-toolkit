@@ -22,14 +22,16 @@ if ( ! function_exists( 'blockera_get_css_media_queries' ) ) {
 
 	/**
 	 * Get css media queries from configured breakpoints.
+	 * 
+	 * @param array $breakpoints The breakpoints.
 	 *
 	 * @return array
 	 */
-	function blockera_get_css_media_queries(): array {
+	function blockera_get_css_media_queries( array $breakpoints): array {
 
 		$queries = [];
 
-		foreach ( blockera_core_config( 'breakpoints.list' ) as $breakpoint ) {
+		foreach ( $breakpoints as $breakpoint ) {
 
 			// skip invalid breakpoint.
 			if ( empty( $breakpoint['type'] ) ) {
@@ -285,14 +287,24 @@ if ( ! function_exists( 'blockera_get_css_selector_format' ) ) {
 		$pseudo_class        = $args['pseudo_class'] ?? '';
 		$parent_pseudo_class = $args['parent_pseudo_class'] ?? '';
 
-		return sprintf(
-			'%1$s%2$s%3$s%4$s%5$s',
-			trim( $root_selector ),
-			! empty( $parent_pseudo_class ) ? ':' . $parent_pseudo_class : '',
-			str_starts_with( $picked_selector, '&' ) || empty( $root_selector ) ? '' : ' ',
-			blockera_process_ampersand_selector_char( $picked_selector ),
-			empty( $pseudo_class ) ? '' : ':' . $pseudo_class
-		);
+		// Pre-calculate reused values.
+		$has_parent_pseudo = ! empty( $parent_pseudo_class );
+		$has_pseudo        = ! empty( $pseudo_class );
+		$root              = trim( $root_selector );
+		
+		$formatted_selectors = [];
+		foreach (explode( ', ', $picked_selector ) as $selector) {
+			$selector    = trim($selector);
+			$needs_space = ! str_starts_with($selector, '&') && ! empty($root);
+			
+			$formatted_selectors[] = $root . 
+				( $has_parent_pseudo ? ':' . $parent_pseudo_class : '' ) .
+				( $needs_space ? ' ' : '' ) .
+				blockera_process_ampersand_selector_char($selector) .
+				( $has_pseudo ? ':' . $pseudo_class : '' );
+		}
+
+		return implode(', ', $formatted_selectors);
 	}
 }
 
@@ -343,9 +355,12 @@ if ( ! function_exists( 'blockera_get_compatible_block_css_selector' ) ) {
 
 		$block_type = blockera_get_block_type( $args['block-name'] );
 
-		$cloned_block_type = new WP_Block_Type( $args['block-name'], $block_type );
+		if ($block_type) {
+			// Clone block type to avoid mutating the original block type.
+			$cloned_block_type = clone $block_type;
+		}
 
-		if ( ! empty( $args['block-type'] ) && blockera_is_inner_block( $args['block-type'] ) ) {
+		if ( ! empty( $args['block-type'] ) && blockera_is_inner_block( $args['block-type'] ) && isset($cloned_block_type) ) {
 
 			$selector_id = blockera_get_normalized_inner_block_id( $args['block-type'] );
 
@@ -355,11 +370,15 @@ if ( ! function_exists( 'blockera_get_compatible_block_css_selector' ) ) {
 
 		$has_fallback = ! empty( $args['fallback'] );
 
-		$selector = wp_get_block_css_selector( $cloned_block_type, $feature_id, ! $has_fallback );
+		// Ensure the block type is not null and the block type name starts with 'core/'.
+		if (isset($cloned_block_type) && ( str_starts_with($block_type->name, 'core/') || isset($cloned_block_type->selectors['root']) )) {
 
-		if ( ! $selector && $has_fallback ) {
+			$selector = wp_get_block_css_selector($cloned_block_type, $feature_id, ! $has_fallback);
 
-			$selector = wp_get_block_css_selector( $cloned_block_type, $args['fallback'], true );
+			if (! $selector && $has_fallback) {
+
+				$selector = wp_get_block_css_selector($cloned_block_type, $args['fallback'], true);
+			}
 		}
 
 		// Imagine the current block is master!
@@ -385,6 +404,7 @@ if ( ! function_exists( 'blockera_get_compatible_block_css_selector' ) ) {
 			$selector,
 			$args['blockera-unique-selector'],
 			[
+				'root'=> $args['root'] ?? '',
 				'block-type' => $args['block-type'],
 				'block-name' => str_replace( '/', '-', str_replace( 'core/', '', $args['block-name'] ) ),
 			]
@@ -437,41 +457,59 @@ if ( ! function_exists( 'blockera_append_root_block_css_selector' ) ) {
 	 */
 	function blockera_append_root_block_css_selector( string $selector, string $root, array $args = [] ): string {
 
-		// Assume recieved selector is invalid.
+		// Assume received selector is invalid.
 		if ( empty( trim( $selector ) ) ) {
 
 			return $root;
 		}
 
+		$is_child_selector = false;
+
+		// Check if selector is a child of root.
+		if ( preg_match( '/^\s|[\s>+~]/', $selector ) ) {
+
+			$is_child_selector = true;
+		}
+
 		$preg_quote = preg_quote( $args['block-name'], '/' );
 		$pattern    = '/\.\bwp-block-' . $preg_quote . '\b/';
 
-		// Assume recieved selector is another reference to root, so we should concat together.
+		// Assume received selector is another reference to root, so we should concat together.
 		if ( preg_match( $pattern, $selector, $matches ) ) {
 
-			// Appending blockera roo unique css selector into picked your selector.
+			// Appending blockera root unique css selector into picked your selector.
 			return \Blockera\Utils\Utils::modifySelectorPos(
 				$selector,
 				$matches[0],
 				[
 					'prefix' => $root,
-					'suffix' => $root,
+					'suffix' => blockera_get_admin_options([ 'earlyAccessLab', 'optimizeStyleGeneration' ]) ? '' : $root,
 				]
 			);
 		}
 
-		// Imagine selector and root is same.
+		// Handle cases where selector and root are identical or when dealing with inner blocks.
 		if ( $selector === $root || blockera_is_inner_block( $args['block-type'] ) ) {
 
-			return $selector;
+			// If a custom root is provided in args, replace it with the combined root selectors and should not start with a space because it's a child selector and we should not add it before the root.
+			if (isset($args['root']) && ! str_starts_with($args['root'], ' ')) {
+
+				// Replace the custom root with itself plus the standard root selector.
+				return str_replace($args['root'], "{$args['root']}{$root}", $selector);
+			}
+
+			// Return selector unchanged if no custom root.
+			return "{$root} {$selector}";
 		}
 
-		// Assume received selector started with html tag name!
-		if ( '.' !== $selector[0] ) {
+		// If selector is a child of root or starts with a tag name and should not start with a space because it's a child selector and we should not add it before the root.
+		if (! str_starts_with($selector, ' ') && ( $is_child_selector || preg_match( '/^[a-z]/', $selector ) )) {
 
+			// If selector contains combinators (space, >, +, ~), append root after the selector.
 			return "{$selector}{$root}";
 		}
 
+		// If selector started with dot or any other classname of child elements, we imagine it's other classname of root or child of root.
 		return "{$root}{$selector}";
 	}
 }
@@ -623,7 +661,7 @@ if ( ! function_exists( 'blockera_convert_css_declarations_to_css_valid_rules' )
 
 			foreach ( $declaration as $property => $value ) {
 
-				if ( is_array( $value ) && empty( $value ) ) {
+				if ( is_array($value) || ( empty( trim($value) ) && '0' !== $value ) || is_int( $property ) || empty( trim($property) ) ) {
 
 					continue;
 				}
@@ -636,7 +674,7 @@ if ( ! function_exists( 'blockera_convert_css_declarations_to_css_valid_rules' )
 				}
 
 				// value validating ...
-				if ( is_array( $validCssRules[ $selector ] ) || is_array( $property ) || is_array( $value ) ) {
+				if ( is_array( $validCssRules[ $selector ] ) ) {
 
 					continue;
 				}
@@ -701,7 +739,8 @@ if ( ! function_exists( 'blockera_get_base_breakpoint' ) ) {
 	 */
 	function blockera_get_base_breakpoint(): string {
 
-		$base = blockera_core_config( 'breakpoints.base' );
+		$breakpoints = blockera_core_config( 'breakpoints' );
+		$base        = $breakpoints['base'];
 
 		if ( ! is_string( $base ) ) {
 
@@ -709,7 +748,7 @@ if ( ! function_exists( 'blockera_get_base_breakpoint' ) ) {
 		}
 
 		$prepared_breakpoints = array_filter(
-			blockera_core_config( 'breakpoints.list' ),
+			$breakpoints['list'],
 			function ( array $breakpoint ): bool {
 
 				return ! empty( $breakpoint['base'] ) && ! empty( $breakpoint['status'] );
@@ -741,52 +780,51 @@ if ( ! function_exists( 'blockera_is_normal_on_base_breakpoint' ) ) {
 	}
 }
 
-if ( ! function_exists( 'blockera_get_available_block_supports' ) ) {
+if (! function_exists('blockera_get_available_block_supports')) {
 
 	/**
-	 * Retrieve available block supports list.
+	 * Get all available block supports.
 	 *
-	 * @see: ../js/schemas/blockera-block-supports-list.json
-	 *
-	 * @param string $support_category the support category name.
-	 *
-	 * @return array The available block supports list for support category or all categories.
+	 * @return array the block supports.
 	 */
-	function blockera_get_available_block_supports( string $support_category = '' ): array {
-
+	function blockera_get_available_block_supports(): array {
 		$supports = [];
 		$files    = glob( blockera_core_config( 'app.vendor_path' ) . 'blockera/editor/js/schemas/block-supports/*-block-supports-list.json' );
 
-		foreach ( $files as $support_file ) {
+		foreach ($files as $support_file) {
 
 			ob_start();
 
 			require $support_file;
 
-			$support_config = json_decode( ob_get_clean(), true );
+			$support = json_decode(ob_get_clean(), true);
 
-			if ( empty( $support_config['supports'] ) || ( ! empty( trim( $support_category ) ) && $support_config['title'] !== $support_category ) ) {
+			if (empty($support['title'])) {
 
 				continue;
 			}
 
-			$supports = array_merge(
-				$supports,
-				blockera_array_flat(
-					array_map(
-						function ( array $support ): array {
-
-							return [
-								$support['name'] => $support,
-							];
-						},
-						$support_config['supports']
-					)
-				)
-			);
+			$supports[ $support['title'] ] = $support;
 		}
 
 		return $supports;
+	}
+}
+
+if (! function_exists('blockera_get_block_supports_by_category')) {
+
+	/**
+	 * Get block supports by category.
+	 *
+	 * @param string $category the category name.
+	 *
+	 * @return array the block supports.
+	 */
+	function blockera_get_block_supports_by_category( string $category): array {
+
+		$category = \Blockera\Utils\Utils::kebabCase( $category );
+
+		return blockera_get_available_block_supports()[ $category ]['supports'];
 	}
 }
 
@@ -801,12 +839,11 @@ if ( ! function_exists( 'blockera_get_block_support' ) ) {
 	 *
 	 * @return mixed The available block supports list as array, or string, boolean on success, null while failure!
 	 */
-	function blockera_get_block_support( string $support_category, string $name, string $property = '' ) {
+	function blockera_get_block_support( string $support_category, string $name = '', string $property = '' ) {
 
-		$support_category = \Blockera\Utils\Utils::kebabCase( $support_category );
-		$supports         = blockera_get_available_block_supports( $support_category );
+		$supports = blockera_get_block_supports_by_category( $support_category);
 
-		if ( empty( $supports ) || empty( $supports[ $name ] ) ) {
+		if ( empty( $supports ) || ! isset( $supports[ $name ] ) ) {
 
 			return null;
 		}
@@ -846,5 +883,20 @@ if ( ! function_exists( 'blockera_get_sanitize_block_attributes' ) ) {
 			},
 			$attributes
 		);
+	}
+}
+
+if ( ! function_exists( 'blockera_is_wp_block_child_class' ) ) {
+
+	/**
+	 * Check if the block has a wp-block-child class.
+	 *
+	 * @param string $block_classname the block class name.
+	 *
+	 * @return bool true if the block has a wp-block-child class, false otherwise.
+	 */
+	function blockera_is_wp_block_child_class( string $block_classname ): bool {
+
+		return preg_match('/wp-block-[a-zA-Z0-9-]+__[a-zA-Z0-9-]+/i', $block_classname);
 	}
 }

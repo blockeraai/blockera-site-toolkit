@@ -34,6 +34,7 @@ export const BorderAndShadowStyles = ({
 	masterState,
 	currentBlock,
 	activeDeviceType,
+	supports: blockSupports,
 	selectors: blockSelectors,
 	defaultAttributes: attributes,
 	attributes: currentBlockAttributes,
@@ -47,9 +48,13 @@ export const BorderAndShadowStyles = ({
 	} = config.borderAndShadowConfig;
 
 	const blockProps = {
+		state,
 		clientId,
+		supports,
 		blockName,
 		attributes: currentBlockAttributes,
+		blockeraStyleEngineConfig: blockSupports?.blockeraStyleEngineConfig,
+		currentBlock,
 	};
 
 	const sharedParams = {
@@ -61,6 +66,7 @@ export const BorderAndShadowStyles = ({
 		currentBlock,
 		blockSelectors,
 		activeDeviceType,
+		supports: blockSupports,
 		className: currentBlockAttributes?.className,
 	};
 
@@ -94,7 +100,8 @@ export const BorderAndShadowStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}
@@ -124,7 +131,8 @@ export const BorderAndShadowStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -155,7 +163,8 @@ export const BorderAndShadowStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -191,7 +200,8 @@ export const BorderAndShadowStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
