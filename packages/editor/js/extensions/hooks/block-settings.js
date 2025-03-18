@@ -2,27 +2,34 @@
 /**
  * External dependencies
  */
+import {
+	getBlockVariations,
+	registerBlockVariation,
+	unregisterBlockVariation,
+} from '@wordpress/blocks';
 import { select } from '@wordpress/data';
-import type { MixedElement } from 'react';
-import { doAction } from '@wordpress/hooks';
-import { useEffect, useMemo } from '@wordpress/element';
+import type { MixedElement, ComponentType } from 'react';
+import {
+	memo,
+	useMemo,
+	useState,
+	useEffect,
+	createElement,
+} from '@wordpress/element';
 import { SlotFillProvider, Slot } from '@wordpress/components';
+import { ErrorBoundary } from 'react-error-boundary';
 
 /**
  * Blockera dependencies
  */
+import { useBugReporter } from '@blockera/telemetry';
 import { BaseControlContext } from '@blockera/controls';
-import {
-	isEmpty,
-	isObject,
-	isFunction,
-	mergeObject,
-	isLoadedSiteEditor,
-} from '@blockera/utils';
+import { isEmpty, isObject, isFunction, mergeObject } from '@blockera/utils';
 
 /**
  * Internal dependencies
  */
+import { FallbackUI } from '../fallback-ui';
 import {
 	registerBlockExtensionsSupports,
 	registerInnerBlockExtensionsSupports,
@@ -74,7 +81,7 @@ const EdiBlockWithoutExtensions = ({
 }: Object): MixedElement => {
 	useSharedBlockSideEffect();
 
-	return settings.edit(props);
+	return createElement(settings.edit, props);
 };
 
 type extraArguments = {
@@ -126,6 +133,35 @@ export default function withBlockSettings(
 	};
 }
 
+export const ErrorBoundaryFallback: ComponentType<Object> = memo(
+	({
+		error,
+		from,
+		setNotice,
+		fallbackComponent,
+		props,
+		clientId,
+		...rest
+	}: Object): MixedElement => {
+		useBugReporter({
+			error,
+			...rest,
+		});
+
+		return (
+			<FallbackUI
+				{...rest}
+				from={from}
+				id={clientId}
+				error={error}
+				setNotice={setNotice}
+				fallbackComponentProps={props}
+				fallbackComponent={fallbackComponent}
+			/>
+		);
+	}
+);
+
 /**
  * Merge settings of block type.
  *
@@ -161,6 +197,23 @@ function mergeBlockSettings(
 		if (!isAvailableBlock()) {
 			return settings?.variations;
 		}
+
+		// Re-register the block variations with blockera icon.
+		getBlockVariations(settings.name)?.forEach((variation) => {
+			if (variation?.icon?.props?.defaultIcon) {
+				return;
+			}
+			unregisterBlockVariation(settings.name, variation.name);
+			registerBlockVariation(settings.name, {
+				...variation,
+				icon: (
+					<BlockIcon
+						defaultIcon={variation?.icon || settings?.icon}
+						name={settings.name}
+					/>
+				),
+			});
+		});
 
 		return [
 			...(settings?.variations || []),
@@ -211,14 +264,6 @@ function mergeBlockSettings(
 		);
 
 		if (isFunction(additional?.edit) && isAvailableBlock()) {
-			// Bootstrap canvas editor UI on WordPress site editor.
-			if (isLoadedSiteEditor()) {
-				/**
-				 * Calls the callback functions that have been added to an action hook.
-				 */
-				doAction('blockera.mergeBlockSettings.Edit.component');
-			}
-
 			// eslint-disable-next-line
 			const attributes = useMemo(() => {
 				const { content, ...attributes } = props.attributes;
@@ -233,8 +278,26 @@ function mergeBlockSettings(
 				  )
 				: settings.attributes;
 
+			const [isReportingErrorCompleted, setIsReportingErrorCompleted] =
+				// eslint-disable-next-line react-hooks/rules-of-hooks
+				useState(false);
+
 			return (
-				<>
+				<ErrorBoundary
+					fallbackRender={({ error }) => (
+						<ErrorBoundaryFallback
+							{...{
+								props,
+								error,
+								from: 'root',
+								clientId: props.clientId,
+								isReportingErrorCompleted,
+								setIsReportingErrorCompleted,
+								fallbackComponent: settings.edit,
+							}}
+						/>
+					)}
+				>
 					<BaseControlContext.Provider value={baseContextValue}>
 						<BlockApp
 							{...{
@@ -271,7 +334,7 @@ function mergeBlockSettings(
 						</BlockApp>
 					</BaseControlContext.Provider>
 					{settings.edit(props)}
-				</>
+				</ErrorBoundary>
 			);
 		}
 

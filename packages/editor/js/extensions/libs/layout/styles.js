@@ -5,6 +5,7 @@
  */
 import { getValueAddonRealValue } from '@blockera/controls';
 import { prepare } from '@blockera/data-editor';
+import { isEquals } from '@blockera/utils';
 
 /**
  * Internal dependencies
@@ -29,6 +30,7 @@ export const LayoutStyles = ({
 	currentBlock,
 	activeDeviceType,
 	styleEngineConfig,
+	supports: blockSupports,
 	selectors: blockSelectors,
 	defaultAttributes: attributes,
 	attributes: currentBlockAttributes,
@@ -42,6 +44,7 @@ export const LayoutStyles = ({
 	} = config.layoutConfig;
 
 	const blockProps = {
+		state,
 		clientId,
 		blockName,
 		attributes: currentBlockAttributes,
@@ -56,6 +59,7 @@ export const LayoutStyles = ({
 		currentBlock,
 		blockSelectors,
 		activeDeviceType,
+		supports: blockSupports,
 		className: currentBlockAttributes?.className,
 	};
 	const staticDefinitionParams = {
@@ -90,7 +94,8 @@ export const LayoutStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}
@@ -124,7 +129,8 @@ export const LayoutStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -174,7 +180,8 @@ export const LayoutStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -208,7 +215,8 @@ export const LayoutStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -217,12 +225,15 @@ export const LayoutStyles = ({
 	if (
 		_attributes.blockeraDisplay === 'flex' &&
 		isActiveField(blockeraFlexWrap) &&
-		_attributes.blockeraFlexWrap !== attributes.blockeraFlexWrap.default
+		!isEquals(
+			_attributes.blockeraFlexWrap,
+			attributes.blockeraFlexWrap.default
+		)
 	) {
-		let value = _attributes.blockeraFlexWrap?.value;
+		let value = _attributes.blockeraFlexWrap?.val;
 
 		if (
-			_attributes.blockeraFlexWrap?.value === 'wrap' &&
+			_attributes.blockeraFlexWrap?.val === 'wrap' &&
 			_attributes.blockeraFlexWrap?.reverse
 		) {
 			value += '-reverse';
@@ -251,7 +262,8 @@ export const LayoutStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}
@@ -286,7 +298,8 @@ export const LayoutStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}
@@ -351,7 +364,8 @@ export const LayoutStyles = ({
 								},
 							],
 						},
-						blockProps
+						blockProps,
+						pickedSelector
 					),
 				});
 
@@ -400,7 +414,8 @@ export const LayoutStyles = ({
 								},
 							],
 						},
-						blockProps
+						blockProps,
+						pickedSelector
 					),
 				});
 
@@ -448,7 +463,8 @@ export const LayoutStyles = ({
 								},
 							],
 						},
-						blockProps
+						blockProps,
+						pickedSelector
 					),
 				});
 			}
@@ -485,7 +501,8 @@ export const LayoutStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}

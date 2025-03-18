@@ -3,139 +3,69 @@
 /**
  * External dependencies
  */
+import type { MixedElement } from 'react';
 import { select } from '@wordpress/data';
-import {
-	getPlugin,
-	registerPlugin,
-	unregisterPlugin,
-} from '@wordpress/plugins';
-
-/**
- * Blockera dependencies
- */
-import { isLoadedPostEditor, isLoadedSiteEditor } from '@blockera/utils';
+import { getPlugin, registerPlugin } from '@wordpress/plugins';
+import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import { Observer } from '../observer';
 import { CanvasEditor } from './index';
 import { getTargets } from './helpers';
+import { IntersectionObserverRenderer } from './intersection-observer-renderer';
 
-const allowedContexts = ['post', 'site'];
+// Cache for checking if the component is already rendered.
+const cache: Map<string, boolean> = new Map();
 
-const getPageQueryString = (): string => window.location.search;
-
-export const bootstrapCanvasEditor = (context: string): void | Object => {
+export const bootstrapCanvasEditor = (): void | Object => {
 	const { getEntity } = select('blockera/data') || {};
 
-	if (!allowedContexts.includes(context)) {
-		return;
-	}
-
 	const observerPlugin = 'blockera-canvas-editor-observer';
-	const editPostPlugin = 'blockera-post-canvas-editor-top-bar';
-	const editSitePlugin = 'blockera-site-canvas-editor-top-bar';
 
 	const { version } = getEntity('wp');
 	const { header, previewDropdown, postPreviewElement } = getTargets(version);
 
-	// Executing on site editor. to ensure of rendering canvas editor at the WordPress top bar.
-	if (isLoadedSiteEditor() && !getPageQueryString().length) {
-		if (getPlugin(observerPlugin)) {
-			unregisterPlugin(observerPlugin);
-
-			if (getPlugin(editSitePlugin)) {
-				unregisterPlugin(editSitePlugin);
-			}
-		}
-	}
-
-	const registry = () =>
+	const registry = () => {
 		registerPlugin(observerPlugin, {
 			render() {
-				const ancestors = {
-					post: {
-						options: {
-							root: document.querySelector(
-								'.interface-interface-skeleton__header'
+				const componentSelector = '.blockera-canvas-breakpoints';
+
+				// eslint-disable-next-line react-hooks/rules-of-hooks
+				useEffect(() => {
+					if (
+						!document.querySelector(componentSelector) &&
+						!cache.get(componentSelector)
+					) {
+						cache.set(componentSelector, true);
+
+						new IntersectionObserverRenderer(
+							'.editor-header__center',
+							(): MixedElement => (
+								<CanvasEditor
+									{...{
+										previewDropdown,
+										postPreviewElement,
+									}}
+									target={document.querySelector(header)}
+								/>
 							),
-							threshold: 1.0,
-						},
-						callback(entries: Array<IntersectionObserverEntry>) {
-							const editPost = select('core/edit-post');
-
-							if (!editPost) {
-								return;
+							{
+								root: '.editor-header',
+								after: '.editor-header__toolbar',
+								componentSelector,
 							}
+						);
+					}
+					// eslint-disable-next-line react-hooks/exhaustive-deps
+				}, []);
 
-							if (getPlugin(editPostPlugin)) {
-								return;
-							}
-
-							registerPlugin(editPostPlugin, {
-								render() {
-									return (
-										<CanvasEditor
-											{...{
-												previewDropdown,
-												postPreviewElement,
-											}}
-											entry={entries[0]}
-										/>
-									);
-								},
-							});
-						},
-						target: header,
-					},
-					site: {
-						options: {
-							root: document.querySelector('body'),
-							threshold: 1.0,
-						},
-						callback(entries: Array<IntersectionObserverEntry>) {
-							const editSite = select('core/edit-site');
-
-							if (!editSite) {
-								return;
-							}
-
-							if (getPlugin(editSitePlugin)) {
-								return;
-							}
-
-							registerPlugin(editSitePlugin, {
-								render() {
-									return (
-										<CanvasEditor
-											{...{
-												previewDropdown,
-												postPreviewElement,
-											}}
-											entry={entries[0]}
-										/>
-									);
-								},
-							});
-						},
-						target: header,
-					},
-				};
-
-				return <Observer ancestors={[ancestors[context]]} />;
+				return <></>;
 			},
 		});
+	};
 
-	if (
-		isLoadedSiteEditor() &&
-		-1 !== getPageQueryString().indexOf('canvas=edit') &&
-		!getPlugin(observerPlugin)
-	) {
-		return registry();
-	}
-
-	if (isLoadedPostEditor() && !getPlugin(observerPlugin)) {
+	if (!getPlugin(observerPlugin)) {
 		return registry();
 	}
 };

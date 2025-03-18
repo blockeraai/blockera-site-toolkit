@@ -2,12 +2,13 @@
 
 namespace Blockera\Bootstrap;
 
+use Illuminate\Container\Container;
+
 /**
  * Service providers are the central place of all blockera application bootstrapping.
  * Your own application, as well as all of blockera's core services, are bootstrapped via service providers.
  */
-class ServiceProvider
-{
+class ServiceProvider {
 
 	/**
 	 * Store application container.
@@ -21,8 +22,7 @@ class ServiceProvider
 	 *
 	 * @param Application $app the instance of application container.
 	 */
-	public function __construct(Application $app)
-	{
+	public function __construct( Application $app ) {
 
 		$this->app = $app;
 	}
@@ -32,12 +32,17 @@ class ServiceProvider
 	 *
 	 * @return void
 	 */
-	public function register(): void {}
+	public function register(): void {
+
+	}
 
 	/**
 	 * Bootstrap any application services.
 	 *
 	 * @return void
 	 */
-	public function boot(): void {}
+	public function boot(): void {
+
+	}
+
 }

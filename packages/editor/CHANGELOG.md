@@ -1,5 +1,95 @@
 ## Unreleased
 
+## 1.2.1 (2025-03-17)
+
+### Bug Fixes
+- Fixed an issue in the Layout style generator Reported  by [@hoang](https://github.com/hoang) 🙏🏼
+- Fixed an issue where the gap lock or unlock button was not working properly.
+- Fixed an issue with the style engine were not being correctly generating styles for blocks in breakpoints. [@hoang](https://github.com/hoang) Thanks a lot for your help!
+
+## 1.2.0 (2025-03-15)
+
+### Bug Fixes
+- Double preview button in header in translated languages. [[🔗 Bug](https://community.blockera.ai/bugs-mdhyb8nc/post/missing-translation-string-for-blockera-iBEIfdKXdbBkpn1?highlight=mIwhJxxt63eUix5)]
+- Various bug fixes.
+- Fixed an issue where the style engine generated incorrect selectors on both server and client sides.
+- Block section settings are now hidden if there are no taggable features in the section.
+- The Width feature should use `flex-basis` in the Column Block. 
+- Fixed an issue where the toggle action in the block section was not working correctly.
+- Fixed an issue where the block section focus, collapse and expand actions were not being updated correctly as a unified state around the editor for all blocks.
+- Fixed the Flex Direction not working properly sometimes.
+- Fixed the extra Flex Wrap css property for blocks.
+- Fixed an issue where the gap feature was not working properly.
+- Fixed an issue in the Layout style definition where margin-block-start was incorrectly being generated multiple times - once for the root selector and again for all child selectors, causing duplicate CSS rules. This was happening specifically when using gap with margin type in flex/grid layouts. The fix ensures margin-block-start is only generated once for the appropriate selector.
+- Fixed flex layout not working properly on mobile devices (Thanks Hoang 🙏🏼)
+
+### Development Workflow
+- GitHub workflow to enable developers to have custom PR playground configurations.
+
+### New Features
+- `Text Wrap` feature added to enhance typography customization (Pro Feature).
+- Added a new feature to cleanup inline styles from the block elements on the blockera site editor.
+- Multiple UX enhancements.
+
+### Automated Tests
+- Added E2E tests for the `Text Wrap` feature to verify its functionality in both the editor and front end.
+- Added E2E tests to check Shift + Click on label to reset value.
+- Added E2E tests to check "x" icon click on label to reset value.
+
+## 1.1.1 (2025-02-04)
+
+### Bug Fixes
+- Fixed an issue where too many renders occurred in the canvas editor.
+
+### Improvements
+- Optimized performance by detecting and addressing bottlenecks. 🔥
+
+## 1.1.0 (2025-02-03)
+
+### Improvements
+- The overall design of the block settings has been improved to boost the UX (based on user feedback and user researches).
+- Enhanced Block Sections with improved state management for seamless transitions between parent and inner blocks, maintaining section states and focus mode settings during block switching.
+
+### New Features:
+- Added Box Sizing feature to Size block section to enhance design flexibility in size-related customizations.
+- Added a new fallback UI for the block editor to improve the user experience when an error occurs. [[🔗 Feature Request](https://community.blockera.ai/feature-request-1rsjg2ck/post/bug-detector-and-reporter-inside-wp-admin-JNHwQhKzYqrEjK6)]
+
+### Automated Tests
+- Added E2E tests for the Box Sizing feature to verify its functionality in both the editor and front end.
+
+### Bug Fixes
+- Fixed an issue where features configurations and cached data caused problems when adding new features options.
+- Fixed an issue in the custom style section where this is by default closed, but the section remained open.
+- Fixed an issue where the navigation block were not correctly working with flex wrap and aspect ratio features. [[🔗 Bug](https://community.blockera.ai/bugs-mdhyb8nc/post/bug-in-navigation-block-WQZsA8IAhFcPNxR)]
+- Fixed an issue where the breakpoints navbar disappear when the 'Top Toolbar' setting is selected. [[🔗 Bug](https://community.blockera.ai/bugs-mdhyb8nc/post/blockers-top-toolbar-disappears-if-you-select-top-toolbar-setting-sldgztD8JG2lVeC)]
+
+## 1.0.3 (2025-01-22)
+
+
+### Improvements
+- Enhanced the CSS style generator for typography features to improve design flexibility and customization.
+- Enhanced the style engine server-side implementation with improved APIs for better developer experience and extensibility.
+
+### Bug Fixes
+- Fixed a TypeError caused by calling a class as a function.
+- Wrapped the block edit component in an ErrorBoundary to enhance error handling.
+- Fixed an issue with the blockeraGap feature in the style engine causing incorrect gap values.
+
+## 1.0.2 (2025-01-17)
+
+### Bug Fixes
+- Fixed an issue causing compatibility errors with the Blocksy theme.
+
+
+## 1.0.1 (2025-01-06)
+
+### Bug Fixes
+- Ensured compatibility with the React.js rendering pipeline [[🔗 Bug](https://community.blockera.ai/bugs-mdhyb8nc/post/single-product-block-error-bXDiO88g7LsP0hV)].
+- Fixed the block mode callback handler to improve functionality and reliability [[🔗 Bug](https://community.blockera.ai/bugs-mdhyb8nc/post/block-mode-switch-not-works-FsR1uwRuIcCakWp)].
+
+### Improvements
+- Updated block sections to remove the "Powered by Blockera" icon from the bottom. Instead, an indicator was added at the top of the block to show whether it is in advanced mode, displayed only once per block. (Based on users feedback)
+
 ## 1.0.0 (2024-12-08)
 
 ### New Features:

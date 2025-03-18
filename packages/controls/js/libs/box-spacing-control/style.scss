@@ -133,11 +133,22 @@
 
 				svg {
 					fill: #ffffff;
+					outline: 2px solid #ffffff;
 				}
 
 				.blockera-control-value-addon-pointer {
 					transform: scale3d(1, 1, 1);
 					transition: all 0.15s cubic-bezier(1, 0.76, 0, 0.89);
+				}
+			}
+		}
+
+		.blockera-control.blockera-control-value-addon-pointers {
+
+			&.active-addon-pointers {
+
+				svg {
+					outline: 2px solid #ffffff;
 				}
 			}
 		}
@@ -191,7 +202,7 @@
 			height: 30px;
 
 			.blockera-control-value-addon-pointers {
-				top: -10.5px;
+				top: -13.5px;
 				right: 15px;
 			}
 		}
@@ -203,7 +214,7 @@
 			width: 30px;
 
 			.blockera-control-value-addon-pointers {
-				right: -10.5px;
+				right: -13.5px;
 				top: 15px;
 			}
 		}
@@ -217,7 +228,7 @@
 			.blockera-control-value-addon-pointers {
 				right: initial;
 				top: initial;
-				bottom: -11.5px;
+				bottom: -13.5px;
 				left: 15px;
 				text-align: left;
 			}
@@ -234,7 +245,7 @@
 				top: initial;
 				right: initial;
 				bottom: 15px;
-				left: -10.5px;
+				left: -13.5px;
 			}
 		}
 
@@ -245,7 +256,7 @@
 			height: 30px;
 
 			.blockera-control-value-addon-pointers {
-				top: -9.5px;
+				top: -12.5px;
 				right: 15px;
 			}
 		}
@@ -257,7 +268,7 @@
 			width: 30px;
 
 			.blockera-control-value-addon-pointers {
-				right: -10.5px;
+				right: -13.5px;
 				top: 15px;
 			}
 		}
@@ -271,7 +282,7 @@
 			.blockera-control-value-addon-pointers {
 				right: initial;
 				top: initial;
-				bottom: -10.5px;
+				bottom: -12.5px;
 				left: 15px;
 				text-align: left;
 			}
@@ -288,7 +299,7 @@
 				top: initial;
 				right: initial;
 				bottom: 15px;
-				left: -10.5px;
+				left: -13.5px;
 			}
 		}
 	}
@@ -310,7 +321,7 @@
 			align-items: center;
 			justify-content: center;
 			height: 24px;
-			z-index: 1;
+			z-index: 5;
 		}
 
 		&.box-mode-padding {
@@ -324,7 +335,7 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			z-index: 1;
+			z-index: 8;
 		}
 
 		.blockera-control-label {
@@ -374,6 +385,7 @@
 			top: 50%;
 			transform: translateY(-50%);
 			left: 162px;
+			z-index: 7;
 		}
 
 		&.margin-lock {

@@ -3,14 +3,15 @@
 namespace Blockera\WordPress;
 
 use Blockera\Bootstrap\Application;
+use Symfony\Component\VarDumper\VarDumper;
 
 /**
  * Class AssetsLoader registering all blockera core assets into WordPress CMS.
  *
  * @package AssetsLoader
  */
-class AssetsLoader
-{
+class AssetsLoader {
+
 	/**
 	 * Store loader identifier.
 	 *
@@ -74,8 +75,8 @@ class AssetsLoader
 	 *
 	 * @since 1.0.0
 	 */
-	public function __construct(Application $app, array $assets = [], array $args = [])
-	{
+	public function __construct( Application $app, array $assets = [], array $args = [] ) {
+
 		$this->application    = $app;
 		$this->assets         = $assets;
 		$this->is_development = $args['debug-mode'] ?? false;
@@ -86,51 +87,41 @@ class AssetsLoader
 		];
 		$this->id             = $args['id'] ?? 'blockera-wordpress-assets-loader';
 
-		if (! empty($args['fallback']) && ! empty($args['fallback']['url']) && ! empty($args['fallback']['path'])) {
+		if ( ! empty( $args['fallback'] ) && ! empty( $args['fallback']['url'] ) && ! empty( $args['fallback']['path'] ) ) {
 
 			$this->fallback_args = $args['fallback'];
 		}
 
-		add_action('wp_head', [$this, 'printBlockeraGeneratedStyles']);
+		if ( ! empty( $args['enqueue-block-assets'] ) ) {
 
-		if (! empty($args['enqueue-block-assets'])) {
+			add_action( 'enqueue_block_editor_assets', [ $this, 'enqueue' ] );
 
-			add_action('enqueue_block_editor_assets', [$this, 'enqueue']);
-		} elseif (! empty($args['enqueue-admin-assets'])) {
+		} elseif ( ! empty( $args['enqueue-admin-assets'] ) ) {
 
-			add_action('admin_enqueue_scripts', [$this, 'enqueue']);
-		} else {
-			$loader = $this;
-
-			add_action('wp_enqueue_scripts', static function () use ($loader): void {
-				$loader->enqueue(false);
-			});
+			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue' ] );
 		}
 	}
 
 	/**
 	 * Enqueue assets just load into gutenberg canvas editor iframe.
 	 *
-	 * @param bool $is_admin The flag to check if the assets are being loaded in the admin area. Default is true.
-	 *
 	 * @return void
 	 */
-	public function enqueue(bool $is_admin = true): void
-	{
-		// Return early if we're trying to load admin assets on the frontend
-		if ($is_admin && ! is_admin()) {
+	public function enqueue(): void {
+
+		if ( ! is_admin() ) {
 
 			return;
 		}
 
 		array_map(
-			function (array $asset): void {
+			function ( array $asset ): void {
 
-				if ($asset['style']) {
+				if ( $asset['style'] ) {
 
 					wp_enqueue_style(
 						$asset['name'],
-						str_replace('\\', DIRECTORY_SEPARATOR, $asset['style']),
+						str_replace( '\\', DIRECTORY_SEPARATOR, $asset['style'] ),
 						[],
 						$asset['version']
 					);
@@ -138,27 +129,28 @@ class AssetsLoader
 					return;
 				}
 
-				if (! $asset['script']) {
+				if ( ! $asset['script'] ) {
 
 					return;
 				}
 
-				$deps = $this->excludeDependencies($asset['deps']);
+				$deps = $this->excludeDependencies( $asset['deps'] );
 
-				array_map('wp_enqueue_script', $this->packages_deps[$asset['name']] ?? []);
+				array_map( 'wp_enqueue_script', $this->packages_deps[ $asset['name'] ] ?? [] );
 
 				wp_enqueue_script(
 					$asset['name'],
-					str_replace('\\', DIRECTORY_SEPARATOR, $asset['script']),
+					str_replace( '\\', DIRECTORY_SEPARATOR, $asset['script'] ),
 					array_merge(
 						$deps,
-						$this->packages_deps[$asset['name']] ?? []
+						$this->packages_deps[ $asset['name'] ] ?? []
 					),
 					$asset['version'],
 					[
 						'in_footer' => true,
 					]
 				);
+
 			},
 			$this->prepareAssets()
 		);
@@ -169,7 +161,7 @@ class AssetsLoader
 		 * @hook  'blockera/wordpress/{$this->id}/inline-script/before'
 		 * @since 1.0.0
 		 */
-		$before_inline_script = apply_filters('blockera/wordpress/' . $this->id . '/inline-script/before', '');
+		$before_inline_script = apply_filters( 'blockera/wordpress/' . $this->id . '/inline-script/before', '' );
 
 		/**
 		 * This filter for extendable after inline script from internal or third-party developers.
@@ -177,7 +169,7 @@ class AssetsLoader
 		 * @hook  'blockera/wordpress/{$this->id}/inline-script/after'
 		 * @since 1.0.0
 		 */
-		$after_inline_script = apply_filters('blockera/wordpress/' . $this->id . '/inline-script/after', '');
+		$after_inline_script = apply_filters( 'blockera/wordpress/' . $this->id . '/inline-script/after', '' );
 
 		/**
 		 * This filter for change handle name for inline script from internal or third-party developers.
@@ -185,9 +177,9 @@ class AssetsLoader
 		 * @hook  'blockera/wordpress/{$this->id}/handle/inline-script
 		 * @since 1.0.0
 		 */
-		$handle_inline_script = apply_filters('blockera/wordpress/' . $this->id . '/handle/inline-script', '');
+		$handle_inline_script = apply_filters( 'blockera/wordpress/' . $this->id . '/handle/inline-script', '' );
 
-		if (!empty($before_inline_script) && !empty($handle_inline_script)) {
+		if ( !empty( $before_inline_script ) && !empty( $handle_inline_script ) ) {
 
 			// blockera server side before scripts.
 			wp_add_inline_script(
@@ -197,7 +189,7 @@ class AssetsLoader
 			);
 		}
 
-		if (!empty($after_inline_script) && !empty($handle_inline_script)) {
+		if ( !empty( $after_inline_script ) && !empty( $handle_inline_script ) ) {
 
 			// blockera server side before scripts.
 			wp_add_inline_script(
@@ -208,44 +200,29 @@ class AssetsLoader
 	}
 
 	/**
-	 * Printing blockera requirement css styles on WordPress front page.
-	 *
-	 * @return void
-	 */
-	public function printBlockeraGeneratedStyles(): void
-	{
-		echo sprintf(
-			'<style id="blockera-inline-css">%s</style>',
-			apply_filters(
-				'blockera/wordpress/register-block-editor-assets/add-inline-css-styles',
-				''
-			)
-		);
-	}
-
-	/**
 	 * Preparing current assets with info!
 	 *
 	 * @param bool $isRegistering the registering flag.
 	 *
 	 * @return array
 	 */
-	protected function prepareAssets(bool $isRegistering = false): array
-	{
+	protected function prepareAssets( bool $isRegistering = false ): array {
+
 		$provider = $this;
 
 		return array_filter(
 			array_map(
-				static function (string $asset) use ($provider) {
+				static function ( string $asset ) use ( $provider ) {
 
-					$assetInfo = $provider->assetInfo($asset);
+					$assetInfo = $provider->assetInfo( $asset );
 
-					if (! $assetInfo) {
+					if ( ! $assetInfo ) {
 
 						return null;
 					}
 
 					return $assetInfo;
+
 				},
 				$isRegistering ? blockera_get_dist_assets() : $this->assets
 			)
@@ -260,13 +237,13 @@ class AssetsLoader
 	 * @since 1.0.0
 	 * @return array the list of filtered dependencies.
 	 */
-	private function excludeDependencies(array $dependencies): array
-	{
+	private function excludeDependencies( array $dependencies ): array {
+
 		return array_filter(
 			$dependencies,
-			static function (string $item): bool {
+			static function ( string $item ): bool {
 
-				return false === strpos($item, 'dev-');
+				return false === strpos( $item, 'dev-' );
 			}
 		);
 	}
@@ -278,10 +255,8 @@ class AssetsLoader
 	 *
 	 * @return array the asset data.
 	 */
-	public function assetInfo(string $name): array
-	{
-		$deps = [];
-		$version = '';
+	public function assetInfo( string $name ): array {
+
 		$from_out_side = false;
 		$assetInfoFile = sprintf(
 			'%1$sdist/%2$s/%2$s%3$s.asset.php',
@@ -290,13 +265,7 @@ class AssetsLoader
 			$this->is_development ? '' : '.min'
 		);
 
-		if (file_exists($assetInfoFile)) {
-
-			$assetInfo = include $assetInfoFile;
-
-			$deps    = $assetInfo['dependencies'] ?? [];
-			$version = $assetInfo['version'] ?? filemtime($assetInfoFile);
-		} else {
+		if ( ! file_exists( $assetInfoFile ) ) {
 
 			$assetInfoFile = sprintf(
 				'%1$sdist/%2$s/%2$s%3$s.asset.php',
@@ -305,11 +274,18 @@ class AssetsLoader
 				$this->is_development ? '' : '.min'
 			);
 
-			if (file_exists($assetInfoFile)) {
+			if ( ! file_exists( $assetInfoFile ) ) {
 
-				$from_out_side = true;
+				return [];
 			}
+
+			$from_out_side = true;
 		}
+
+		$assetInfo = include $assetInfoFile;
+
+		$deps    = $assetInfo['dependencies'] ?? [];
+		$version = $assetInfo['version'] ?? filemtime( $assetInfoFile );
 
 		$js_file = sprintf(
 			'%1$sdist/%2$s/%2$s%3$s.js',
@@ -318,7 +294,7 @@ class AssetsLoader
 			$this->is_development ? '' : '.min'
 		);
 
-		if (file_exists($js_file)) {
+		if ( file_exists( $js_file ) ) {
 
 			$script = sprintf(
 				'%1$sdist/%2$s/%2$s%3$s.js',
@@ -338,7 +314,7 @@ class AssetsLoader
 			$this->is_development ? '' : '.min'
 		);
 
-		if (file_exists($css_file)) {
+		if ( file_exists( $css_file ) ) {
 
 			$style = sprintf(
 				'%sdist/%s/style%s.css',
@@ -351,20 +327,9 @@ class AssetsLoader
 			$style = '';
 		}
 
-		if (!$version) {
-
-			if (!empty($script)) {
-
-				$version = filemtime($js_file);
-			}
-			if (!empty($style)) {
-
-				$version = filemtime($css_file);
-			}
-		}
-
 		$name = '@blockera/' . $name;
 
-		return compact('name', 'deps', 'script', 'style', 'version');
+		return compact( 'name', 'deps', 'script', 'style', 'version' );
 	}
+
 }
