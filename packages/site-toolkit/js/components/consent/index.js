@@ -17,6 +17,7 @@ import {
 	Flex,
 	Button,
 	ToggleControl,
+	LoadingComponent,
 	ControlContextProvider,
 } from '@blockera/controls';
 
@@ -146,6 +147,10 @@ export const ConsentForm = ({
 	const [pickedLicense, setPickedLicense] = useState(
 		1 === licenses.length ? licenses[0].licenseId : null
 	);
+	const [connectionState, setConnectionState] = useState({
+		isConnected: false,
+		isConnecting: false,
+	});
 
 	const handleConnect = useCallback(() => {
 		apiFetch({
@@ -162,7 +167,8 @@ export const ConsentForm = ({
 			},
 		}).then((response) => {
 			if (response?.success) {
-				window.location.href = redirectUrl + '&connectedWithYourAccount=true';
+				window.location.href =
+					redirectUrl + '&connectedWithYourAccount=true';
 			}
 		});
 	}, [pickedLicense]);
@@ -194,9 +200,13 @@ export const ConsentForm = ({
 				variant="primary"
 				onClick={handleConnect}
 			>
+				{connectionState.isConnecting && (
+					<LoadingComponent color="#ffffff" />
+				)}
 				{/* <Icon name="attach" /> */}
 				<AttachIcon fill="#ffffff" />
-				{__('Connect', 'blockera')}
+				{!connectionState.isConnected && __('Connect', 'blockera')}
+				{connectionState.isConnected && __('Connected', 'blockera')}
 			</Button>
 		</Flex>
 	);
