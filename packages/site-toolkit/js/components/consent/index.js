@@ -153,6 +153,10 @@ export const ConsentForm = ({
 	});
 
 	const handleConnect = useCallback(() => {
+		setConnectionState({
+			...connectionState,
+			isConnecting: true,
+		});
 		apiFetch({
 			path: '/auth/v1/licenses/create',
 			method: 'POST',
@@ -167,6 +171,10 @@ export const ConsentForm = ({
 			},
 		}).then((response) => {
 			if (response?.success) {
+				setConnectionState({
+					isConnected: true,
+					isConnecting: false,
+				});
 				window.location.href =
 					redirectUrl + '&connectedWithYourAccount=true';
 			}
@@ -200,13 +208,14 @@ export const ConsentForm = ({
 				variant="primary"
 				onClick={handleConnect}
 			>
-				{connectionState.isConnecting && (
-					<LoadingComponent color="#ffffff" />
-				)}
 				{/* <Icon name="attach" /> */}
 				<AttachIcon fill="#ffffff" />
 				{!connectionState.isConnected && __('Connect', 'blockera')}
-				{connectionState.isConnected && __('Connected', 'blockera')}
+				{connectionState.isConnected &&
+					__('Connected and Redirecting...', 'blockera')}
+				{connectionState.isConnecting && (
+					<LoadingComponent color="#ffffff" />
+				)}
 			</Button>
 		</Flex>
 	);
