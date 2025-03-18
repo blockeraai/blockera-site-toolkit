@@ -46,6 +46,7 @@ const AttachIcon = ({ fill }: { fill: string }) => (
 type LicenseProps = {
 	productLogo: string,
 	plan: string,
+	_isActive: boolean,
 	licenseId: number,
 	productColor: string,
 	productTitle: string,
@@ -62,13 +63,14 @@ const License = ({
 	productLogo,
 	licenseId,
 	plan,
+	_isActive,
 	maxDomains,
 	expiryDate,
 	activeWebsites,
 	status,
 	onChange,
 }: LicenseProps): MixedElement => {
-	const [isActive, setIsActive] = useState(false);
+	const [isActive, setIsActive] = useState(_isActive);
 	const remainingDomains = maxDomains - activeWebsites.length;
 
 	const onActiveChange = (licenseId: number) => {
@@ -141,7 +143,9 @@ export const ConsentForm = ({
 	clientWebsite: string,
 	licenses: Array<LicenseProps>,
 }): MixedElement => {
-	const [pickedLicense, setPickedLicense] = useState(null);
+	const [pickedLicense, setPickedLicense] = useState(
+		1 === licenses.length ? licenses[0].licenseId : null
+	);
 
 	const handleConnect = useCallback(() => {
 		apiFetch({
@@ -182,6 +186,7 @@ export const ConsentForm = ({
 					key={license.productTitle}
 					{...license}
 					onChange={setPickedLicense}
+					_isActive={1 === licenses.length}
 				/>
 			))}
 			<Button
