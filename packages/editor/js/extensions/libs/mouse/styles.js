@@ -22,6 +22,7 @@ export const MouseStyles = ({
 	masterState,
 	currentBlock,
 	activeDeviceType,
+	supports: blockSupports,
 	selectors: blockSelectors,
 	defaultAttributes: attributes,
 	attributes: currentBlockAttributes,
@@ -30,6 +31,7 @@ export const MouseStyles = ({
 	const { blockeraCursor, blockeraUserSelect, blockeraPointerEvents } =
 		config.mouseConfig;
 	const blockProps = {
+		state,
 		attributes: currentBlockAttributes,
 		clientId,
 		blockName,
@@ -44,6 +46,7 @@ export const MouseStyles = ({
 		currentBlock,
 		blockSelectors,
 		activeDeviceType,
+		supports: blockSupports,
 		className: currentBlockAttributes?.className,
 	};
 	const staticDefinitionParams = {
@@ -81,7 +84,8 @@ export const MouseStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}
@@ -115,7 +119,8 @@ export const MouseStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}
@@ -149,7 +154,8 @@ export const MouseStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}

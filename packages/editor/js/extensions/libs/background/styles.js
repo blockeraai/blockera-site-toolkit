@@ -28,6 +28,7 @@ export const BackgroundStyles = ({
 	masterState,
 	currentBlock,
 	activeDeviceType,
+	supports: blockSupports,
 	selectors: blockSelectors,
 	defaultAttributes: attributes,
 	attributes: currentBlockAttributes,
@@ -39,6 +40,7 @@ export const BackgroundStyles = ({
 		blockeraBackgroundClip,
 	} = config.backgroundConfig;
 	const blockProps = {
+		state,
 		clientId,
 		blockName,
 		attributes: currentBlockAttributes,
@@ -52,6 +54,7 @@ export const BackgroundStyles = ({
 		currentBlock,
 		blockSelectors,
 		activeDeviceType,
+		supports: blockSupports,
 		className: currentBlockAttributes?.className,
 	};
 	const styleGroup: Array<CssRule> = [];
@@ -84,7 +87,8 @@ export const BackgroundStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}
@@ -122,7 +126,8 @@ export const BackgroundStyles = ({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -154,7 +159,8 @@ export const BackgroundStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}

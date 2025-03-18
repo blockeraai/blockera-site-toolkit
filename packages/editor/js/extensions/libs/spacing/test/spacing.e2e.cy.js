@@ -52,7 +52,7 @@ describe('Spacing Extension', () => {
 
 			redirectToFrontPage();
 
-			cy.get('.blockera-block')
+			cy.get('p.blockera-block')
 				.should('have.css', 'margin-top', '10px')
 				.and('have.css', 'margin-right', '20px')
 				.and('have.css', 'margin-bottom', '10px')
@@ -240,7 +240,7 @@ describe('Spacing Extension', () => {
 
 			redirectToFrontPage();
 
-			cy.get('.blockera-block')
+			cy.get('p.blockera-block')
 				.should('have.css', 'padding-top', '10px')
 				.and('have.css', 'padding-right', '20px')
 				.and('have.css', 'padding-bottom', '10px')
@@ -672,7 +672,7 @@ describe('Spacing Extension', () => {
 						.last()
 						.within(() => {
 							cy.get('[aria-label="Select Unit"]').select('px');
-							cy.get('input[type=number]').type('-15');
+							cy.get('input[type=text]').type('-15');
 						});
 
 					cy.get('@Position')
@@ -732,7 +732,7 @@ describe('Spacing Extension', () => {
 				);
 
 				// positive drag value change
-				cy.get('@SideShape').dragValue('vertical', 20);
+				cy.get('@SideShape').dragValue('vertical', 20, 0);
 
 				cy.get('@SideLabel')
 					.invoke('text')
@@ -742,7 +742,7 @@ describe('Spacing Extension', () => {
 
 				// negative drag value change
 				// margin supports negative values
-				cy.get('@SideShape').dragValue('vertical', -35);
+				cy.get('@SideShape').dragValue('vertical', -35, 0);
 
 				cy.get('@SideLabel')
 					.invoke('text')
@@ -763,7 +763,7 @@ describe('Spacing Extension', () => {
 				);
 
 				// positive drag value change
-				cy.get('@SideShape').dragValue('vertical', 20);
+				cy.get('@SideShape').dragValue('vertical', 20, 0);
 
 				cy.get('@SideLabel')
 					.invoke('text')
@@ -773,7 +773,7 @@ describe('Spacing Extension', () => {
 
 				// negative drag value change
 				// margin supports negative values
-				cy.get('@SideShape').dragValue('vertical', -35);
+				cy.get('@SideShape').dragValue('vertical', -35, 0);
 
 				cy.get('@SideLabel')
 					.invoke('text')
@@ -794,7 +794,7 @@ describe('Spacing Extension', () => {
 				);
 
 				// positive drag value change
-				cy.get('@SideShape').dragValue('vertical', 20);
+				cy.get('@SideShape').dragValue('vertical', 20, 0);
 
 				cy.get('@SideLabel')
 					.invoke('text')
@@ -803,7 +803,7 @@ describe('Spacing Extension', () => {
 					});
 
 				// negative drag value change
-				cy.get('@SideShape').dragValue('vertical', -15);
+				cy.get('@SideShape').dragValue('vertical', -15, 0);
 
 				cy.get('@SideLabel')
 					.invoke('text')
@@ -814,7 +814,7 @@ describe('Spacing Extension', () => {
 				// negative drag value change
 				// padding does not supports negative values
 				// min value is 0
-				cy.get('@SideShape').dragValue('vertical', -15);
+				cy.get('@SideShape').dragValue('vertical', -15, 0);
 
 				cy.get('@SideLabel')
 					.invoke('text')
@@ -835,7 +835,7 @@ describe('Spacing Extension', () => {
 				);
 
 				// positive drag value change
-				cy.get('@SideShape').dragValue('vertical', 20);
+				cy.get('@SideShape').dragValue('vertical', 20, 0);
 
 				cy.get('@SideLabel')
 					.invoke('text')
@@ -844,7 +844,7 @@ describe('Spacing Extension', () => {
 					});
 
 				// negative drag value change
-				cy.get('@SideShape').dragValue('vertical', -15);
+				cy.get('@SideShape').dragValue('vertical', -15, 0);
 
 				cy.get('@SideLabel')
 					.invoke('text')
@@ -855,7 +855,7 @@ describe('Spacing Extension', () => {
 				// negative drag value change
 				// padding does not supports negative values
 				// min value is 0
-				cy.get('@SideShape').dragValue('vertical', -15);
+				cy.get('@SideShape').dragValue('vertical', -15, 0);
 
 				cy.get('@SideLabel')
 					.invoke('text')
@@ -922,9 +922,9 @@ describe('Spacing Extension', () => {
 								{ matchCase: false }
 							);
 
-							cy.get('input[type=number]').clear({ force: true });
-							cy.get('input[type=number]').clear({ force: true });
-							cy.get('input[type=number]').type(
+							cy.get('input[type=text]').clear({ force: true });
+							cy.get('input[type=text]').clear({ force: true });
+							cy.get('input[type=text]').type(
 								side === 'left' ? '30' : '40',
 								{ delay: 0, force: true }
 							);
@@ -999,9 +999,9 @@ describe('Spacing Extension', () => {
 								{ matchCase: false }
 							);
 
-							cy.get('input[type=number]').clear({ force: true });
-							cy.get('input[type=number]').clear({ force: true });
-							cy.get('input[type=number]').type(
+							cy.get('input[type=text]').clear({ force: true });
+							cy.get('input[type=text]').clear({ force: true });
+							cy.get('input[type=text]').type(
 								side === 'top' ? '30' : '40',
 								{ delay: 0, force: true }
 							);
@@ -1084,9 +1084,9 @@ describe('Spacing Extension', () => {
 								{ matchCase: false }
 							);
 
-							cy.get('input[type=number]').clear({ force: true });
-							cy.get('input[type=number]').clear({ force: true });
-							cy.get('input[type=number]').type(
+							cy.get('input[type=text]').clear({ force: true });
+							cy.get('input[type=text]').clear({ force: true });
+							cy.get('input[type=text]').type(
 								side === 'left' ? '30' : '40',
 								{ delay: 0, force: true }
 							);
@@ -1125,9 +1125,9 @@ describe('Spacing Extension', () => {
 								{ matchCase: false }
 							);
 
-							cy.get('input[type=number]').clear({ force: true });
-							cy.get('input[type=number]').clear({ force: true });
-							cy.get('input[type=number]').type(
+							cy.get('input[type=text]').clear({ force: true });
+							cy.get('input[type=text]').clear({ force: true });
+							cy.get('input[type=text]').type(
 								side === 'top' ? '30' : '40',
 								{ delay: 0, force: true }
 							);
@@ -1202,9 +1202,9 @@ describe('Spacing Extension', () => {
 								{ matchCase: false }
 							);
 
-							cy.get('input[type=number]').clear({ force: true });
-							cy.get('input[type=number]').clear({ force: true });
-							cy.get('input[type=number]').type(
+							cy.get('input[type=text]').clear({ force: true });
+							cy.get('input[type=text]').clear({ force: true });
+							cy.get('input[type=text]').type(
 								side === 'top' ? '30' : '40',
 								{ delay: 0, force: true }
 							);
@@ -1243,9 +1243,9 @@ describe('Spacing Extension', () => {
 								{ matchCase: false }
 							);
 
-							cy.get('input[type=number]').clear({ force: true });
-							cy.get('input[type=number]').clear({ force: true });
-							cy.get('input[type=number]').type(
+							cy.get('input[type=text]').clear({ force: true });
+							cy.get('input[type=text]').clear({ force: true });
+							cy.get('input[type=text]').type(
 								side === 'left' ? '30' : '40',
 								{ delay: 0, force: true }
 							);

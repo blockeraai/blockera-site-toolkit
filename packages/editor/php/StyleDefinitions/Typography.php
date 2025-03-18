@@ -95,7 +95,7 @@ class Typography extends BaseStyleDefinition {
 				break;
 
 			case 'font-family':
-				$declaration[ $cssProperty ] = 'var(--wp--preset--font-family--' . $propertyValue . ')';
+				$declaration[ $cssProperty ] = 'var(--wp--preset--font-family--' . $propertyValue . ') !important';
 				break;
 
 			case 'font-weight':
@@ -118,7 +118,9 @@ class Typography extends BaseStyleDefinition {
 			case 'word-break':
 			case 'color':
 			case '-webkit-text-stroke-width':
+			case 'text-wrap':
 			case 'font-size':
+			case 'text-align':
 				$declaration[ $cssProperty ] = $propertyValue ? blockera_get_value_addon_real_value( $propertyValue ) : '';
 				break;
 
