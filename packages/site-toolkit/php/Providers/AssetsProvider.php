@@ -47,10 +47,11 @@ class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider
                 [
                     'assets' => $this->getAssets(),
                     'extra-args' => [
-                        'fallback' => [
+                        'root' => [
                             'url'  => $this->getURL(),
                             'path' => $this->getPATH(),
                         ],
+						'debug-mode' => $this->getDebugMode(),
                         'packages-deps' => [],
                     ],
                 ]
@@ -84,7 +85,7 @@ class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider
      */
     protected function getURL(): string
     {
-        return $this->app->getIURL();
+        return $this->app->getURL();
     }
 
     /**
@@ -96,6 +97,16 @@ class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider
     {
         return $this->app->getPath();
     }
+
+	/**
+	 * Get the debug mode.
+	 *
+	 * @return bool
+	 */
+	protected function getDebugMode(): bool
+	{
+		return $this->app->isDebug();
+	}
 
     /**
      * Get all assets of blockera plugin.
