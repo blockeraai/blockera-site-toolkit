@@ -23,6 +23,7 @@
     "@blockera/controls": "file:packages/controls",
     "@blockera/data-editor": "file:packages/data-editor",
     "@blockera/editor": "file:packages/editor",
+    "@blockera/telemetry": "file:packages/telemetry",
     "@blockera/env": "file:packages/env",
     "@blockera/icons": "file:packages/icons",
     "@blockera/site-toolkit": "file:packages/site-toolkit",
