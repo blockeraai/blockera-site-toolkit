@@ -37,7 +37,7 @@ function updateCssProps(spacingProps: TSpacingDefaultProps): TCssProps {
 
 		const marginRight = getValueAddonRealValue(spacingProps.margin.right);
 		if (marginRight !== '') {
-			properties['margin-right'] = marginRight;
+			properties['margin-right'] = marginRight + ' !important';
 		}
 
 		const marginBottom = getValueAddonRealValue(spacingProps.margin.bottom);
@@ -47,7 +47,7 @@ function updateCssProps(spacingProps: TSpacingDefaultProps): TCssProps {
 
 		const marginLeft = getValueAddonRealValue(spacingProps.margin.left);
 		if (marginLeft !== '') {
-			properties['margin-left'] = marginLeft;
+			properties['margin-left'] = marginLeft + ' !important';
 		}
 	}
 
@@ -86,6 +86,7 @@ export const SpacingStyles = ({
 	masterState,
 	currentBlock,
 	activeDeviceType,
+	supports: blockSupports,
 	selectors: blockSelectors,
 	defaultAttributes: attributes,
 	attributes: currentBlockAttributes,
@@ -93,6 +94,7 @@ export const SpacingStyles = ({
 }: StylesProps): Array<CssRule> => {
 	const { blockeraSpacing } = config.spacingConfig;
 	const blockProps = {
+		state,
 		clientId,
 		blockName,
 		attributes: currentBlockAttributes,
@@ -107,6 +109,7 @@ export const SpacingStyles = ({
 		currentBlock,
 		blockSelectors,
 		activeDeviceType,
+		supports: blockSupports,
 		className: currentBlockAttributes?.className,
 	};
 	const staticDefinitionParams = {
@@ -146,7 +149,8 @@ export const SpacingStyles = ({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		},
 	];

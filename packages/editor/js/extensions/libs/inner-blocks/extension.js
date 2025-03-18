@@ -155,6 +155,7 @@ export const InnerBlocksExtension: ComponentType<InnerBlocksProps> = memo(
 										}
 
 										setCurrentBlock(name);
+										onToggle(true, 'switch-to-inner', name);
 									}
 								}
 							},
@@ -217,7 +218,7 @@ export const InnerBlocksExtension: ComponentType<InnerBlocksProps> = memo(
 						)}
 						icon={<Icon icon="inner-blocks" />}
 						description={__(
-							'Customize nested blocks style.',
+							'Customize inner elements and blocks style.',
 							'blockera'
 						)}
 						design="large"

@@ -2,8 +2,8 @@
 
 namespace Blockera\Editor\StyleDefinitions;
 
-use Blockera\Editor\StyleDefinitions\Contracts\CustomStyle;
 use Blockera\Utils\Utils;
+use Blockera\Editor\StyleDefinitions\Contracts\CustomStyle;
 
 abstract class BaseStyleDefinition {
 
@@ -102,6 +102,60 @@ abstract class BaseStyleDefinition {
 	protected string $blockera_unique_selector = '';
 
 	/**
+	 * Store the current feature identifier being processed.
+	 * This is used to track which block support feature (like layout, typography, etc.)
+	 * is currently being processed during style generation.
+	 *
+	 * @var string
+	 */
+	protected string $current_feature_id;
+
+	/**
+	 * Store the current breakpoint.
+	 *
+	 * @var string $breakpoint the current breakpoint.
+	 */
+	protected string $breakpoint;
+
+	/**
+	 * Store the supports.
+	 *
+	 * @var array $supports the supports.
+	 */
+	protected array $support = [];
+
+	/**
+	 * The constructor.
+	 *
+	 * @param array $supports The supports.
+	 * 
+	 * @throws \Exception If the supports are not valid.
+	 *
+	 * @return void
+	 */
+	public function __construct( array $supports) {
+
+		if (empty($supports) || ! isset($supports[ Utils::kebabCase($this->getId()) ])) {
+
+			throw new \Exception( 'The supports provided for ' . $this->getId() . ' Style is not valid.' );
+		}
+
+		$this->support = $supports[ Utils::kebabCase($this->getId()) ];
+	}
+
+	/**
+	 * Set the current breakpoint.
+	 *
+	 * @param string $breakpoint the current breakpoint.
+	 *
+	 * @return void
+	 */
+	public function setBreakpoint( string $breakpoint): void {
+
+		$this->breakpoint = $breakpoint;
+	}
+
+	/**
 	 * @param array $options the options to generate css properties.
 	 *
 	 * @return void
@@ -128,6 +182,12 @@ abstract class BaseStyleDefinition {
 	 * @param string $support The feature identifier.
 	 */
 	public function setSelector( string $support ): void {
+
+		if (empty($support)) {
+			$this->selector = $support;
+
+			return;
+		}
 
 		$fallback  = $this->getFallbackSupport( $support );
 		$selectors = blockera_get_block_type_property( $this->block['blockName'], 'selectors' );
@@ -243,25 +303,11 @@ abstract class BaseStyleDefinition {
 	}
 
 	/**
-	 * Filter blockera settings.
-	 *
-	 * @param string $name the blockera attribute name.
-	 *
-	 * @return bool true on success, false on otherwise.
-	 */
-	protected function filterSettings( string $name ): bool {
-
-		return str_starts_with( $name, 'blockera' ) && ! in_array( $name, [ 'blockeraPropsId', 'blockeraCompatId' ], true );
-	}
-
-	/**
 	 * @return array
 	 */
 	public function getCssRules(): array {
 
-		$settings = array_filter( $this->settings, [ $this, 'filterSettings' ], ARRAY_FILTER_USE_KEY );
-
-		array_map( [ $this, 'generateCssRules' ], $settings, array_keys( $settings ) );
+		array_map( [ $this, 'generateCssRules' ], $this->settings, array_keys( $this->settings ) );
 
 		return array_filter( $this->css, 'blockera_get_filter_empty_array_item' );
 	}
@@ -276,14 +322,27 @@ abstract class BaseStyleDefinition {
 	 */
 	protected function generateCssRules( $value, string $name ): void {
 
-		if ( isset( $value['value'] ) ) {
+		if ( isset( $value['value'] ) && 1 === count($value) ) {
 
 			$value = $value['value'];
 		}
 
 		$cssProperty = $this->getSupportCssProperty( $name );
 
-		if ( ! $cssProperty ) {
+		// Skip if no CSS property is defined.
+		if ( ! $cssProperty) {
+			
+			return;
+		}
+
+		// Skip processing mask and divider properties if they are not enabled in experimental features.
+		if ( in_array($cssProperty, [ 'divider', 'mask' ], true) && ! blockera_get_experimental([ 'editor', 'extensions', 'effectsExtension', $cssProperty ])) {
+
+			return;
+		}
+
+		// Skip processing for properties with default value.
+		if ( isset($this->default_settings[ $name ]['default']['value']) && $value === $this->default_settings[ $name ]['default']['value'] ) {
 
 			return;
 		}
@@ -306,16 +365,38 @@ abstract class BaseStyleDefinition {
 		array_map(
 			function ( array $setting ) use ( $name ): void {
 
-				if ( ! blockera_get_block_support( $this->getId(), $name ) ) {
+				if ( ! $this->getSupports(false)[ $name ] ) {
 
 					return;
 				}
 
-				$this->setSelector( $name );
+				$this->setCurrentFeatureId($name);
 				$this->css( $setting );
 			},
 			$settings
 		);
+	}
+
+	/**
+	 * Sets the current feature identifier.
+	 * This is used to track which feature is currently being processed.
+	 *
+	 * @param string $id
+	 * @return void
+	 */
+	protected function setCurrentFeatureId( string $id):void{
+		
+		$this->current_feature_id = $id;
+	}
+
+	/**
+	 * Get current feature id to track that.
+	 *
+	 * @return string the current feature identifier.
+	 */
+	protected function getCurrentFeatureId():string {
+
+		return $this->current_feature_id;
 	}
 
 	/**
@@ -331,9 +412,15 @@ abstract class BaseStyleDefinition {
 	/**
 	 * Sets css declaration into current selector.
 	 *
-	 * @param array $declaration the generated css declarations array.
+	 * @param array  $declaration the generated css declarations array.
+	 * @param string $customSupportId the customized support identifier.
+	 * @param string $selectorSuffix the css selector suffix.
 	 */
-	public function setCss( array $declaration ): void {
+	public function setCss( array $declaration, string $customSupportId = '', string $selectorSuffix = '' ): void {
+
+		if (empty($declaration)) {
+			return;
+		}
 
 		if ( $this->isImportant() ) {
 
@@ -342,8 +429,18 @@ abstract class BaseStyleDefinition {
 
 					return $declaration_item . $this->getImportant();
 				},
-				$declaration
+				array_filter($declaration, 'is_string')
 			);
+		}
+
+		if (! empty($selectorSuffix) && ! empty($customSupportId)) {
+
+			$this->setSelector($customSupportId);
+			$this->selector = blockera_append_css_selector_suffix($this->selector, $selectorSuffix);
+
+		} else {
+
+			$this->setSelector($this->getCurrentFeatureId());
 		}
 
 		if ( isset( $this->css[ $this->getSelector() ] ) ) {
@@ -363,7 +460,7 @@ abstract class BaseStyleDefinition {
 	 */
 	protected function isImportant(): bool {
 
-		return $this->options['is-important'];
+		return $this->options['is-important'] && ! blockera_get_admin_options( [ 'earlyAccessLab', 'optimizeStyleGeneration' ] );
 	}
 
 	/**
@@ -414,11 +511,23 @@ abstract class BaseStyleDefinition {
 	 *
 	 * @param string $support the blockera block support name.
 	 *
-	 * @return string the standard css property name
+	 * @return string the standard css property name.
 	 */
 	public function getSupportCssProperty( string $support ): ?string {
 
-		return blockera_get_block_support( $this->getId(), $support, 'css-property' );
+		return $this->getSupports(false)[ $support ]['css-property'] ?? null;
+	}
+
+	/**
+	 * Get blockera supports.
+	 * 
+	 * @param bool $array_keys The array keys flag.
+	 *
+	 * @return array the supports stack.
+	 */
+	public function getSupports( bool $array_keys = true): array {
+
+		return $array_keys ? array_keys($this->support['supports']) : $this->support['supports'];
 	}
 
 	/**
@@ -448,7 +557,26 @@ abstract class BaseStyleDefinition {
 	 */
 	protected function getFallbackSupport( string $support ) {
 
-		return blockera_get_block_support( $this->getId(), $support, 'fallback' ) ?? 'root';
+		return $this->getSupports(false)[ $support ]['fallback'] ?? 'root';
+	}
+
+	/**
+	 * Get supports.
+	 *
+	 * @return array
+	 */
+	protected function getStyleEngineConfig( string $support): array {
+
+		$block_type = \WP_Block_Type_Registry::get_instance()->get_registered( $this->block['blockName'] );
+
+		$default_style_engine_config = $this->getSupports(false)[ $support ]['style-engine-config'] ?? [];
+
+		if (! $block_type) {
+
+			return $default_style_engine_config;
+		}
+
+		return  array_merge($default_style_engine_config, $block_type->supports['blockeraStyleEngineConfig'][ $support ] ?? []);
 	}
 
 	/**
@@ -461,5 +589,4 @@ abstract class BaseStyleDefinition {
 		$this->css          = [];
 		$this->declarations = [];
 	}
-
 }

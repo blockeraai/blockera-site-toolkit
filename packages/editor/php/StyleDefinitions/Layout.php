@@ -3,6 +3,7 @@
 namespace Blockera\Editor\StyleDefinitions;
 
 use Blockera\Editor\StyleDefinitions\Contracts\CustomStyle;
+use Symfony\Component\VarDumper\VarDumper;
 
 class Layout extends BaseStyleDefinition implements CustomStyle {
 
@@ -25,13 +26,16 @@ class Layout extends BaseStyleDefinition implements CustomStyle {
 		// Before run css method we need reset properties.
 		$this->reset();
 
-		$declaration = [];
-		$cssProperty = $setting['type'];
+		$declaration    = [];
+		$selectorSuffix = '';
+		$cssProperty    = $setting['type'];
 
 		if ( empty( $cssProperty ) ) {
 
 			return $declaration;
 		}
+
+		$optimizeStyleGeneration = blockera_get_admin_options([ 'earlyAccessLab', 'optimizeStyleGeneration' ]);
 
 		switch ( $cssProperty ) {
 			case 'flex':
@@ -80,7 +84,14 @@ class Layout extends BaseStyleDefinition implements CustomStyle {
 				$item             = $setting['flex-direction'];
 				$changeFlexInside = false;
 
-				if ( $item['direction'] ) {
+				// Current block display (even the default).
+				$display = $this->getDisplayValue();
+
+				if ( 'flex' !== $display ) {
+					break;
+				}
+
+				if ( isset($item['alignItems']) && $item['direction'] ) {
 					$declaration['flex-direction'] = $item['direction'];
 				}
 
@@ -90,41 +101,37 @@ class Layout extends BaseStyleDefinition implements CustomStyle {
 					'flex-end'   => true,
 				];
 
-				if ( 'column' === $item['direction'] && isset( $normalItems[ $item['alignItems'] ] ) && isset( $normalItems[ $item['justifyContent'] ] )
+				if ( isset($item['alignItems'], $item['direction'], $item['justifyContent']) && 'column' === $item['direction'] && isset( $normalItems[ $item['alignItems'] ] ) && isset( $normalItems[ $item['justifyContent'] ] )
 				) {
 					$changeFlexInside = true;
 				}
 
-				if ( $item['alignItems'] ) {
+				if ( isset($item['alignItems']) && $item['alignItems'] ) {
 					$prop                 = $changeFlexInside ? 'justify-content' : 'align-items';
-					$declaration[ $prop ] = $item['alignItems'];
+					$declaration[ $prop ] = $item['alignItems'] . ( $optimizeStyleGeneration && 'align-items' === $prop ? ' !important' : '' );
 				}
 
-				if ( $item['justifyContent'] ) {
+				if ( isset($item['justifyContent']) && $item['justifyContent'] ) {
 					$prop                 = $changeFlexInside ? 'align-items' : 'justify-content';
-					$declaration[ $prop ] = $item['justifyContent'];
+					$declaration[ $prop ] = $item['justifyContent'] . ( $optimizeStyleGeneration && 'justify-content' === $prop ? ' !important' : '' );
 				}
 
 				break;
 
 			case 'flex-wrap':
-				$flexDirection = $setting['flex-wrap'];
+				// Backward compatibility for flex-wrap value, because flex-wrap changed from value to val in the new version.
+				$flexWrap = $setting['flex-wrap'];
+			
+				if ( ! empty( $flexWrap['value'] ) || ! empty( $flexWrap['val'] ) ) {
 
-				if ( ! empty( $flexDirection['value'] ) ) {
-
-					$declaration['flex-wrap'] = $flexDirection['value'] . ( $flexDirection['reverse'] && 'wrap' === $flexDirection['value'] ? '-reverse' : '' );
+					$declaration['flex-wrap'] = ( $flexWrap['value'] ?? $flexWrap['val'] ) . ( $flexWrap['reverse'] && 'wrap' === ( $flexWrap['value'] ?? $flexWrap['val'] ) ? '-reverse' : '' ) . ( $optimizeStyleGeneration ? ' !important' : '' );
 				}
 
 				break;
 
 			case 'gap':
 				// Current block display (even the default).
-				$display = '';
-				if ( ! empty( $this->settings['blockeraDisplay']['value'] ) ) {
-					$display = $this->settings['blockeraDisplay']['value'];
-				} elseif ( ! empty( $this->default_settings['blockeraDisplay']['default'] ) ) {
-					$display = $this->default_settings['blockeraDisplay']['default'];
-				}
+				$display = $this->getDisplayValue();
 
 				// Current block gap type.
 				$gapType = 'gap';
@@ -149,23 +156,23 @@ class Layout extends BaseStyleDefinition implements CustomStyle {
 
 				if ( $gap['lock'] ) {
 
-					$cssProperty = isset( $selectorSuffix ) ? 'margin-block-start' : 'gap';
+					$cssProperty = $selectorSuffix ? 'margin-block-start' : 'gap';
 
 					if ( $gap['gap'] ) {
-						$declaration[ $cssProperty ] = blockera_get_value_addon_real_value( $gap['gap'] );
+						$declaration[ $cssProperty ] = blockera_get_value_addon_real_value( $gap['gap'] ) . ( $selectorSuffix && $optimizeStyleGeneration ? ' !important' : '' );
 					}
 				} else {
 
 					if ( $gap['rows'] ) {
-						$cssProperty = isset( $selectorSuffix ) ? 'margin-block-start' : 'row-gap';
+						$cssProperty = $selectorSuffix ? 'margin-block-start' : 'row-gap';
 
-						$declaration[ $cssProperty ] = blockera_get_value_addon_real_value( $gap['rows'] );
+						$declaration[ $cssProperty ] = blockera_get_value_addon_real_value( $gap['rows'] ) . ( $selectorSuffix && $optimizeStyleGeneration ? ' !important' : '' );
 					}
 
 					if ( $gap['columns'] ) {
-						$cssProperty = isset( $selectorSuffix ) ? 'margin-block-start' : 'column-gap';
+						$cssProperty = $selectorSuffix ? 'margin-block-start' : 'column-gap';
 
-						$declaration[ $cssProperty ] = blockera_get_value_addon_real_value( $gap['columns'] );
+						$declaration[ $cssProperty ] = blockera_get_value_addon_real_value( $gap['columns'] ) . ( $selectorSuffix && $optimizeStyleGeneration ? ' !important' : '' );
 					}
 				}
 
@@ -175,35 +182,30 @@ class Layout extends BaseStyleDefinition implements CustomStyle {
 				 */
 				if (
 					'gap-and-margin' === $gapType &&
-					( 'flex' === $display || 'grid' === $display )
+					( 'flex' === $display || 'grid' === $display || '' === $display )
 				) {
-					$this->with_gap_margin_block_start = true;
-				}
 
+					$this->setCss(
+						'' === $display ? $declaration: [
+							'margin-block-start' => '0' . ( $optimizeStyleGeneration ? ' !important' : '' ),
+						],
+						'margin-block-start',
+						' > * + *'
+					);
+
+					// Remove margin-block-start because if display is empty, the gap will be applied with margin-block-start in previous step.
+					if ('' === $display) {
+						unset($declaration['margin-block-start']);
+					}
+				}
 				break;
+
 			default:
 				$declaration[ $cssProperty ] = $setting[ $cssProperty ];
 				break;
 		}
 
-		/**
-		 * If gap type is both and the current display is flex or grid
-		 * then we use gap property to but still WP is creating gap with `margin-block-start` and we have to remove it.
-		 *
-		 * This variable is false by default, but it will be enabled if the style clearing is needed.
-		 */
-		if ( $this->with_gap_margin_block_start ) {
-
-			$this->setCss(
-				[
-					'margin-block-start' => '0',
-				]
-			);
-
-		} else {
-
-			$this->setCss( $declaration );
-		}
+		$this->setCss( $declaration );
 
 		return $this->css;
 	}
@@ -261,26 +263,6 @@ class Layout extends BaseStyleDefinition implements CustomStyle {
 		return $setting;
 	}
 
-	public function setSelector( string $support ): void {
-
-		/**
-		 * If gap type is both and the current display is flex or grid
-		 * then we use gap property to but still WP is creating gap with `margin-block-start` and we have to remove it.
-		 *
-		 * This variable is false by default, but it will be enabled if the style clearing is needed.
-		 */
-		if ( $this->with_gap_margin_block_start ) {
-
-			parent::setSelector( 'margin-block-start' );
-
-			$this->selector = blockera_append_css_selector_suffix( $this->selector, ' > * + *' );
-
-			return;
-		}
-
-		parent::setSelector( $support );
-	}
-
 	/**
 	 * Flush properties of Layout class.
 	 *
@@ -291,4 +273,29 @@ class Layout extends BaseStyleDefinition implements CustomStyle {
 		$this->with_gap_margin_block_start = false;
 	}
 
+	/**
+	 * Get display value from settings or default settings
+	 *
+	 * @param string $property Property name to check in settings.
+	 * @return string Display value
+	 */
+	private function getDisplayValue( string $property = 'blockeraDisplay'): string {
+
+		if (isset($this->settings[ $property ]) ) {
+
+			if (is_string($this->settings[ $property ]) ) {
+				return $this->settings[ $property ];
+			}
+
+			if (! empty($this->settings[ $property ]['value'])) {
+				return $this->settings[ $property ]['value'];
+			} 
+		}
+
+		if (! empty($this->default_settings[ $property ]['default']['value'])) {
+			return $this->default_settings[ $property ]['default']['value'];
+		}
+
+		return '';
+	}
 }

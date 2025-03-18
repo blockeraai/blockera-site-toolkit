@@ -30,6 +30,7 @@ export function TypographyStyles({
 	masterState,
 	currentBlock,
 	activeDeviceType,
+	supports: blockSupports,
 	selectors: blockSelectors,
 	defaultAttributes: attributes,
 	attributes: currentBlockAttributes,
@@ -53,9 +54,11 @@ export function TypographyStyles({
 		blockeraTextColumns,
 		blockeraTextStroke,
 		blockeraWordBreak,
+		blockeraTextWrap,
 	} = config.typographyConfig;
 
 	const blockProps = {
+		state,
 		clientId,
 		blockName,
 		attributes: currentBlockAttributes,
@@ -70,6 +73,7 @@ export function TypographyStyles({
 		currentBlock,
 		blockSelectors,
 		activeDeviceType,
+		supports: blockSupports,
 		className: currentBlockAttributes?.className,
 	};
 
@@ -97,12 +101,13 @@ export function TypographyStyles({
 							{
 								type: 'static',
 								properties: {
-									'font-family': `var(--wp--preset--font-family--${blockeraFontFamily})`,
+									'font-family': `var(--wp--preset--font-family--${blockeraFontFamily}) !important`,
 								},
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -113,7 +118,10 @@ export function TypographyStyles({
 			blockProps.attributes.blockeraFontAppearance;
 
 		if (
-			blockeraFontAppearance !== attributes.blockeraFontAppearance.default
+			!isEquals(
+				blockeraFontAppearance,
+				attributes.blockeraFontAppearance.default
+			)
 		) {
 			const pickedSelector = getCompatibleBlockCssSelector({
 				...sharedParams,
@@ -125,6 +133,19 @@ export function TypographyStyles({
 				),
 			});
 
+			const properties: {
+				'font-weight'?: string,
+				'font-style'?: string,
+			} = {};
+
+			if (blockeraFontAppearance.weight !== '') {
+				properties['font-weight'] = blockeraFontAppearance.weight;
+			}
+
+			if (blockeraFontAppearance.style !== '') {
+				properties['font-style'] = blockeraFontAppearance.style;
+			}
+
 			styleGroup.push({
 				selector: pickedSelector,
 				declarations: computedCssDeclarations(
@@ -132,15 +153,12 @@ export function TypographyStyles({
 						blockeraFontAppearance: [
 							{
 								type: 'static',
-								properties: {
-									'font-weight':
-										blockeraFontAppearance.weight,
-									'font-style': blockeraFontAppearance.style,
-								},
+								properties,
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -176,7 +194,8 @@ export function TypographyStyles({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -212,7 +231,8 @@ export function TypographyStyles({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -238,7 +258,7 @@ export function TypographyStyles({
 				selector: pickedSelector,
 				declarations: computedCssDeclarations(
 					{
-						blockeraBackgroundColor: [
+						blockeraFontColor: [
 							{
 								type: 'static',
 								properties: {
@@ -247,7 +267,8 @@ export function TypographyStyles({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -280,7 +301,8 @@ export function TypographyStyles({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -316,7 +338,8 @@ export function TypographyStyles({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -352,7 +375,8 @@ export function TypographyStyles({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -385,7 +409,8 @@ export function TypographyStyles({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -421,7 +446,8 @@ export function TypographyStyles({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -454,7 +480,8 @@ export function TypographyStyles({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -487,7 +514,8 @@ export function TypographyStyles({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -551,7 +579,8 @@ export function TypographyStyles({
 								},
 							],
 						},
-						blockProps
+						blockProps,
+						pickedSelector
 					),
 				});
 		}
@@ -627,7 +656,8 @@ export function TypographyStyles({
 								},
 							],
 						},
-						blockProps
+						blockProps,
+						pickedSelector
 					),
 				});
 		}
@@ -668,7 +698,8 @@ export function TypographyStyles({
 								},
 							],
 						},
-						blockProps
+						blockProps,
+						pickedSelector
 					),
 				});
 			}
@@ -705,7 +736,42 @@ export function TypographyStyles({
 							},
 						],
 					},
-					blockProps
+					blockProps,
+					pickedSelector
+				),
+			});
+		}
+	}
+
+	if (isActiveField(blockeraTextWrap)) {
+		const blockeraTextWrap = blockProps.attributes.blockeraTextWrap;
+
+		if (blockeraTextWrap !== attributes.blockeraTextWrap.default) {
+			const pickedSelector = getCompatibleBlockCssSelector({
+				...sharedParams,
+				query: 'blockeraTextWrap',
+				support: 'blockeraTextWrap',
+				fallbackSupportId: getBlockSupportFallback(
+					supports,
+					'blockeraTextWrap'
+				),
+			});
+
+			styleGroup.push({
+				selector: pickedSelector,
+				declarations: computedCssDeclarations(
+					{
+						blockeraTextWrap: [
+							{
+								type: 'static',
+								properties: {
+									'text-wrap': blockeraTextWrap,
+								},
+							},
+						],
+					},
+					blockProps,
+					pickedSelector
 				),
 			});
 		}
@@ -739,7 +805,8 @@ export function TypographyStyles({
 						},
 					],
 				},
-				blockProps
+				blockProps,
+				pickedSelector
 			),
 		});
 	}

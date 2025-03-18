@@ -2,8 +2,7 @@
 
 namespace Blockera\WordPress;
 
-class Sender
-{
+class Sender {
 
 	/**
 	 * External POST HTTP request through wp_remote_post api.
@@ -13,10 +12,9 @@ class Sender
 	 *
 	 * @return array|\WP_Error
 	 */
-	public function post(string $endpoint, array $args = [])
-	{
+	public function post( string $endpoint, array $args = [] ) {
 
-		return wp_remote_post($endpoint, $args);
+		return wp_remote_post( $endpoint, $args );
 	}
 
 	/**
@@ -27,10 +25,9 @@ class Sender
 	 *
 	 * @return array|\WP_Error
 	 */
-	public function get(string $endpoint, array $args = [])
-	{
+	public function get( string $endpoint, array $args = [] ) {
 
-		return wp_remote_get($endpoint, $args);
+		return wp_remote_get( $endpoint, $args );
 	}
 
 	/**
@@ -40,8 +37,9 @@ class Sender
 	 *
 	 * @return array
 	 */
-	public function getResponseBody(array $response): array
-	{
-		return json_decode(wp_remote_retrieve_body($response), true);
+	public function getResponseBody( array $response ): array {
+
+		return json_decode( wp_remote_retrieve_body( $response ), true );
 	}
+
 }
