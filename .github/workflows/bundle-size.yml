@@ -55,15 +55,6 @@ jobs:
                   custom-cache-suffix: $(/bin/date -u --date='last Mon' "+%F")
                   composer-options: '--no-dev -o --apcu-autoloader -a'
 
-            - name: Clone Blockera Site Builder
-              run: |
-                  cd ..
-                  git clone https://github.com/blockeraai/blockera.git
-                  cd blockera
-                  npm ci
-                  npm run build
-                  cd ../blockera-site-toolikit
-
             - name: Build Plugin Zip File
               uses: ./.github/build-plugin-zip
 
