@@ -27,15 +27,15 @@ const getFiles = (dir, pattern) => {
 const main = () => {
 	const categories = new Set();
 
-	const categorizedFiles = getFiles('packages', /\.(.*?)\.toolkit\.e2e\.cy\.js/);
+	const categorizedFiles = getFiles('packages', /\.(.*?)\.toolkit\.visual\.cy\.js/);
 	categorizedFiles.forEach((file) => {
-		const match = file.match(/\.(.*?)\.toolkit\.e2e\.cy\.js/);
+		const match = file.match(/\.(.*?)\.toolkit\.visual\.cy\.js/);
 		if (match && match[1]) {
 			categories.add(match[1]);
 		}
 	});
 
-	const generalFiles = getFiles('packages', /\/[\w-]+\.toolkit\.e2e\.cy\.js/);
+	const generalFiles = getFiles('packages', /\/[\w-]+\.toolkit\.visual\.cy\.js/);
 	if (generalFiles.length) {
 		categories.add('general');
 	}
