@@ -17,8 +17,8 @@
 		}
 
 		.product-status {
-			background-color: #FFE5E5;
-			color: #BD0000;
+			background-color: #ffe5e5;
+			color: #bd0000;
 			border-radius: 50px;
 			font-size: 14px;
 			line-height: 29px;
@@ -36,14 +36,14 @@
 		.license-card-title {
 			color: var(--blockera-product-color);
 			font-size: 14px;
-			font-weight: bold;
+			font-weight: 700;
 			align-items: center;
 			display: flex;
 			gap: 10px;
 			margin: 0;
 
 			svg {
-				background-color: color-mix(in srgb, var(--blockera-product-color) 25%, white);
+				background-color: color-mix(in srgb, var(--blockera-product-color) 25%, #ffffff);
 				padding: 1px 2px;
 				width: 22.61px;
 				height: 24px;
@@ -59,20 +59,17 @@
 			border-bottom: solid 1px var(--blockera-license-information-row-border-color);
 
 			.details-wrapper {
-			
+				flex: 3;
+
 				.field-value {
 					flex: 2;
 					font-weight: 600;
-			
+
 					span {
 						font-weight: 400;
 						color: #676767;
 					}
 				}
-			}
-			
-			.details-wrapper {
-				flex: 3;
 			}
 
 			.actions-wrapper {
@@ -181,7 +178,6 @@
 
 				button.delete-row {
 					background-color: #ffffff;
-					color:color-mix(in srgb, var(--blockera-product-color) 10%, white);
 					display: flex;
 					align-items: center;
 					color: #000000;
@@ -189,7 +185,7 @@
 					height: 24px;
 					box-shadow: none;
 					border-radius: 2px;
-					border: solid 1px #CFE0FF;
+					border: solid 1px #cfe0ff;
 					cursor: pointer;
 
 					span {
@@ -202,12 +198,12 @@
 	}
 
 	.product-header {
-	
+
 		.product-title {
 			margin: 0;
 			padding: 0;
 		}
-	
+
 		.product-details {
 			padding: 0;
 			margin: 0;
@@ -220,7 +216,6 @@
 		display: flex;
 		color: #ffffff;
 		border: none;
-		border-radius: 3px;
 		font-size: 12px;
 		cursor: pointer;
 		border-radius: 2px;
@@ -267,7 +262,7 @@
 
 #blockera-site-toolkit-consent-form {
 	height: 100%;
-	background-color: #EFF4FF;
+	background-color: #eff4ff;
 	position: relative;
 	text-align: center;
 
@@ -279,16 +274,16 @@
 			width: 166px;
 			height: 29px;
 			line-height: 29px;
-			background-color: #0051E7 !important;
+			background-color: #0051e7 !important;
 			color: #ffffff;
 			border: none;
 			border-radius: 3px;
 			padding: 5px 10px;
 			font-size: 16px;
-			font-weight: bold;
+			font-weight: 700;
 
 			.client-website-scheme {
-				color: #80ADFF !important;
+				color: #80adff !important;
 			}
 		}
 
@@ -297,7 +292,7 @@
 			margin: 0 auto;
 			position: relative;
 
-			&:before {
+			&::before {
 				content: '';
 				width: 2px;
 				height: 80px;
@@ -310,7 +305,7 @@
 
 		.license {
 			background-color: #ffffff;
-			border: solid 1px #CFE0FF;
+			border: solid 1px #cfe0ff;
 			border-radius: 3px;
 			padding: 2px 15px;
 			height: 90px;
@@ -321,7 +316,7 @@
 				text-align: left;
 				font-size: 20px;
 			}
-			
+
 			.product-details {
 				padding: 0;
 				margin: 0;
@@ -333,7 +328,7 @@
 			margin: 1rem auto;
 			width: 390px;
 			height: 45px;
-			background-color: #0051E7 !important;
+			background-color: #0051e7 !important;
 			align-items: center;
 			display: flex;
 			color: #ffffff;
@@ -341,12 +336,12 @@
 			border-radius: 3px;
 			padding: 20px 10px;
 			font-size: 16px;
-			font-weight: bold;
+			font-weight: 700;
 			cursor: pointer;
 			position: relative;
 
-			&:before {
-				content: '';
+			&::before {
+				content: "";
 				width: 2px;
 				height: 80px;
 				z-index: -1;
