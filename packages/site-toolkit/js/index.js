@@ -1,7 +1,8 @@
+// @flow
+
 /**
  * External dependencies
  */
-import type { MixedElement } from 'react';
 import domReady from '@wordpress/dom-ready';
 import { createRoot } from '@wordpress/element';
 
@@ -64,8 +65,8 @@ domReady(() => {
 		document.getElementById('blockera-site-toolkit-subscription-manager')
 	);
 
-	const MappedLicenses = licenses.map((license) => {
-		return <LicenseManager {...license} />;
+	const MappedLicenses = licenses.map((license, index) => {
+		return <LicenseManager key={index} {...license} />;
 	});
 
 	root.render(MappedLicenses);

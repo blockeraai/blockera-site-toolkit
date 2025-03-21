@@ -36,8 +36,8 @@ const Row = ({
 	remainingDomains,
 	setRemainingDomains,
 	setWebsites,
-	subscriptionId,
-	onChange = null,
+	// subscriptionId,
+	// onChange = null,
 	blockeraaiNonce,
 }: {
 	num: number,
@@ -158,7 +158,7 @@ const Row = ({
 /**
  * Websites component.
  *
- * @return {JSX.Element}
+ * @return {JSX.Element} The rendered component.
  */
 export const WebsitesManager = ({
 	maxDomains,

@@ -78,7 +78,7 @@ const Row = ({
 /**
  * license information component.
  *
- * @return {JSX.Element}
+ * @return {JSX.Element} The rendered component.
  */
 export const LicenseInformation = ({
 	plan,
