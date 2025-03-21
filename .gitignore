@@ -5,3 +5,5 @@ dist
 env.txt
 .DS_Store
 dist
+.phpunit.result.cache
+.env
