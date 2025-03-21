@@ -11,7 +11,6 @@ import type { MixedElement } from 'react';
  */
 import { Icon } from '@blockera/icons';
 import { Flex } from '@blockera/controls';
-import { componentClassNames, classNames } from '@blockera/classnames';
 
 /**
  * Internal dependencies
@@ -57,7 +56,7 @@ const Row = ({
 /**
  * Downloads component.
  *
- * @returns {JSX.Element}
+ * @return {JSX.Element}
  */
 export const Downloads = ({
 	downloads,
@@ -86,18 +85,23 @@ export const Downloads = ({
 			<Table
 				headerBackground="#F7F7F7"
 				cols={[
-					<strong className="table-title">
+					<strong key="name" className="table-title">
 						{__('Name', 'blockera')}
 					</strong>,
-					<strong className="table-title">
+					<strong key="version" className="table-title">
 						{__('Version', 'blockera')}
 					</strong>,
-					<strong className="table-title">
+					<strong key="link" className="table-title">
 						{__('Link', 'blockera')}
 					</strong>,
 				]}
 				rows={Object.values(downloads)?.map((download, index) => (
-					<Row {...download} version={version} num={index + 1} />
+					<Row
+						key={index}
+						{...download}
+						version={version}
+						num={index + 1}
+					/>
 				))}
 			/>
 		</Flex>

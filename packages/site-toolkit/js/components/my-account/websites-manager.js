@@ -5,21 +5,14 @@
  */
 import { __ } from '@wordpress/i18n';
 import type { MixedElement } from 'react';
-import { useState, useEffect } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Blockera dependencies
  */
 import { Icon } from '@blockera/icons';
-import {
-	Flex,
-	Modal,
-	Button,
-	Tooltip,
-	InputControl,
-	ControlContextProvider,
-} from '@blockera/controls';
+import { Flex, Modal, Button, Tooltip } from '@blockera/controls';
 import { isLocalhost } from '@blockera/utils';
 
 /**
@@ -28,12 +21,12 @@ import { isLocalhost } from '@blockera/utils';
 import { Table } from './table';
 import { HeaderSection } from './header-section';
 
-const Header = (): MixedElement => (
-	<>
-		<strong className="table-title">{__('Website', 'blockera')}</strong>
-		<strong className="table-title">{__('Action', 'blockera')}</strong>
-	</>
-);
+// const Header = (): MixedElement => (
+// 	<>
+// 		<strong className="table-title">{__('Website', 'blockera')}</strong>
+// 		<strong className="table-title">{__('Action', 'blockera')}</strong>
+// 	</>
+// );
 
 const Row = ({
 	num,
@@ -59,7 +52,7 @@ const Row = ({
 	blockeraaiNonce?: string,
 }): MixedElement => {
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-	const name = `${subscriptionId}-${website}-domain`;
+	// const name = `${subscriptionId}-${website}-domain`;
 	const handleDelete = () => {
 		apiFetch({
 			path: 'auth/v1/license/delete',
@@ -165,7 +158,7 @@ const Row = ({
 /**
  * Websites component.
  *
- * @returns {JSX.Element}
+ * @return {JSX.Element}
  */
 export const WebsitesManager = ({
 	maxDomains,
@@ -176,16 +169,16 @@ export const WebsitesManager = ({
 	subscriptionId: number,
 	activeWebsites: { [key: string]: string },
 }): MixedElement => {
-	const [{ hasError, errorMessage }, setError] = useState({
-		hasError: false,
-		errorMessage: '',
-	});
+	// const [{ hasError, errorMessage }, setError] = useState({
+	// 	hasError: false,
+	// 	errorMessage: '',
+	// });
 	const activatedCount = Object.values(activeWebsites)?.length || 0;
 	const [remainingDomains, setRemainingDomains] = useState(
 		0 < maxDomains ? maxDomains - activatedCount : 0
 	);
 	const [websites, setWebsites] = useState(activeWebsites);
-	const { blockeraaiNonce, blockeraUserAccessToken } = window;
+	const { blockeraaiNonce } = window; // blockeraUserAccessToken
 
 	return (
 		<Flex gap={20} className="license-card-separator" direction="column">
@@ -206,16 +199,17 @@ export const WebsitesManager = ({
 			<Table
 				headerBackground="#F7F7F7"
 				cols={[
-					<strong className="table-title">
+					<strong key="website" className="table-title">
 						{__('Website', 'blockera')}
 					</strong>,
-					<strong className="table-title">
+					<strong key="action" className="table-title">
 						{__('Action', 'blockera')}
 					</strong>,
 				]}
 				rows={Object.entries(websites)?.map(
 					([websiteId, website]: [string, string], index) => (
 						<Row
+							key={index}
 							num={index + 1}
 							website={website}
 							websites={websites}

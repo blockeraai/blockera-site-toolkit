@@ -17,11 +17,6 @@ import { classNames } from '@blockera/classnames';
  */
 import { Image } from '../image';
 
-/**
- * Header component.
- *
- * @returns {JSX.Element}
- */
 export const Header = ({
 	logo,
 	title,

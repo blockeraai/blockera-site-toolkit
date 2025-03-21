@@ -11,11 +11,6 @@ import type { MixedElement } from 'react';
 import { Header } from './header';
 import { LicenseInformation } from './license-information';
 
-/**
- * Card component.
- *
- * @returns {JSX.Element}
- */
 export const LicenseManager = ({
 	productTitle,
 	productColor,
@@ -47,7 +42,14 @@ export const LicenseManager = ({
 	startDate: string,
 	expiryDate: string,
 	renewAmount: string,
-	downloads: Array<{ name: string, version: string, link: string }>,
+	downloads: {
+		[key: string]: {
+			name: string,
+			enabled: boolean,
+			id: string,
+			file: string,
+		},
+	},
 	activeWebsites: { [key: string]: string },
 	status: string,
 }): MixedElement => {

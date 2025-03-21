@@ -1,14 +1,6 @@
 // @flow
 
 /**
- * External dependencies
- */
-import { __ } from '@wordpress/i18n';
-import type { MixedElement } from 'react';
-import { useState } from '@wordpress/element';
-import apiFetch from '@wordpress/api-fetch';
-
-/**
  * Blockera dependencies
  */
 import { Icon } from '@blockera/icons';

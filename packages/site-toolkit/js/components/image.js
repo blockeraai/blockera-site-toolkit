@@ -10,11 +10,6 @@ import type { MixedElement } from 'react';
  */
 import { classNames } from '@blockera/classnames';
 
-/**
- * Image component.
- *
- * @returns {JSX.Element}
- */
 export const Image = ({
 	src,
 	alt,

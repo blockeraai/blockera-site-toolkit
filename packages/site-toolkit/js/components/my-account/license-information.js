@@ -11,7 +11,6 @@ import { useState } from '@wordpress/element';
 /**
  * Blockera dependencies
  */
-import { Icon } from '@blockera/icons';
 import {
 	Flex,
 	Button,
@@ -79,16 +78,16 @@ const Row = ({
 /**
  * license information component.
  *
- * @returns {JSX.Element}
+ * @return {JSX.Element}
  */
 export const LicenseInformation = ({
 	plan,
 	maxDomains,
-	upgradable,
+	// upgradable,
 	isAutoRenew: autoRenew,
 	startDate,
 	expiryDate,
-	renewAmount,
+	// renewAmount,
 	activeWebsites,
 	downloads,
 	version,
@@ -107,14 +106,16 @@ export const LicenseInformation = ({
 	downloads: {
 		[key: string]: {
 			name: string,
-			link: string,
+			enabled: boolean,
+			id: string,
+			file: string,
 		},
 	},
 }): MixedElement => {
 	const [isAutoRenew, setIsAutoRenew] = useState(autoRenew);
 	const { blockeraaiNonce } = window;
 
-	let showUpgradeButton = true;
+	const showUpgradeButton = true;
 	let autoRenewText = __('Next Renew', 'blockera');
 	let upgradeButtonText = __('Upgrade', 'blockera');
 
@@ -167,7 +168,7 @@ export const LicenseInformation = ({
 					value={`${plan}`}
 					maxDomains={maxDomains}
 				>
-					{/* <Button
+					<Button
 						className="license-button-primary"
 						variant="primary"
 						size="small"
@@ -185,7 +186,7 @@ export const LicenseInformation = ({
 						}
 					>
 						{upgradeButtonText}
-					</Button> */}
+					</Button>
 				</Row>
 				{!isLifeTime && (
 					<>
@@ -195,7 +196,7 @@ export const LicenseInformation = ({
 						>
 							<div />
 						</Row>
-						{/* <Row label={autoRenewText} value={expiryDate}>
+						<Row label={autoRenewText} value={expiryDate}>
 							<span className="auto-renew-label">
 								{__('Auto Renew', 'blockera')}
 							</span>
@@ -213,7 +214,7 @@ export const LicenseInformation = ({
 									onChange={onAutoRenewChange}
 								/>
 							</ControlContextProvider>
-						</Row> */}
+						</Row>
 					</>
 				)}
 			</Flex>
