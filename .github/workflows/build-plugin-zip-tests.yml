@@ -52,10 +52,10 @@ jobs:
                   mkdir packages/blockera-site-toolkit
                   mkdir packages/blockera-site-toolkit/tests
                   touch .wp-env.json
-                  echo '{"plugins": ["."], "config": {"BLOCKERA_TELEMETRY_OPT_IN_OFF": true}, "phpVersion": "${{ matrix.php }}"}' >> .wp-env.json
+                  echo '{"plugins": ["."], "phpVersion": "${{ matrix.php }}"}' >> .wp-env.json
                   cat .wp-env.json
                   touch cypress.env.json
-                  echo '{"isLogin": false,"wpUsername": "admin","wpPassword": "password","testURL": "http://localhost:8888","e2e": {"excludeSpecPattern": [],"specPattern": ["packages/**/*..toolkit.build.e2e.cy.js"]}}' >> cypress.env.json
+                  echo '{"isLogin": false,"wpUsername": "admin","wpPassword": "password","testURL": "http://localhost:8888","e2e": {"excludeSpecPattern": [],"specPattern": ["packages/**/*.toolkit.build.e2e.cy.js"]}}' >> cypress.env.json
                   cat cypress.env.json
                   cd ../..
                   cp -r ./cypress ./build/blockera-site-toolkit
