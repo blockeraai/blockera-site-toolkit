@@ -6,6 +6,7 @@ Version: 1.0
 Author: blockera.ai
 Tested up to: 6.7
 Domain Path: /languages
+License: GPLv3 or later
 Domain: blockera-site-toolkit
 */
 
