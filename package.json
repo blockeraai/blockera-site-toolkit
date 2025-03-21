@@ -30,7 +30,7 @@
 	"test:generate-output": "jest --json --outputFile=.jest-test-results.json",
 	"test:generate-output:dev": "jest --json --outputFile=.jest-test-results.json -- --watch",
 	"test:unit:php:setup": "npm run env:start",
-	"test:unit:php:base": "wp-env run --env-cwd='wp-content/plugins/blockera' tests-wordpress vendor/bin/phpunit -c phpunit.xml.dist --verbose",
+	"test:unit:php:base": "wp-env run --env-cwd='wp-content/plugins/blockera-site-toolkit' tests-wordpress vendor/bin/phpunit -c phpunit.xml.dist --verbose",
 	"test:unit:php": "npm-run-all test:unit:php:setup test:unit:php:base",
 	"test:unit:php:composer": "composer run-script test",
 	"version": "grunt version && grunt update-pot",
@@ -46,8 +46,8 @@
 	"env:reset": "npm run env:start --update --xdebug",
 	"env:tests-cli:bash": "npm run env run tests-cli bash",
 	"packages:update": "wp-scripts packages-update",
-	"plugin:activate": "wp-env run tests-cli wp plugin activate blockera",
-	"plugin:deactivate": "wp-env run tests-cli wp plugin deactivate blockera"
+	"plugin:activate": "wp-env run tests-cli wp plugin activate blockera-site-toolkit",
+	"plugin:deactivate": "wp-env run tests-cli wp plugin deactivate blockera-site-toolkit"
   },
   "repository": {
     "type": "git",
