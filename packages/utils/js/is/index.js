@@ -216,8 +216,9 @@ export function isLoadedPostEditor(): boolean {
 
 /**
  * Checks if the given URL or domain is a localhost address
+ *
  * @param {string} domain - URL or domain to check
- * @returns {boolean} - true if localhost, false otherwise
+ * @return {boolean} - true if localhost, false otherwise
  */
 export function isLocalhost(domain: string): boolean {
 	if (!domain) return false;
