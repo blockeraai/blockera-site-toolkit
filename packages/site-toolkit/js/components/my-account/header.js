@@ -17,11 +17,6 @@ import { classNames } from '@blockera/classnames';
  */
 import { Image } from '../image';
 
-/**
- * Header component.
- *
- * @returns {JSX.Element}
- */
 export const Header = ({
 	logo,
 	title,
@@ -45,8 +40,9 @@ export const Header = ({
 
 	return (
 		<Flex
-			className="subscription-card-separator product-header"
+			className="license-card-separator product-header"
 			alignItems="flex-start"
+			gap={20}
 		>
 			<Image
 				src={logo}
@@ -56,7 +52,7 @@ export const Header = ({
 					'product-logo': true,
 				}}
 			/>
-			<Flex direction="column">
+			<Flex direction="column" gap={25}>
 				<h3 className="product-title">{title}</h3>
 				<Flex gap={40}>
 					<p
@@ -78,14 +74,20 @@ export const Header = ({
 			{isExpired && (
 				<span
 					className={classNames('product-status', {
-						'product-details': true,
+						expired: true,
 					})}
 				>
 					{__('Expired', 'blockera')}
 				</span>
 			)}
 			{!isExpired && remainingDays <= 7 && (
-				<span>{__('Expiring Soon', 'blockera')}</span>
+				<span
+					className={classNames('product-status', {
+						expired: true,
+					})}
+				>
+					{__('Expiring Soon', 'blockera')}
+				</span>
 			)}
 		</Flex>
 	);

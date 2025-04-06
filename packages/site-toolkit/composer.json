@@ -1,0 +1,18 @@
+{
+	"name": "blockera/site-toolkit",
+	"version": "1.0.0", 
+	"description": "A toolkit package for Blockera site functionality including OAuth server implementation and utility functions.",
+	"autoload": {
+		"psr-4": {
+			"BlockeraAI\\SiteToolkit\\": "php/"
+		},
+		"files": [
+			"php/functions.php"
+		]
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"BlockeraAI\\SiteToolkit\\Tests\\": "php/tests/"
+		}
+	}
+}

@@ -1,7 +1,8 @@
+// @flow
+
 /**
  * External dependencies
  */
-import type { MixedElement } from 'react';
 import domReady from '@wordpress/dom-ready';
 import { createRoot } from '@wordpress/element';
 
@@ -9,16 +10,16 @@ import { createRoot } from '@wordpress/element';
  * Internal dependencies
  */
 import { ConsentForm } from './components/consent';
-import { SubscriptionManager } from './components/my-account';
+import { LicenseManager } from './components/my-account';
 
 domReady(() => {
 	const {
-		blockeraSiteToolkitSubscriptions: subscriptions = [
+		blockeraSiteToolkitLicenses: licenses = [
 			{
 				productTitle: '',
 				productColor: '',
 				productLogo: '',
-				subscriptionId: 0,
+				licenseId: 0,
 				productVersion: '',
 				updatedOn: '',
 				plan: '',
@@ -49,10 +50,10 @@ domReady(() => {
 		root.render(
 			<ConsentForm
 				clientId={clientId}
+				licenses={licenses}
 				clientUrl={clientUrl}
 				redirectUrl={redirectUrl}
 				consentNonce={consentNonce}
-				subscriptions={subscriptions}
 				clientWebsite={clientWebsite}
 			/>
 		);
@@ -64,11 +65,11 @@ domReady(() => {
 		document.getElementById('blockera-site-toolkit-subscription-manager')
 	);
 
-	const MappedSubscriptions = subscriptions.map((subscription) => {
-		return <SubscriptionManager {...subscription} />;
+	const MappedLicenses = licenses.map((license, index) => {
+		return <LicenseManager key={index} {...license} />;
 	});
 
-	root.render(MappedSubscriptions);
+	root.render(MappedLicenses);
 });
 
 export * from './components';
