@@ -36,6 +36,8 @@ runs:
         # passing a custom cache suffix ensures that the cache is flushed at least once per week.
         - name: Install Composer dependencies
           uses: ramsey/composer-install@v2
+          env:
+              COMPOSER: composer.dev.json
           with:
               custom-cache-suffix: $(/bin/date -u --date='last Mon' "+%F")
               composer-options: '${{ inputs.composer-options }}'
