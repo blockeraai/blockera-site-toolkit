@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 
 require __DIR__ . '/vendor/autoload.php';
 
-use BlockeraAI\SiteToolkit\Setup;
+use Build\Packages\SiteToolkit\Setup;
 
 // Env Loading ...
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);

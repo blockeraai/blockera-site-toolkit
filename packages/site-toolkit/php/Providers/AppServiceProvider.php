@@ -154,6 +154,12 @@ class AppServiceProvider extends ServiceProvider
     public function overrideTemplates(string $template, string $templateName): string
     {
         if ('myaccount/my-subscriptions-view.php' === $templateName && false !== strpos($_SERVER['REQUEST_URI'], 'my-account/my-subscription')) {
+			$build_file = $this->app->getPath() . '/vendor/blockera/build/src/SiteToolkit/Views/licenses.php';
+
+			if (file_exists($build_file)) {
+				return $build_file;
+			}
+			
             return $this->app->getPath() . '/vendor/blockera/site-toolkit/php/Views/licenses.php';
         }
 

@@ -168,9 +168,12 @@ class Setup extends Application
         // Rewrite rule to transform url specific page to query vars.
         $this->rewriteRules();
 
-        $web_filename = $this->getPath() . '/packages/site-toolkit/php/Routes/web.php';
+		$build_filename = $this->getPath() . '/vendor/blockera/build/src/SiteToolkit/Routes/web.php';
+        $web_filename = $this->getPath() . '/vendor/blockera/site-toolkit/php/Routes/web.php';
 
-        if (file_exists($web_filename)) {
+		if (file_exists($build_filename)) {
+			$web_filename = $build_filename;
+		}elseif (file_exists($web_filename)) {
             // Require the web routes.
             require_once $web_filename;
         }
@@ -184,9 +187,14 @@ class Setup extends Application
 
     public function registerRestRoutes(): void
     {
-        $apiFilename = $this->getPath() . '/packages/site-toolkit/php/Routes/api.php';
 
-        if (file_exists($apiFilename)) {
+		$build_file = $this->getPath() . '/vendor/blockera/build/src/SiteToolkit/Routes/api.php';
+		
+        $apiFilename = $this->getPath() . '/vendor/blockera/site-toolkit/php/Routes/api.php';
+
+		if (file_exists($build_file)) {
+			$apiFilename = $build_file;
+		}elseif (file_exists($apiFilename)) {
             // Require the API routes.
             require_once $apiFilename;
         }
