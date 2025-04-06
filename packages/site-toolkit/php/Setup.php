@@ -172,7 +172,7 @@ class Setup extends Application
         $web_filename = $this->getPath() . '/vendor/blockera/site-toolkit/php/Routes/web.php';
 
 		if (file_exists($build_filename)) {
-			$web_filename = $build_filename;
+			require_once $build_filename;
 		}elseif (file_exists($web_filename)) {
             // Require the web routes.
             require_once $web_filename;
@@ -193,7 +193,7 @@ class Setup extends Application
         $apiFilename = $this->getPath() . '/vendor/blockera/site-toolkit/php/Routes/api.php';
 
 		if (file_exists($build_file)) {
-			$apiFilename = $build_file;
+			require_once $build_file;
 		}elseif (file_exists($apiFilename)) {
             // Require the API routes.
             require_once $apiFilename;
