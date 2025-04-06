@@ -72,7 +72,7 @@ rm -r -f dist
 # Run the build.
 status "Installing dependencies... 📦"
 if [ -z "$NO_INSTALL_COMPOSER" ]; then
-  npm run start:php
+  npm run build:php
   composer install --no-dev -o --apcu-autoloader -a
 fi
 if [ -z "$NO_INSTALL_NPM" ]; then
