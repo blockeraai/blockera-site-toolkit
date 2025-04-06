@@ -126,6 +126,7 @@ return [
         // '~^PHPUnit\\\\Framework$~',    // The whole namespace PHPUnit\Framework (but not sub-namespaces)
         // '~^$~',                        // The root namespace only
         // '',                            // Any namespace
+		'\\',
     ],
     'exclude-classes' => [
         // 'ReflectionClassConstant',
