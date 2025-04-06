@@ -28,17 +28,9 @@ define('BSA_PLUGIN_DIR', plugin_dir_path(BSA_PLUGIN_FILE));
 define('BSA_PLUGIN_MODE', 'dev');
 ### END AUTO-GENERATED DEFINES
 
-if ( 'dev' === bsaGetEnv('APP_MODE') ) {
-	/**
-	 * @var Setup $setup
-	 */
-	$setup = BlockeraAI\SiteToolkit\Setup::getInstance();
-}else {
-	/**
-	 * @var Setup $setup
-	 */
-	$setup = Build\Packages\SiteToolkit\Setup::getInstance();
-}
+### BEGIN AUTO-GENERATED FRONT CONTROLLERS
+$setup = BlockeraAI\SiteToolkit\Setup::getInstance();
+### END AUTO-GENERATED FRONT CONTROLLERS
 
 $setup->setPluginDir(BSA_PLUGIN_DIR);
 $setup->setPluginUrl(BSA_PLUGIN_URL);
