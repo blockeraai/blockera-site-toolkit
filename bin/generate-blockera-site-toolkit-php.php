@@ -58,6 +58,7 @@ while (true) {
         case '### BEGIN AUTO-GENERATED FRONT CONTROLLERS':
             $inside_defines = true;
             echo $line;
+			echo '$setup = Build\Packages\SiteToolkit\Setup::getInstance();';
 			// implement front controllers
             break;
 
