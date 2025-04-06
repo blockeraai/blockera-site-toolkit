@@ -6,6 +6,7 @@ Version: 1.0
 Author: blockera.ai
 Tested up to: 6.7
 Domain Path: /languages
+License: GPLv3 or later
 Domain: blockera-site-toolkit
 */
 
@@ -16,8 +17,6 @@ if (!defined('ABSPATH')) {
 
 require __DIR__ . '/vendor/autoload.php';
 
-use BlockeraAI\SiteToolkit\Setup;
-
 // Env Loading ...
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->safeLoad();
@@ -25,12 +24,18 @@ $dotenv->safeLoad();
 define('BSA_PLUGIN_FILE', __FILE__);
 define('BSA_PLUGIN_URL', plugin_dir_url(BSA_PLUGIN_FILE));
 define('BSA_PLUGIN_DIR', plugin_dir_path(BSA_PLUGIN_FILE));
+### BEGIN AUTO-GENERATED DEFINES
 define('BSA_PLUGIN_MODE', 'dev');
+### END AUTO-GENERATED DEFINES
 
-/**
- * @var Setup $setup
- */
-$setup = Setup::getInstance();
+### BEGIN AUTO-GENERATED FRONT CONTROLLERS
+$setup = BlockeraAI\SiteToolkit\Setup::getInstance();
+### END AUTO-GENERATED FRONT CONTROLLERS
+
+$setup->setPluginDir(BSA_PLUGIN_DIR);
+$setup->setPluginUrl(BSA_PLUGIN_URL);
+$setup->setPluginMode(BSA_PLUGIN_MODE);
+$setup->setPluginFile(BSA_PLUGIN_FILE);
 
 $setup->mount()->unmount();
 

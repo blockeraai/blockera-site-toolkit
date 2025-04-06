@@ -2,3 +2,9 @@ vendor
 .patch
 node_modules
 dist
+env.txt
+.DS_Store
+dist
+.phpunit.result.cache
+.env
+build
