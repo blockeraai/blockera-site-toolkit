@@ -74,6 +74,33 @@ status "Installing dependencies... 📦"
 if [ -z "$NO_INSTALL_COMPOSER" ]; then
   composer install
   npm run build:php
+  # Path to composer.json
+  COMPOSER_FILE="composer.json"
+
+  # Create a temporary file
+  tmp=$(mktemp)
+
+  # Use awk to insert the new repository entry while preserving formatting and add require dependency
+  awk '
+  /\"repositories\": \[/ {
+      print $0
+      print "\t\t{"
+      print "\t\t\t\"type\": \"path\","
+      print "\t\t\t\"url\": \"build\""
+      print "\t\t},"
+      next
+  }
+  /\"require\": {/ {
+      print $0
+      print "\t\t\"blockera/build\": \"*\","
+      next
+  }
+  { print }' "$COMPOSER_FILE" > "$tmp"
+
+  # Replace original file
+  mv "$tmp" "$COMPOSER_FILE"
+
+  echo "Updated composer.json successfully 🎉"
   composer install --no-dev -o --apcu-autoloader -a && composer dumpautoload
 fi
 if [ -z "$NO_INSTALL_NPM" ]; then
