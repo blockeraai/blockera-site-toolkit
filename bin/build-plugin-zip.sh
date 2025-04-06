@@ -101,7 +101,7 @@ if [ -z "$NO_INSTALL_COMPOSER" ]; then
   mv "$tmp" "$COMPOSER_FILE"
 
   echo "Updated composer.json successfully 🎉"
-  composer install --no-dev -o --apcu-autoloader -a && composer dumpautoload
+  composer update --no-dev -o --apcu-autoloader -a && composer dumpautoload
 fi
 if [ -z "$NO_INSTALL_NPM" ]; then
   npm i
