@@ -72,8 +72,9 @@ rm -r -f dist
 # Run the build.
 status "Installing dependencies... 📦"
 if [ -z "$NO_INSTALL_COMPOSER" ]; then
+  composer install
   npm run build:php
-  composer install --no-dev -o --apcu-autoloader -a
+  composer install --no-dev -o --apcu-autoloader -a && composer dumpautoload
 fi
 if [ -z "$NO_INSTALL_NPM" ]; then
   npm i
@@ -93,8 +94,8 @@ build_files=$(
 	ls dist/*/*.{min.js,min.css,asset.php} \
 )
 
-vendor_without_blockera=$(
-  find ./vendor -type f -not -path "./vendor/blockera" \
+vendor=$(
+  find ./vendor \
 );
 
 main_plugin_file='blockera-site-toolkit.php'
@@ -111,9 +112,7 @@ zip -r -q blockera-site-toolkit.zip \
 	$main_plugin_file \
 	composer.json \
 	experimental.config.json \
-	$vendor_without_blockera \
-  ### BEGIN AUTO-GENERATED VENDOR PACKAGES PATH PATTERN
-  ### END AUTO-GENERATED VENDOR PACKAGES PATH PATTERN
+	$vendor \
   && echo "blockera-site-toolkit.zip created successfully ✅" || echo "blockera-site-toolkit.zip creation failed ❌"
 
 status "Cleaning up... 🧹"
