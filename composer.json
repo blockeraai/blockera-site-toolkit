@@ -7,7 +7,11 @@
         {
             "type": "path",
             "url": "build"
-        }
+        },
+		{
+			"type": "path",
+			"url": "packages/dev-phpunit"
+		}
     ],
     "require": {
 		"php": ">=8.2",
@@ -34,6 +38,7 @@
         }
     ],
     "require-dev": {
+		"blockera/dev-phpunit": "*",
 		"symfony/dom-crawler": "5.4.x-dev",
 		"dealerdirect/phpcodesniffer-composer-installer": "^0.7",
 		"phpcompatibility/phpcompatibility-wp": "^2.1",
