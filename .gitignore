@@ -7,3 +7,4 @@ env.txt
 dist
 .phpunit.result.cache
 .env
+build
