@@ -9,6 +9,10 @@ inputs:
         description: 'Optional. The options to use on composer install. When not specified, the options is empty'
         required: false
         default: ''
+    composer:
+        description: 'Optional. The composer file to use. When not specified, the composer file is composer.dev.json'
+        required: false
+        default: 'composer.dev.json'
 
 runs:
     using: 'composite'
@@ -37,7 +41,7 @@ runs:
         - name: Install Composer dependencies
           uses: ramsey/composer-install@v2
           env:
-              COMPOSER: composer.dev.json
+              COMPOSER: ${{ inputs.composer }}
           with:
               custom-cache-suffix: $(/bin/date -u --date='last Mon' "+%F")
               composer-options: '${{ inputs.composer-options }}'
