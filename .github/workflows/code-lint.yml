@@ -59,7 +59,7 @@ jobs:
             - name: Setup PHP Composer install dependencies
               uses: ./.github/setup-php
               with:
-                  php-version: 8.1
+                  php-version: 8.2
 
             - name: Make Composer packages available globally
               run: echo "${PWD}/vendor/bin" >> $GITHUB_PATH
