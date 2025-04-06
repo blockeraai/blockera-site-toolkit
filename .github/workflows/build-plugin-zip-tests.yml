@@ -30,10 +30,11 @@ jobs:
             - name: Setup Node.js and install dependencies
               uses: ./.github/setup-node
 
+            - name: Build PHP
+              run: npm run build:php
+
             - name: Install Composer dependencies
               uses: ramsey/composer-install@v2
-              env:
-                  COMPOSER: composer.dev.json
               with:
                   custom-cache-suffix: $(/bin/date -u --date='last Mon' "+%F")
                   composer-options: '--no-dev -o --apcu-autoloader -a'
