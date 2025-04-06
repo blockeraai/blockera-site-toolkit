@@ -17,8 +17,6 @@ if (!defined('ABSPATH')) {
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Build\Packages\SiteToolkit\Setup;
-
 // Env Loading ...
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->safeLoad();
@@ -30,10 +28,18 @@ define('BSA_PLUGIN_DIR', plugin_dir_path(BSA_PLUGIN_FILE));
 define('BSA_PLUGIN_MODE', 'dev');
 ### END AUTO-GENERATED DEFINES
 
-/**
- * @var Setup $setup
- */
-$setup = Setup::getInstance();
+if ( 'dev' === bsaGetEnv('APP_MODE') ) {
+	/**
+	 * @var Setup $setup
+	 */
+	$setup = BlockeraAI\SiteToolkit\Setup::getInstance();
+}else {
+	/**
+	 * @var Setup $setup
+	 */
+	$setup = Build\Packages\SiteToolkit\Setup::getInstance();
+}
+
 $setup->setPluginDir(BSA_PLUGIN_DIR);
 $setup->setPluginUrl(BSA_PLUGIN_URL);
 $setup->setPluginMode(BSA_PLUGIN_MODE);
