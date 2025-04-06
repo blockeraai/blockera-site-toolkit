@@ -56,7 +56,7 @@ jobs:
               run: npx cypress install
 
             - name: Install Composer Packages
-              run: composer install --no-dev -o --apcu-autoloader -a
+              run: COMPOSER=composer.dev.json composer install --no-dev -o --apcu-autoloader -a
 
             - name: Create required environment files
               run: |
