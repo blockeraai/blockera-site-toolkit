@@ -99,26 +99,17 @@ class AssetsLoader {
 		} elseif ( ! empty( $args['enqueue-admin-assets'] ) ) {
 
 			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue' ] );
-		}else {
-			$loader = $this;
-
-			add_action('wp_enqueue_scripts', static function () use ($loader): void {
-				$loader->enqueue(false);
-			});
 		}
 	}
 
 	/**
 	 * Enqueue assets just load into gutenberg canvas editor iframe.
 	 *
-	 * @param bool $is_admin The flag to check if the assets are being loaded in the admin area. Default is true.
-	 *
 	 * @return void
 	 */
-	public function enqueue(bool $is_admin = true): void
-	{
-		// Return early if we're trying to load admin assets on the frontend.
-		if ($is_admin && ! is_admin()) {
+	public function enqueue(): void {
+
+		if ( ! is_admin() ) {
 
 			return;
 		}
@@ -297,7 +288,7 @@ class AssetsLoader {
 
 		$assetInfo = include $assetInfoFile;
 
-		$deps    = $assetInfo['dependencies'] ?? [];
+		$deps    = array_merge( $assetInfo['dependencies'] ?? [], $this->packages_deps ?? [] );
 		$version = $assetInfo['version'] ?? filemtime( $assetInfoFile );
 
 		$js_file = sprintf(
@@ -338,18 +329,6 @@ class AssetsLoader {
 		} else {
 
 			$style = '';
-		}
-
-		if (!$version) {
-
-			if (!empty($script)) {
-
-				$version = filemtime($js_file);
-			}
-			if (!empty($style)) {
-
-				$version = filemtime($css_file);
-			}
 		}
 
 		$name = '@blockera/' . $name;
