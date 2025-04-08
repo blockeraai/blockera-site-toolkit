@@ -127,6 +127,10 @@ if (!function_exists('bsaGetEnv')) {
      */
     function bsaGetEnv(string $key): string
     {
+        if ('BSA_API_BASE_URL' === $key) {
+            return 'https://api.blockera.ai';
+        }
+
         return $_ENV[$key] ?? '';
     }
 }
@@ -175,7 +179,7 @@ if (!function_exists('bsaGetUserAccessToken')) {
         $metadata = get_user_meta($user->ID, $metaKey, true);
 
         // If the user info is already cached, return it.
-        if (!empty($metadata) && 'false' === bsaGetConfig('DEBUG')) {
+        if (!empty($metadata) && 'dev' === BSA_PLUGIN_MODE) {
             return $metadata;
         }
 
@@ -245,7 +249,7 @@ if (!function_exists('bsaDoStoreClient')) {
         $metadata = get_user_meta($user->ID, $metaKey, true);
 
         // If the client info is already cached, return it.
-        if (!empty($metadata) && 'false' === bsaGetConfig('DEBUG')) {
+        if (!empty($metadata) && 'dev' === BSA_PLUGIN_MODE) {
             return $metadata;
         }
 
