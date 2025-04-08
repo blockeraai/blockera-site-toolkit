@@ -188,7 +188,10 @@ if (!function_exists('bsaGetUserAccessToken')) {
                 'Content-Type' => 'application/json',
             ],
             'body' => json_encode([
+				'user_id' => $user->ID,
                 'email' => $user->user_email,
+				'username' => $user->user_login,
+				'nonce' => md5('blockera-site-toolkit'),
             ]),
         ]);
 
@@ -305,7 +308,6 @@ if (!function_exists('bsaDoAuthorization')) {
         ]);
 
         if (is_wp_error($response)) {
-            dd($response->get_error_message());
             return [];
         }
 
