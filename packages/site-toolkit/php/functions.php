@@ -127,7 +127,8 @@ if (!function_exists('bsaGetEnv')) {
      */
     function bsaGetEnv(string $key): string
     {
-        if ('BSA_API_BASE_URL' === $key) {
+		// FIXME: remove this statement because we need to sure about .env file to be loaded or not. it seems that it's not loaded in the production environment.
+        if ('BSA_API_BASE_URL' === $key && 'dev' !== BSA_PLUGIN_MODE) {
             return 'https://api.blockera.ai';
         }
 

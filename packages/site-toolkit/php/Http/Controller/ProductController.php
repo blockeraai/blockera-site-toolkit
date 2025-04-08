@@ -3,7 +3,6 @@
 namespace BlockeraAI\SiteToolkit\Http\Controller;
 
 use BlockeraAI\SiteToolkit\Repositories\ProductRepository;
-use BlockeraAI\SiteToolkit\Repositories\SubscriptionRepository;
 
 class ProductController
 {
@@ -89,6 +88,14 @@ class ProductController
         }, $variations);
     }
 
+    /**
+     * Saving variation.
+     *
+     * @param int $variationId The variation id.
+     * @param int $postId The post id.
+     *
+     * @return void
+     */
     protected function savingVariation(int $variationId, int $postId): void
     {
         $variation = wc_get_product($variationId);
@@ -108,6 +115,15 @@ class ProductController
         }, $variation->get_data()['downloads'] ?? []);
     }
 
+    /**
+     * Upload file to remote server.
+     *
+     * @param \WC_Product_Download $download The download object.
+     * @param int $variationId The variation id.
+     * @param int $postId The post id.
+     *
+     * @return void
+     */
     protected function uploadFileToRemoteServer(\WC_Product_Download $download, int $variationId, int $postId): void
     {
         $fileUrl = $download->get_file();
@@ -124,7 +140,7 @@ class ProductController
         }
 
         // Get current user credentials
-        $userCredentials = bsaGetUserAccessToken();
+        $userCredentials = bsaGetUserAccessToken(null, false);
         if (empty($userCredentials)) {
             return;
         }
