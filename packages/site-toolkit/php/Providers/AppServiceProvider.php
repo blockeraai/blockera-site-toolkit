@@ -81,7 +81,7 @@ class AppServiceProvider extends ServiceProvider
         $user_info_cache_key = 'blockera_api_user_info';
         $client_info_cache_key = 'blockera_api_client_info';
 
-        if (!empty(get_user_meta($user_id, $client_info_cache_key))) {
+        if (!empty(get_user_meta($user_id, $client_info_cache_key, true))) {
             return;
         }
 
