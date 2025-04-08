@@ -329,7 +329,7 @@ class LicenseManagerController
         }
 
         try {
-            $userCredentials = bsaGetUserAccessToken();
+            $userCredentials = bsaGetUserAccessToken(null, false);
 
             if (empty($userCredentials)) {
                 throw new \Exception('User credentials not found!');

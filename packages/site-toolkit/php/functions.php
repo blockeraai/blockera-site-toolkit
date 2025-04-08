@@ -164,10 +164,11 @@ if (!function_exists('bsaGetUserAccessToken')) {
      * Get the user access token.
      *
      * @param \WP_User $user The user object.
+	 * @param bool $redirect The flag to determine if the user should be redirected to the redirect uri. Default is true.
      *
      * @return array
      */
-    function bsaGetUserAccessToken(\WP_User $user = null): array
+    function bsaGetUserAccessToken(\WP_User $user = null, bool $redirect = true): array
     {
         $user = $user ?? wp_get_current_user();
         $metaKey = 'blockera_api_user_info';
@@ -202,15 +203,23 @@ if (!function_exists('bsaGetUserAccessToken')) {
         $redirectURI = empty($_GET['redirect_uri']) ? home_url() : $_GET['redirect_uri'] . '&' . $query;
 
         if (is_wp_error($response)) {
-            wp_redirect($redirectURI, 302);
-            exit;
+            if ($redirect) {
+				wp_redirect($redirectURI, 302);
+                exit;
+			}
+
+			return [];
         }
 
         $body = json_decode(wp_remote_retrieve_body($response), true);
 
         if (empty($body['success'])) {
-            wp_redirect($redirectURI, 302);
-            exit;
+            if ($redirect) {
+				wp_redirect($redirectURI, 302);
+                exit;
+			}
+
+			return [];
         }
 
         // Cache the user info in the user meta.
