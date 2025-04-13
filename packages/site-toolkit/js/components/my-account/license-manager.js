@@ -9,9 +9,11 @@ import type { MixedElement } from 'react';
  * Internal dependencies
  */
 import { Header } from './header';
+import { SubscriptionInformation } from './subscription-information';
 import { LicenseInformation } from './license-information';
 
 export const LicenseManager = ({
+	type,
 	productTitle,
 	productColor,
 	productLogo,
@@ -29,6 +31,7 @@ export const LicenseManager = ({
 	activeWebsites,
 	status,
 }: {
+	type: 'subscription' | 'non-subscription',
 	productColor: string,
 	productTitle: string,
 	productLogo: string,
@@ -63,6 +66,7 @@ export const LicenseManager = ({
 			}}
 		>
 			<Header
+				type={type}
 				status={status}
 				expiryDate={expiryDate}
 				logo={productLogo}
@@ -71,19 +75,32 @@ export const LicenseManager = ({
 				updatedOn={updatedOn}
 			/>
 
-			<LicenseInformation
-				subscriptionId={subscriptionId}
-				plan={plan}
-				version={productVersion}
-				activeWebsites={activeWebsites}
-				maxDomains={maxDomains}
-				upgradable={upgradable}
-				isAutoRenew={isAutoRenew}
-				startDate={startDate}
-				expiryDate={expiryDate}
-				renewAmount={renewAmount}
-				downloads={downloads}
-			/>
+			{type === 'subscription' ? (
+				<SubscriptionInformation
+					subscriptionId={subscriptionId}
+					plan={plan}
+					version={productVersion}
+					activeWebsites={activeWebsites}
+					maxDomains={maxDomains}
+					upgradable={upgradable}
+					isAutoRenew={isAutoRenew}
+					startDate={startDate}
+					expiryDate={expiryDate}
+					renewAmount={renewAmount}
+					downloads={downloads}
+					status={status}
+				/>
+			) : (
+				<LicenseInformation
+					subscriptionId={subscriptionId}
+					plan={plan}
+					version={productVersion}
+					activeWebsites={activeWebsites}
+					maxDomains={maxDomains}
+					startDate={startDate}
+					downloads={downloads}
+				/>
+			)}
 		</div>
 	);
 };

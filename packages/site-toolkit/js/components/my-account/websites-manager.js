@@ -181,11 +181,12 @@ export const WebsitesManager = ({
 	const { blockeraaiNonce } = window; // blockeraUserAccessToken
 
 	return (
-		<Flex gap={20} className="license-card-separator" direction="column">
+		<Flex gap={20} className="license-card-section" direction="column">
 			<HeaderSection
 				icon={{
 					icon: 'cog',
 					library: 'wp',
+					iconSize: 24,
 				}}
 				title={__('Active Websites', 'blockera')}
 				description={

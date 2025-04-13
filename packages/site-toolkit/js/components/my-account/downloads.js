@@ -73,11 +73,12 @@ export const Downloads = ({
 	version: string,
 }): MixedElement => {
 	return (
-		<Flex gap={20} direction="column" className="license-card-separator">
+		<Flex gap={20} direction="column" className="license-card-section">
 			<HeaderSection
 				icon={{
 					icon: 'download',
 					library: 'wp',
+					iconSize: 24,
 				}}
 				title={__('Downloads', 'blockera')}
 			/>
