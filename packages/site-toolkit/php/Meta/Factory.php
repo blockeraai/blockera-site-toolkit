@@ -58,9 +58,10 @@ class Factory
 		$product_id = get_post_meta($post->ID, 'product_id', true);
         $product_version = get_post_meta($post->ID, 'product_version', true);
         $product_color = get_post_meta($post->ID, 'product_color', true);
+		$product_download_file = get_post_meta($post->ID, 'product_download_file', true);
 
         View::load('product-meta-box-custom-fields', 
-			compact('product_id','product_version', 'product_color'),
+			compact('product_id','product_version', 'product_color', 'product_download_file'),
 			[
 				'root-path' => trailingslashit(__DIR__),
 			]
@@ -111,6 +112,15 @@ class Factory
                 sanitize_hex_color($_POST['product_color'])
             );
         }
+
+		// Save product download file.
+		if (isset($_POST['product_download_file'])) {
+			update_post_meta(
+				$post_id,
+				'product_download_file',
+				sanitize_text_field($_POST['product_download_file'])
+			);
+		}
     }
 
     /**

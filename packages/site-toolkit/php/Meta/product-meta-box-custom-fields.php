@@ -20,4 +20,35 @@
 		<input type="color" id="product_color" name="product_color"
 			value="<?php echo esc_attr($product_color); ?>" />
 	</p>
+	<p class="form-field">
+		<label for="product_download_file">
+			<?php _e('Product Downloadable File:', 'blockera-site-toolkit'); ?>
+		</label>
+		<input type="text" class="short" id="product_download_file" name="product_download_file" value="<?php echo esc_attr($product_download_file); ?>" />
+		<button type="button" class="button upload_file_button" data-choose="<?php esc_attr_e('Choose file', 'blockera-site-toolkit'); ?>" data-update="<?php esc_attr_e('Insert file URL', 'blockera-site-toolkit'); ?>">
+			<?php echo esc_html__('Choose file', 'blockera-site-toolkit'); ?>
+		</button>
+		<script>
+			jQuery(document).ready(function($) {
+				$('.upload_file_button').on('click', function(e) {
+					e.preventDefault();
+					var button = $(this);
+					var fileFrame = wp.media({
+						title: button.data('choose'),
+						button: {
+							text: button.data('update')
+						},
+						multiple: false
+					});
+
+					fileFrame.on('select', function() {
+						var attachment = fileFrame.state().get('selection').first().toJSON();
+						$('#product_download_file').val(attachment.url);
+					});
+
+					fileFrame.open();
+				});
+			});
+		</script>
+	</p>
 </div>
