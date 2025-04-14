@@ -273,6 +273,11 @@
 					font-size: 14px;
 					font-weight: 500;
 
+					a {
+						color: var(--blockera-product-color);
+						text-decoration: none;
+					}
+
 					svg {
 						position: relative;
 						top: 7px;

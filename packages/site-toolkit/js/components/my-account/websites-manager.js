@@ -115,7 +115,10 @@ const Row = ({
 			)}
 			<span className="domain">
 				<span className="number">{num}</span>
-				{website}
+
+				<a href={website} target="_blank" rel="noopener noreferrer">
+					{website.replace('https://', '').replace('http://', '')}
+				</a>
 			</span>
 
 			<span className="type">
