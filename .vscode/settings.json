@@ -1,0 +1,10 @@
+{
+    "cSpell.customDictionaries": {
+        "custom-dictionary-folder-blockera-site-toolkit": {
+            "name": "custom-dictionary-folder-blockera-site-toolkit",
+            "path": "${workspaceFolder:blockera-site-toolkit}/.cspell/custom-dictionary-folder-blockera-site-toolkit.txt",
+            "addWords": true,
+            "scope": "folder"
+        }
+    }
+}
