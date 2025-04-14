@@ -199,7 +199,7 @@ class ProductController
         if (is_wp_error($response) || $status !== 201) {
             $body = json_decode(wp_remote_retrieve_body($response), true);
 
-            throw new \Exception(implode(', ', $body['errors']));
+            wp_die(implode(', ', iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveArrayIterator($body['errors'])))));
         }
     }
 }
