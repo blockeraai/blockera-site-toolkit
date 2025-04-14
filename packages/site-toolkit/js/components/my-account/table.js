@@ -33,7 +33,12 @@ export const Table = ({
 			>
 				{cols}
 			</Flex>
-			<Flex className={classNames('table-row')} alignItems="center">
+
+			<Flex
+				className={classNames('table-row')}
+				alignItems="center"
+				gap={0}
+			>
 				{rows}
 			</Flex>
 		</Flex>

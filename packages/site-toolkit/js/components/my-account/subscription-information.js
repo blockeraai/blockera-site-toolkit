@@ -5,7 +5,6 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import type { MixedElement } from 'react';
-import { useState } from '@wordpress/element';
 
 /**
  * Blockera dependencies
@@ -29,11 +28,8 @@ export const SubscriptionInformation = ({
 	status,
 	plan,
 	maxDomains,
-	// upgradable,
-	isAutoRenew: autoRenew,
 	startDate,
 	expiryDate,
-	// renewAmount,
 	activeWebsites,
 	downloads,
 	version,
@@ -42,11 +38,8 @@ export const SubscriptionInformation = ({
 	status: string,
 	subscriptionId: number,
 	plan: string,
-	upgradable: string,
-	isAutoRenew: boolean,
 	startDate: string,
 	expiryDate: string,
-	renewAmount: string,
 	maxDomains: number,
 	version: string,
 	activeWebsites: { [key: string]: string },

@@ -21,13 +21,6 @@ import { isLocalhost } from '@blockera/utils';
 import { Table } from './table';
 import { HeaderSection } from './header-section';
 
-// const Header = (): MixedElement => (
-// 	<>
-// 		<strong className="table-title">{__('Website', 'blockera')}</strong>
-// 		<strong className="table-title">{__('Action', 'blockera')}</strong>
-// 	</>
-// );
-
 const Row = ({
 	num,
 	website,
@@ -36,8 +29,6 @@ const Row = ({
 	remainingDomains,
 	setRemainingDomains,
 	setWebsites,
-	// subscriptionId,
-	// onChange = null,
 	blockeraaiNonce,
 }: {
 	num: number,
@@ -125,30 +116,24 @@ const Row = ({
 			<span className="domain">
 				<span className="number">{num}</span>
 				{website}
-				{isLocalhost(website) && (
-					<Tooltip
-						placement="top"
-						position="top"
-						text={__(
-							'This domain is recognized as a development domain and is excluded from your subscription’s active domain count.',
-							'blockera'
-						)}
-					>
-						<Icon icon="info" library="wp" />
-					</Tooltip>
-				)}
 			</span>
+
+			<span className="type">
+				{isLocalhost(website)
+					? __('Development', 'blockera')
+					: __('Production', 'blockera')}
+			</span>
+
 			{'function' === typeof setWebsites && (
 				<Button
 					className="delete-row"
 					variant="secondary"
 					size="small"
-					icon="trash"
 					onClick={() => {
 						setIsDeleteModalOpen(true);
 					}}
 				>
-					{__('Delete', 'blockera')}
+					{__('Delete Website', 'blockera')}
 				</Button>
 			)}
 		</>
@@ -188,52 +173,70 @@ export const WebsitesManager = ({
 					library: 'ui',
 					iconSize: 24,
 				}}
-				title={__('Active Websites', 'blockera')}
+				title={__('Websites', 'blockera')}
 				description={
-					'(' +
-					remainingDomains +
-					')' +
-					__(' Production domain remaning', 'blockera')
+					<>
+						{__('Remaining websites:', 'blockera')}
+						<span>{remainingDomains}</span>
+					</>
+				}
+				descriptionClassName={
+					remainingDomains <= 0 ? 'no-remaining-websites' : ''
 				}
 			/>
 
-			<Table
-				headerBackground="#F7F7F7"
-				cols={[
-					<strong key="website" className="table-title">
-						{__('Website', 'blockera')}
-					</strong>,
-					<strong key="action" className="table-title">
-						{__('Action', 'blockera')}
-					</strong>,
-				]}
-				rows={Object.entries(websites)?.map(
-					([websiteId, website]: [string, string], index) => (
-						<Row
-							key={index}
-							num={index + 1}
-							website={website}
-							websites={websites}
-							websiteId={websiteId}
-							setWebsites={setWebsites}
-							subscriptionId={subscriptionId}
-							blockeraaiNonce={blockeraaiNonce}
-							remainingDomains={remainingDomains}
-							setRemainingDomains={setRemainingDomains}
-						/>
-					)
-				)}
-			/>
-			<Flex justifyContent="space-between" alignItems="center">
-				{remainingDomains <= 0 && (
+			{Object.keys(activeWebsites).length > 0 ? (
+				<Table
+					headerBackground="#F7F7F7"
+					cols={[
+						<strong key="website" className="table-title">
+							{__('Website', 'blockera')}
+						</strong>,
+						<strong key="type" className="table-title">
+							{__('Type', 'blockera')}
+						</strong>,
+						<strong key="action" className="table-title">
+							{__('Action', 'blockera')}
+						</strong>,
+					]}
+					rows={Object.entries(websites)?.map(
+						([websiteId, website]: [string, string], index) => (
+							<Row
+								key={index}
+								num={index + 1}
+								website={website}
+								websites={websites}
+								websiteId={websiteId}
+								setWebsites={setWebsites}
+								subscriptionId={subscriptionId}
+								blockeraaiNonce={blockeraaiNonce}
+								remainingDomains={remainingDomains}
+								setRemainingDomains={setRemainingDomains}
+							/>
+						)
+					)}
+				/>
+			) : (
+				<p className="no-websites-notice">
+					{__('You have not activated any websites yet.', 'blockera')}
+				</p>
+			)}
+
+			{remainingDomains <= 0 && (
+				<Flex
+					justifyContent="flex-start"
+					alignItems="center"
+					className="no-remaining-websites-notice"
+				>
+					<Icon icon="warning" library="ui" iconSize={18} />
 					<span>
 						{__(
-							'Upgrade your subscription for more sites activation',
+							'Upgrade or purchase another license to activate more websites.',
 							'blockera'
 						)}
 					</span>
-				)}
-			</Flex>
+				</Flex>
+			)}
 		</Flex>
 	);
 };

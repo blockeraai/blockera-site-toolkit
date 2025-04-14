@@ -22,11 +22,8 @@ export const LicenseManager = ({
 	updatedOn,
 	plan,
 	maxDomains,
-	upgradable,
-	isAutoRenew,
 	startDate,
 	expiryDate,
-	renewAmount,
 	downloads,
 	activeWebsites,
 	status,
@@ -40,11 +37,8 @@ export const LicenseManager = ({
 	subscriptionId: number,
 	plan: string,
 	maxDomains: number,
-	upgradable: string,
-	isAutoRenew: boolean,
 	startDate: string,
 	expiryDate: string,
-	renewAmount: string,
 	downloads: {
 		[key: string]: {
 			name: string,
@@ -80,11 +74,8 @@ export const LicenseManager = ({
 					version={productVersion}
 					activeWebsites={activeWebsites}
 					maxDomains={maxDomains}
-					upgradable={upgradable}
-					isAutoRenew={isAutoRenew}
 					startDate={startDate}
 					expiryDate={expiryDate}
-					renewAmount={renewAmount}
 					downloads={downloads}
 					status={status}
 				/>

@@ -5,7 +5,6 @@
  */
 import { sprintf, _n } from '@wordpress/i18n';
 import type { MixedElement } from 'react';
-import { classNames } from '@blockera/classnames';
 
 /**
  * Blockera dependencies

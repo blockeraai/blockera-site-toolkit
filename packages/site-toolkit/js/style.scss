@@ -2,6 +2,7 @@
 	margin-bottom: 2rem;
 	border: solid 1px color-mix(in srgb, var(--blockera-product-color) 15%, #ffffff);
 	position: relative;
+	background-color: #ffffff;
 	--inner-space: 22px;
 
 	&:before {
@@ -22,8 +23,9 @@
 		border-radius: 50%;
 	}
 
-	.product-header {
+	.license-card-section.product-header {
 		position: relative;
+		padding: var(--inner-space);
 
 		.product-title {
 			margin: 0;
@@ -99,13 +101,29 @@
 	}
 
 	.license-card-section {
-		padding: var(--inner-space);
+		padding: var(--inner-space) var(--inner-space) calc(var(--inner-space) * 1.3) var(--inner-space);
 		gap: var(--inner-space);
 		border-top: solid 1px color-mix(in srgb, var(--blockera-product-color) 15%, #ffffff);
 
 		.license-card-description {
 			font-size: 14px;
-			color: #676767;
+			color: var(--blockera-product-color);
+			margin: 0;
+
+			&.no-remaining-websites {
+				--blockera-product-color: #d00c0c;
+			}
+
+			span {
+				font-weight: 500;
+				font-size: 13px;
+				color: var(--blockera-product-color);
+				display: inline-block;
+				padding: 0 7px;
+				margin-left: 10px;
+				border-radius: 2px;
+				background-color: color-mix(in srgb, var(--blockera-product-color) 20%, #ffffff);
+			}
 		}
 
 		.license-card__section-title {
@@ -182,6 +200,14 @@
 			}
 		}
 
+		.no-websites-notice {
+			background-color: rgb(247 247 247);
+			padding: 10px 20px;
+			margin: 0px;
+			font-size: 13px;
+			color: var(--wp--preset--color--contrast);
+		}
+
 		.table-container {
 
 			* {
@@ -199,7 +225,11 @@
 				}
 
 				strong:first-child {
-					width: 50%;
+					width: calc(50% - 25px);
+				}
+
+				strong.table-title:first-child {
+					padding-left: 25px;
 				}
 			}
 
@@ -219,7 +249,7 @@
 					width: 25%;
 				}
 
-				a {
+				.blockera-component-button {
 					height: 24px;
 					width: max-content;
 					font-size: 12px;
@@ -227,6 +257,7 @@
 					border-radius: 2px;
 					text-decoration: none;
 					text-transform: uppercase;
+					padding: 0 8px;
 
 					svg {
 						width: 20px;
@@ -238,7 +269,9 @@
 
 				span.domain {
 					border: none;
-					color: #676767;
+					color: var(--blockera-product-color);
+					font-size: 14px;
+					font-weight: 500;
 
 					svg {
 						position: relative;
@@ -250,7 +283,12 @@
 				}
 
 				span.number {
-					color: #676767;
+					color: #b6b2b2;
+					font-size: 14px;
+					font-weight: 500;
+					width: 15px;
+					display: inline-block;
+					text-align: left;
 					margin-right: 10px;
 				}
 
@@ -259,7 +297,7 @@
 					display: flex;
 					align-items: center;
 					color: #000000;
-					width: 90px;
+					width: max-content;
 					height: 24px;
 					box-shadow: none;
 					border-radius: 2px;
@@ -272,6 +310,20 @@
 					}
 				}
 			}
+		}
+	}
+
+	.no-remaining-websites-notice {
+		--blockera-product-color: #d00c0c;
+		color: var(--blockera-product-color);
+		background-color: color-mix(in srgb, var(--blockera-product-color) 10%, #ffffff);
+		padding: 10px 20px;
+		margin: 0px;
+		font-size: 14px;
+		border-radius: 2px;
+
+		svg {
+			fill: currentColor;
 		}
 	}
 
