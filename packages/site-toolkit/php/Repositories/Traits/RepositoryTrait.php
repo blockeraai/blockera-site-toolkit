@@ -18,10 +18,18 @@ trait RepositoryTrait
 	 */
 	protected $errors = [];
 
+	/**
+	 * The api table prefix.
+	 *
+	 * @var string
+	 */
+	protected string $api_table_prefix = '';
+
 	public function __construct()
 	{
 		global $wpdb;
 
 		$this->wpdb = $wpdb;
+		$this->api_table_prefix = bsaGetEnv('API_TABLE_PREFIX');
 	}
 }

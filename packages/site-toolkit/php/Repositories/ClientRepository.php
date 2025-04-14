@@ -18,6 +18,6 @@ class ClientRepository
 	 */
 	public function getBy(string $field, $value): ?array
 	{
-		return $this->wpdb->get_row($this->wpdb->prepare("SELECT * FROM api_oauth_clients WHERE $field = %s", $value), ARRAY_A);
+		return $this->wpdb->get_row($this->wpdb->prepare("SELECT * FROM {$this->api_table_prefix}oauth_clients WHERE $field = %s", $value), ARRAY_A);
 	}
 }
