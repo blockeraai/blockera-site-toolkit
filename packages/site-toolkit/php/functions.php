@@ -282,6 +282,53 @@ if (!function_exists('bsaDoStoreClient')) {
     }
 }
 
+if (!function_exists('bsaDoTerminateClient')) {
+    /**
+     * Do the client terminate request.
+	 * 
+	 * @param string $authorization The authorization header.
+     *
+     * @return bool true on success, false on otherwise.
+     */
+    function bsaDoTerminateClient(string $authorization): bool
+    {
+        $user = wp_get_current_user();
+        $metaKey = 'blockera_api_client_info';
+        $metadata = get_user_meta($user->ID, $metaKey, true);
+
+        if (empty($metadata)) {
+            return false;
+        }
+
+        $response = wp_remote_request(bsaGetEnv('BSA_API_BASE_URL') . '/clients-manager/v1/clients/' . $metadata['client_id'], [
+            'timeout' => 30,
+            'redirection' => 5,
+            'httpversion' => '1.1',
+            'sslverify' => false,
+            'method' => 'DELETE',
+            'headers' => [
+                'Authorization' => $authorization,
+            ],
+			'body' => [
+				'client_id' => $metadata['client_id'],
+			]
+        ]);
+
+        if (is_wp_error($response)) {
+			dd($response);
+            return false;
+        }
+
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+
+        if (empty($body['success'])) {
+            return false;
+        }
+        
+        return delete_user_meta($user->ID, $metaKey);
+    }
+}
+
 if (!function_exists('bsaDoAuthorization')) {
     /**
      * Do the authorization request.

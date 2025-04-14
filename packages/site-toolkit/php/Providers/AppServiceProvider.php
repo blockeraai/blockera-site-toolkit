@@ -55,6 +55,7 @@ class AppServiceProvider extends ServiceProvider
         }, 10, 2);
 
         // Doing register client request if user is logged in.
+		// This is a workaround for the oauth2 redirect uri and not any other use case.
         if (is_user_logged_in() && isset($_GET['state'], $_GET['response_type'], $_GET['approval_prompt'], $_GET['redirect_uri']) && filter_var($_GET['redirect_uri'], FILTER_VALIDATE_URL)) {
             $this->dispatchLoginEvents();
         }
@@ -81,15 +82,26 @@ class AppServiceProvider extends ServiceProvider
         $user_info_cache_key = 'blockera_api_user_info';
         $client_info_cache_key = 'blockera_api_client_info';
 
-        if (!empty(get_user_meta($user_id, $client_info_cache_key, true))) {
-            return;
-        }
+		$userCredentials = bsaGetUserAccessToken();
+		$authorization = $userCredentials['token_type'] . ' ' . $userCredentials['access_token'];
+		$clientCredentials = get_user_meta($user_id, $client_info_cache_key, true);
 
-        $userCredentials = bsaGetUserAccessToken();
+		// If the user is logged in and the authorized is not set, then we need to terminate the client.
+		// This is a first try to refresh the client credentials and connection.
+        if (!empty($clientCredentials) && empty($_GET['authorized'])) {
+            if (empty($_GET['client_id']) && empty($_GET['client_secret'])) {
+				// We should the terminate the client if the client registered previously.
+                if (!bsaDoTerminateClient($authorization)) {
+                    return;
+                }
+            }
+        }elseif(!empty($clientCredentials)){
+			return;
+		}
 
         $params = bsaGetRegisterClientParams();
 
-        $client = bsaDoStoreClient($params, $userCredentials['token_type'] . ' ' . $userCredentials['access_token']);
+        $client = bsaDoStoreClient($params, $authorization);
 
         if (empty($client)) {
             return;
