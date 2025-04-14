@@ -10,16 +10,17 @@ import { classNames } from '@blockera/classnames';
 /**
  * Blockera dependencies
  */
-import { Flex } from '@blockera/controls';
+import { Flex, Grid } from '@blockera/controls';
 
 export const InformationRow = ({
 	label,
 	value,
 	children,
-	gap = 40,
+	gap = 10,
 	maxDomains,
-	justifyContent = 'space-between',
+	justifyContent = 'start',
 	className,
+	columnsTemplate = '150px 1fr',
 }: {
 	className?: string,
 	gap?: number,
@@ -28,29 +29,40 @@ export const InformationRow = ({
 	children?: Array<MixedElement> | MixedElement,
 	maxDomains?: number,
 	justifyContent?:
-	| 'flex-start'
-	| 'flex-end'
+	| 'start'
 	| 'center'
-	| 'space-between'
+	| 'end'
+	| 'space-evenly'
 	| 'space-around'
-	| 'space-evenly',
+	| 'space-between'
+	| 'stretch',
+	columnsTemplate?: string,
 }): MixedElement => {
 	return (
-		<Flex
+		<Grid
 			justifyContent={justifyContent}
-			className={classNames('license-information-row', className)}
+			className={'license-information-row details-wrapper'}
 			gap={gap}
+			gridTemplateColumns={columnsTemplate}
 		>
-			<Flex className="details-wrapper">
-				{'undefined' !== label && (
-					<p className="field-label">{label}</p>
-				)}
+			<p className="field-label">{label}</p>
 
+			<Flex
+				alignItems="center"
+				justifyContent="space-between"
+				className="field-value"
+			>
 				{'undefined' !== value && (
-					<p className="field-value">
-						{value}{' '}
+					<Flex
+						alignItems="center"
+						justifyContent="flex-start"
+						gap={12}
+						className={className}
+					>
+						{value && <span>{value}</span>}
+
 						{maxDomains && (
-							<span>
+							<span className="max-websites">
 								{sprintf(
 									/* translators: %s: number of websites */
 									_n(
@@ -63,13 +75,19 @@ export const InformationRow = ({
 								)}
 							</span>
 						)}
-					</p>
+					</Flex>
+				)}
+
+				{children && (
+					<Flex
+						alignItems="center"
+						justifyContent="flex-end"
+						className="actions-wrapper"
+					>
+						{children}
+					</Flex>
 				)}
 			</Flex>
-
-			<Flex justifyContent="flex-end" className="actions-wrapper">
-				{children}
-			</Flex>
-		</Flex>
+		</Grid>
 	);
 };

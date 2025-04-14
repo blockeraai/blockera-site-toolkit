@@ -68,7 +68,7 @@ export const SubscriptionInformation = ({
 
 	let statusText = status === 'active' ? __('Active', 'blockera') : status;
 	let autoRenewText = __('Next Renew', 'blockera');
-	let statusClassname = '';
+	let statusClassname = 'status-active';
 
 	if (status === 'cancelled') {
 		statusText = __('Cancelled', 'blockera');

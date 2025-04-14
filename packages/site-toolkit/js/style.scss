@@ -1,6 +1,6 @@
 .license-manager {
 	margin-bottom: 2rem;
-	border: solid 1px var(--blockera-license-card-border-color);
+	border: solid 1px color-mix(in srgb, var(--blockera-product-color) 15%, #ffffff);
 	position: relative;
 	--inner-space: 22px;
 
@@ -28,7 +28,7 @@
 		.product-title {
 			margin: 0;
 			padding: 0;
-			font-size: 20px;
+			font-size: 18px;
 		}
 
 		.product-details {
@@ -101,7 +101,7 @@
 	.license-card-section {
 		padding: var(--inner-space);
 		gap: var(--inner-space);
-		border-top: solid 1px var(--blockera-license-card-border-color);
+		border-top: solid 1px color-mix(in srgb, var(--blockera-product-color) 15%, #ffffff);
 
 		.license-card-description {
 			font-size: 14px;
@@ -140,7 +140,7 @@
 		.license-information-row {
 			padding: 15px 0;
 			align-items: center;
-			border-bottom: solid 1px var(--blockera-license-information-row-border-color);
+			border-bottom: solid 1px color-mix(in srgb, var(--blockera-product-color) 8%, #ffffff);
 
 			&:first-child {
 				padding-top: 0;
@@ -148,62 +148,37 @@
 
 			&:last-child {
 				padding-bottom: 0;
-			}
-
-			.details-wrapper {
-				flex: 3;
-
-				.field-value {
-					flex: 2;
-					font-weight: 600;
-
-					span {
-						font-weight: 400;
-						color: #676767;
-					}
-				}
-			}
-
-			.actions-wrapper {
-				flex: 1;
-
-				* {
-					flex: unset;
-				}
-
-				.auto-renew-label {
-					font-size: 14px;
-					font-weight: 500;
-				}
-			}
-
-			&:last-child {
 				border-bottom: none;
 			}
 
-			p {
-				margin: 0;
+			.field-label {
 				font-size: 14px;
 				font-weight: 500;
-
-				span {
-					font-weight: 600;
-				}
+				margin: 0;
 			}
 
-			& > * > *,
-			& > * {
-				flex: 1;
+			.field-value {
+				font-size: 14px;
+				font-weight: 600;
+
+				.max-websites {
+					font-weight: 400;
+					color: #676767;
+				}
 			}
 
 			svg {
 				fill: currentColor;
 			}
 
-			&.status-cancelled,
-			&.status-expiring,
-			&.status-expired {
+			.status-cancelled,
+			.status-expiring,
+			.status-expired {
 				color: #bd0000;
+			}
+
+			.status-active {
+				color: #24a939;
 			}
 		}
 
@@ -230,7 +205,7 @@
 
 			.table-row {
 				padding: 0 10px;
-				border-bottom: solid 1px var(--blockera-license-information-row-border-color);
+				border-bottom: solid 1px color-mix(in srgb, var(--blockera-product-color) 15%, #ffffff);
 
 				&:last-child {
 					border-bottom: none;
@@ -246,7 +221,7 @@
 
 				a {
 					height: 24px;
-					width: 106.36px;
+					width: max-content;
 					font-size: 12px;
 					font-weight: 400;
 					border-radius: 2px;

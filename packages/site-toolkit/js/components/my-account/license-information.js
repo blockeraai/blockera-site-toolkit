@@ -65,14 +65,12 @@ export const LicenseInformation = ({
 						label={__('Plan', 'blockera')}
 						value={plan}
 						maxDomains={maxDomains}
-					></InformationRow>
+					/>
 
 					<InformationRow
 						label={__('Purchase Date', 'blockera')}
 						value={startDate}
-					>
-						<div />
-					</InformationRow>
+					/>
 				</Flex>
 			</Flex>
 

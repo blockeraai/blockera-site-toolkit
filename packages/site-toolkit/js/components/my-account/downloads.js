@@ -46,7 +46,6 @@ const Row = ({
 				data-id={id}
 				rel="noopener noreferrer"
 			>
-				<Icon icon="download" library="wp" />
 				{__('Download', 'blockera')}
 			</a>
 		</div>
@@ -76,8 +75,8 @@ export const Downloads = ({
 		<Flex gap={20} direction="column" className="license-card-section">
 			<HeaderSection
 				icon={{
-					icon: 'download',
-					library: 'wp',
+					icon: 'download-box',
+					library: 'ui',
 					iconSize: 24,
 				}}
 				title={__('Downloads', 'blockera')}

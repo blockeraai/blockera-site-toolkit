@@ -61,8 +61,6 @@ export const LicenseManager = ({
 			className="license-manager"
 			style={{
 				'--blockera-product-color': productColor,
-				'--blockera-license-card-border-color': '#CFE0FF',
-				'--blockera-license-information-row-border-color': '#F7F7F7',
 			}}
 		>
 			<Header

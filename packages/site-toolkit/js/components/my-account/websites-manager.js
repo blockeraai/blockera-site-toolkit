@@ -184,8 +184,8 @@ export const WebsitesManager = ({
 		<Flex gap={20} className="license-card-section" direction="column">
 			<HeaderSection
 				icon={{
-					icon: 'cog',
-					library: 'wp',
+					icon: 'flag',
+					library: 'ui',
 					iconSize: 24,
 				}}
 				title={__('Active Websites', 'blockera')}
