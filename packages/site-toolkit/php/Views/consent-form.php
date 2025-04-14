@@ -64,7 +64,7 @@ foreach ($subscriptions as $subscription_post) {
     $product_id = $subscription->get('product_id');
     $product = wc_get_product($product_id);
 
-    if (!isset($_GET['product']) || $_GET['product'] !== $product->get_name()) {
+    if (!isset($_GET['product']) || $_GET['product'] !== get_post_meta($product_id, 'product_id', true)) {
         continue;
     }
 	

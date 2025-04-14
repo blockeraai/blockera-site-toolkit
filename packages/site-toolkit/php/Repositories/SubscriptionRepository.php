@@ -62,7 +62,7 @@ class SubscriptionRepository
 		$thumbnail = get_the_post_thumbnail_url($productId);
 		$file = is_array($downloads) ? $this->getLatestVersionFile($downloads) : [];
 		$versionId = $file['id'] ?? null;
-		$productName = get_the_title($productId);
+		$productName = get_post_meta($productId, 'product_id', true);
 		$id = $subscription->get('id');
 
 		return compact('id', 'name', 'description', 'status', 'thumbnail', 'nextPaymentDueDate', 'startDate', 'endDate', 'productName', 'productId', 'productVersion', 'versionId');
