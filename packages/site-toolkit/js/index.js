@@ -34,6 +34,7 @@ domReady(() => {
 				status: '',
 			},
 		],
+		shopUrl = '',
 		clientId = '',
 		clientUrl = '',
 		redirectUrl = '',
@@ -49,6 +50,7 @@ domReady(() => {
 
 		root.render(
 			<ConsentForm
+				shopUrl={shopUrl}
 				clientId={clientId}
 				licenses={licenses}
 				clientUrl={clientUrl}

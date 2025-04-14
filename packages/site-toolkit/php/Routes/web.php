@@ -32,6 +32,18 @@ add_action(
                 exit;
             }
 
+			// If the product is set, then we need to add it to the client credentials.
+			if (!empty($_GET['product'])) {
+				$userId = wp_get_current_user()->ID;
+				$clientCredentials = get_user_meta($userId, 'blockera_api_client_info', true);
+
+				if (!empty($clientCredentials) && !empty($clientCredentials['products']) && !in_array($_GET['product'], $clientCredentials['products'])) {
+					$clientCredentials['products'][] = $_GET['product'];
+
+					update_user_meta($userId, 'blockera_api_client_info', $clientCredentials);
+				}
+			}
+
             // Redirect to license manager page.
             wp_redirect(add_query_arg($_GET, home_url('/consent-form')));
 

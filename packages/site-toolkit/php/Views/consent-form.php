@@ -46,6 +46,8 @@ if (!empty($transient)) {
     exit;
 }
 
+$mappedLicenses = [];
+
 foreach ($subscriptions as $subscription_post) {
 
     $subscription_post = is_numeric($subscription_post) ? get_post($subscription_post) : $subscription_post;
@@ -62,6 +64,10 @@ foreach ($subscriptions as $subscription_post) {
     $product_id = $subscription->get('product_id');
     $product = wc_get_product($product_id);
 
+    if (!isset($_GET['product']) || $_GET['product'] !== $product->get_name()) {
+        continue;
+    }
+	
     $mappedLicenses[] = [
         'productTitle' => get_the_title($product_id),
         'productLogo' => get_the_post_thumbnail_url($product_id),
@@ -83,6 +89,7 @@ $domain = '<div class="client-website"><span class="client-website-scheme">' . $
 <div id="blockera-site-toolkit-consent-form"></div>
 <script>
 	window.clientId = '<?php echo $clientId; ?>';
+	window.shopUrl = '<?php echo home_url('/shop'); ?>';
 	window.isConsentForm = true;
 	window.clientUrl = '<?php echo $rawUrl['scheme'] . '://' . $rawUrl['host']; ?>';
 	window.clientWebsite = '<?php echo $domain; ?>';

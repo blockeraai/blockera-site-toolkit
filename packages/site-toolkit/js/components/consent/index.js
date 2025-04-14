@@ -126,13 +126,15 @@ const License = ({
 };
 
 export const ConsentForm = ({
+	shopUrl,
 	clientId,
+	licenses,
 	clientUrl,
 	redirectUrl,
 	consentNonce,
-	licenses,
 	clientWebsite,
 }: {
+	shopUrl: string,
 	clientId: string,
 	clientUrl: string,
 	redirectUrl: string,
@@ -179,40 +181,70 @@ export const ConsentForm = ({
 
 	return (
 		<Flex direction="column" className="consent-form" gap="3rem">
-			<h1>{__('Let’s connect your site', 'blockera')}</h1>
-			<p className="consent-form-description">
-				{__(
-					'Once that’s done, you’ll be able to access your site from the My Blockera dashboard.',
-					'blockera'
-				)}
-			</p>
-			<div dangerouslySetInnerHTML={{ __html: clientWebsite }} />
-			{/* <Icon name="attach" /> */}
-			<div>
-				<AttachIcon fill="#0047EB" />
-			</div>
-			{licenses?.map((license: LicenseProps) => (
-				<License
-					key={license.productTitle}
-					{...license}
-					onChange={setPickedLicense}
-					_isActive={1 === licenses.length}
-				/>
-			))}
-			<Button
-				className="connect-button"
-				variant="primary"
-				onClick={handleConnect}
-			>
-				{/* <Icon name="attach" /> */}
-				<AttachIcon fill="#ffffff" />
-				{!connectionState.isConnected && __('Connect', 'blockera')}
-				{connectionState.isConnected &&
-					__('Connected and Redirecting …', 'blockera')}
-				{connectionState.isConnecting && (
-					<LoadingComponent color="#ffffff" />
-				)}
-			</Button>
+			{licenses.length > 0 && (
+				<>
+					<h1>{__('Let’s connect your site', 'blockera')}</h1>
+					<p className="consent-form-description">
+						{__(
+							'Once that’s done, you’ll be able to access your site from the My Blockera dashboard.',
+							'blockera'
+						)}
+					</p>
+					<div dangerouslySetInnerHTML={{ __html: clientWebsite }} />
+					{/* <Icon name="attach" /> */}
+					<div>
+						<AttachIcon fill="#0047EB" />
+					</div>
+					{licenses?.map((license: LicenseProps) => (
+						<License
+							key={license.productTitle}
+							{...license}
+							onChange={setPickedLicense}
+							_isActive={1 === licenses.length}
+						/>
+					))}
+					<Button
+						className="connect-button"
+						variant="primary"
+						onClick={handleConnect}
+					>
+						{/* <Icon name="attach" /> */}
+						<AttachIcon fill="#ffffff" />
+						{!connectionState.isConnected &&
+							__('Connect', 'blockera')}
+						{connectionState.isConnected &&
+							__('Connected and Redirecting …', 'blockera')}
+						{connectionState.isConnecting && (
+							<LoadingComponent color="#ffffff" />
+						)}
+					</Button>
+				</>
+			)}
+			{licenses.length === 0 && (
+				<>
+					<h1>
+						{__(
+							'❌ No subscriptions found for this product',
+							'blockera'
+						)}
+					</h1>
+					<p className="consent-form-description">
+						{__(
+							'Please check your subscriptions and try again.',
+							'blockera'
+						)}
+					</p>
+					<Button
+						className="connect-button"
+						variant="primary"
+						onClick={() => {
+							window.location.href = shopUrl;
+						}}
+					>
+						{__('Go to Shop', 'blockera')}
+					</Button>
+				</>
+			)}
 		</Flex>
 	);
 };
