@@ -139,7 +139,7 @@ class SubscriptionRepository
 	 */
 	public function getSubscriptionClientId(int $subscriptionId): ?string
 	{
-		return $this->wpdb->get_var($this->wpdb->prepare("SELECT client_id FROM api_licenses WHERE subscription_id = %s", $subscriptionId));
+		return $this->wpdb->get_var($this->wpdb->prepare("SELECT client_id FROM {$this->api_table_prefix}licenses WHERE subscription_id = %s", $subscriptionId));
 	}
 
 	/**

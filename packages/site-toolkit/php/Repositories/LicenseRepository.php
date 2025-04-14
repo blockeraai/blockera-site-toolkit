@@ -19,7 +19,7 @@ class LicenseRepository
 	 */
 	public function getBy(string $field, $value): ?array
 	{
-		return $this->wpdb->get_results($this->wpdb->prepare("SELECT * FROM api_licenses WHERE $field = %s", $value), ARRAY_A);
+		return $this->wpdb->get_results($this->wpdb->prepare("SELECT * FROM {$this->api_table_prefix}licenses WHERE $field = %s", $value), ARRAY_A);
 	}
 
 	/**
