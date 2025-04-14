@@ -139,7 +139,7 @@ foreach ($subscriptions as $subscription_post) {
 }
 
 ?>
-<?php if (empty($subscriptions)) : ?>
+<?php if (empty($mappedSubscriptions)) : ?>
     <?php $no_subscription_text = apply_filters('ywsbs_no_subscription_text', __('There is no active subscription for your account.', 'blockera-site-toolkit')); ?>
     <p class="ywsbs-my-subscriptions"><?php esc_html_e($no_subscription_text); ?></p>
 <?php else : ?>
