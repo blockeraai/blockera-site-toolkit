@@ -130,6 +130,7 @@ export { default as DisplayGrid } from './display-grid.svg';
 export { default as DisplayInlineBlock } from './display-inline-block.svg';
 export { default as DisplayInline } from './display-inline.svg';
 export { default as DisplayNone } from './display-none.svg';
+export { default as DownloadBox } from './download-box.svg';
 export { default as EntranceAnimation } from './entrance-animation.svg';
 export { default as Error } from './error.svg';
 export { default as ExtensionAdvanced } from './extension-advanced.svg';
