@@ -34,6 +34,7 @@ export const SubscriptionInformation = ({
 	downloads,
 	version,
 	subscriptionId,
+	productColor,
 }: {
 	status: string,
 	subscriptionId: number,
@@ -51,6 +52,7 @@ export const SubscriptionInformation = ({
 			file: string,
 		},
 	},
+	productColor: string,
 }): MixedElement => {
 	const isExpired = status === 'expired';
 
@@ -131,6 +133,7 @@ export const SubscriptionInformation = ({
 				subscriptionId={subscriptionId}
 				activeWebsites={activeWebsites}
 				maxDomains={maxDomains}
+				productColor={productColor}
 			/>
 		</>
 	);

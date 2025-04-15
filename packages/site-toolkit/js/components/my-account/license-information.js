@@ -32,6 +32,7 @@ export const LicenseInformation = ({
 	maxDomains,
 	subscriptionId,
 	activeWebsites,
+	productColor,
 }: {
 	plan: string,
 	version: string,
@@ -47,6 +48,7 @@ export const LicenseInformation = ({
 	maxDomains: number,
 	subscriptionId: number,
 	activeWebsites: { [key: string]: string },
+	productColor: string,
 }): MixedElement => {
 	return (
 		<>
@@ -80,6 +82,7 @@ export const LicenseInformation = ({
 				subscriptionId={subscriptionId}
 				activeWebsites={activeWebsites}
 				maxDomains={maxDomains}
+				productColor={productColor}
 			/>
 		</>
 	);

@@ -78,6 +78,7 @@ export const LicenseManager = ({
 					expiryDate={expiryDate}
 					downloads={downloads}
 					status={status}
+					productColor={productColor}
 				/>
 			) : (
 				<LicenseInformation
@@ -88,6 +89,7 @@ export const LicenseManager = ({
 					maxDomains={maxDomains}
 					startDate={startDate}
 					downloads={downloads}
+					productColor={productColor}
 				/>
 			)}
 		</div>

@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import type { MixedElement } from 'react';
 import { useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
@@ -12,8 +12,8 @@ import apiFetch from '@wordpress/api-fetch';
  * Blockera dependencies
  */
 import { Icon } from '@blockera/icons';
-import { Flex, Modal, Button, Tooltip } from '@blockera/controls';
-import { isLocalhost } from '@blockera/utils';
+import { Flex, Modal, Button } from '@blockera/controls';
+import { isLocalhost, isUndefined } from '@blockera/utils';
 
 /**
  * Internal dependencies
@@ -30,6 +30,7 @@ const Row = ({
 	setRemainingDomains,
 	setWebsites,
 	blockeraaiNonce,
+	productColor,
 }: {
 	num: number,
 	website: string,
@@ -41,10 +42,15 @@ const Row = ({
 	subscriptionId: number,
 	websites?: { [key: string]: string },
 	blockeraaiNonce?: string,
+	productColor: string,
 }): MixedElement => {
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-	// const name = `${subscriptionId}-${website}-domain`;
+	const [isDeleting, setIsDeleting] = useState(false);
+	const [isDeletingError, setIsDeletingError] = useState(false);
+
 	const handleDelete = () => {
+		setIsDeleting(true);
+
 		apiFetch({
 			path: 'auth/v1/license/delete',
 			method: 'POST',
@@ -74,45 +80,25 @@ const Row = ({
 
 					if (
 						'function' === typeof setRemainingDomains &&
-						remainingDomains
+						!isUndefined(remainingDomains)
 					) {
+						// $FlowFixMe
 						setRemainingDomains(remainingDomains + 1);
 					}
 				}
 			})
 			.catch((error) => {
 				console.log(error);
+				setIsDeleting(false);
+				setIsDeletingError(true);
+			})
+			.finally(() => {
+				setIsDeleting(false);
 			});
 	};
 
 	return (
 		<>
-			{isDeleteModalOpen && (
-				<Modal
-					className="delete-modal"
-					size="large"
-					headerTitle={__(
-						'Are you sure, you want to delete this website?',
-						'blockera'
-					)}
-					onRequestClose={() => setIsDeleteModalOpen(false)}
-				>
-					<p>
-						{__(
-							'Removing this domain will deactivate Blockera Pro features on this site. You can reassign it to another site later if needed. Proceed with caution.',
-							'blockera'
-						)}
-					</p>
-					<Flex>
-						<Button onClick={() => setIsDeleteModalOpen(false)}>
-							{__('No', 'blockera')}
-						</Button>
-						<Button onClick={handleDelete}>
-							{__('Yes, Remove', 'blockera')}
-						</Button>
-					</Flex>
-				</Modal>
-			)}
 			<span className="domain">
 				<span className="number">{num}</span>
 
@@ -136,8 +122,111 @@ const Row = ({
 						setIsDeleteModalOpen(true);
 					}}
 				>
-					{__('Delete Website', 'blockera')}
+					{__('Remove Website', 'blockera')}
 				</Button>
+			)}
+
+			{isDeleteModalOpen && (
+				<Modal
+					className="delete-modal"
+					size="large"
+					headerTitle={__(
+						'Are you sure, you want to remove this website?',
+						'blockera'
+					)}
+					onRequestClose={() => setIsDeleteModalOpen(false)}
+					focusOnMount={'firstContentElement'}
+					style={{
+						'--blockera-controls-primary-color': productColor,
+						'--blockera-controls-primary-color-darker-20':
+							'color-mix(in srgb, var(--blockera-controls-primary-color) 100%, black 20%)',
+					}}
+				>
+					<Flex
+						direction="column"
+						gap={40}
+						style={{ paddingTop: 40 }}
+					>
+						<Flex direction="column" gap={20}>
+							<p style={{ margin: 0 }}>
+								{__(
+									'By removing this website, you will deactivate Pro features on the site. You can reassign it to another site later if needed. Proceed with caution.',
+									'blockera'
+								)}
+							</p>
+
+							<Flex direction="row" gap={10} alignItems="center">
+								{__('Removing website:', 'blockera')}
+								<a
+									style={{
+										margin: 0,
+										color: 'var(--blockera-controls-primary-color)',
+										backgroundColor:
+											'color-mix(in srgb, var(--blockera-controls-primary-color) 10%, #ffffff)',
+										padding: '2px 8px',
+										borderRadius: 2,
+										fontSize: 14,
+										fontWeight: 500,
+										textDecoration: 'none',
+									}}
+									href={website}
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									{website}
+								</a>
+							</Flex>
+						</Flex>
+
+						<Flex alignItems="center" direction="row" gap={20}>
+							<Button
+								variant="primary"
+								onClick={() => setIsDeleteModalOpen(false)}
+							>
+								{__('No', 'blockera')}
+							</Button>
+
+							<Button
+								className="delete-row"
+								variant="secondary"
+								onClick={handleDelete}
+								isBusy={isDeleting}
+							>
+								{__('Yes, Remove', 'blockera')}
+							</Button>
+
+							{isDeleting && (
+								<p
+									style={{
+										margin: 0,
+										color: '#d00c0c',
+										fontSize: 14,
+									}}
+								>
+									{__(
+										'Removing website, please wait…',
+										'blockera'
+									)}
+								</p>
+							)}
+
+							{isDeletingError && (
+								<p
+									style={{
+										margin: 0,
+										color: '#d00c0c',
+										fontSize: 14,
+									}}
+								>
+									{__(
+										'An error occurred while removing the website. Please try again or contact support.',
+										'blockera'
+									)}
+								</p>
+							)}
+						</Flex>
+					</Flex>
+				</Modal>
 			)}
 		</>
 	);
@@ -152,10 +241,12 @@ export const WebsitesManager = ({
 	maxDomains,
 	subscriptionId,
 	activeWebsites,
+	productColor,
 }: {
 	maxDomains: number,
 	subscriptionId: number,
 	activeWebsites: { [key: string]: string },
+	productColor: string,
 }): MixedElement => {
 	// const [{ hasError, errorMessage }, setError] = useState({
 	// 	hasError: false,
@@ -188,7 +279,7 @@ export const WebsitesManager = ({
 				}
 			/>
 
-			{Object.keys(activeWebsites).length > 0 ? (
+			{Object.keys(websites).length > 0 ? (
 				<Table
 					headerBackground="#F7F7F7"
 					cols={[
@@ -215,6 +306,7 @@ export const WebsitesManager = ({
 								blockeraaiNonce={blockeraaiNonce}
 								remainingDomains={remainingDomains}
 								setRemainingDomains={setRemainingDomains}
+								productColor={productColor}
 							/>
 						)
 					)}

@@ -120,7 +120,7 @@
 				color: var(--blockera-product-color);
 				display: inline-block;
 				padding: 0 7px;
-				margin-left: 10px;
+				margin-left: 5px;
 				border-radius: 2px;
 				background-color: color-mix(in srgb, var(--blockera-product-color) 20%, #ffffff);
 			}
@@ -253,18 +253,7 @@
 					height: 24px;
 					width: max-content;
 					font-size: 12px;
-					font-weight: 400;
-					border-radius: 2px;
-					text-decoration: none;
-					text-transform: uppercase;
-					padding: 0 8px;
-
-					svg {
-						width: 20px;
-						height: 16px;
-						color: #ffffff;
-						fill: #ffffff;
-					}
+					font-weight: 500;
 				}
 
 				span.domain {
@@ -298,20 +287,16 @@
 				}
 
 				button.delete-row {
-					background-color: #ffffff;
-					display: flex;
-					align-items: center;
-					color: #000000;
-					width: max-content;
-					height: 24px;
-					box-shadow: none;
-					border-radius: 2px;
-					border: solid 1px #cfe0ff;
-					cursor: pointer;
+					color: #616161;
+					--blockera-controls-primary-color: #9b9b9b;
+					--wp-admin-theme-color: #646464;
 
-					span {
-						position: relative;
-						top: 2px;
+					&:hover {
+						--blockera-controls-primary-color: #d00c0c;
+						--wp-admin-theme-color: #d00c0c;
+						--blockera-controls-primary-color-darker-20: #9e0202;
+						--wp-admin-theme-color-darker-20: #9e0202;
+						color: var(--blockera-controls-primary-color-darker-20);
 					}
 				}
 			}
@@ -350,18 +335,21 @@
 .delete-modal {
 
 	.components-modal__content {
+		font-size: 15px;
 
 		h1 {
-			font-size: 14px;
-		}
-
-		button {
-			border: none !important;
-			box-shadow: none !important;
+			font-size: 18px;
 		}
 
 		p {
 			font-size: 15px;
+		}
+
+		button.delete-row {
+			--blockera-controls-primary-color: #d00c0c;
+			--wp-admin-theme-color: #d00c0c;
+			--blockera-controls-primary-color-darker-20: #9e0202;
+			--wp-admin-theme-color-darker-20: #9e0202;
 		}
 	}
 }
