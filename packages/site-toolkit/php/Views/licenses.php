@@ -73,17 +73,15 @@ foreach ($non_subscription_orders as $order) {
             )
         );
 
-		$fallbackDownloadableFiles = get_post_meta($product_id, 'product_download_file');
-		$downloadToken = get_post_meta($product_id, 'product_downloadable_token', true);
+        $fallbackDownloadableFiles = get_post_meta($product_id, 'product_downloadable_files', true);
+        $isActivatedFreeDownload = get_post_meta($product_id, 'product_is_activated_free_download', true);
+        $freeSlug = get_post_meta($product_id, 'product_free_slug', true);
 
         $mappedSubscriptions[] = [
             'id' => $product_id,
             'type' => 'non-subscription',
             'status' => $order->get_status(),
-            'downloads' => bsaGetDownloadableFiles($variation_id, [
-				'download-token' => $downloadToken,
-				'fallback-downloadable-files' => $fallbackDownloadableFiles,
-			]),
+            'downloads' => bsaGetDownloadableFiles($variation_id, compact('fallbackDownloadableFiles', 'isActivatedFreeDownload', 'freeSlug')),
             'productTitle' => $product->get_name(),
             'productLogo' => get_the_post_thumbnail_url($product_id),
             'productColor' => get_post_meta($product_id, 'product_color', true),
@@ -122,18 +120,16 @@ foreach ($subscriptions as $subscription_post) {
             $subscription_id
         )
     );
-	
-	$fallbackDownloadableFiles = get_post_meta($product_id, 'product_download_file');
-	$downloadToken = get_post_meta($product_id, 'product_downloadable_token', true);
+    
+	$fallbackDownloadableFiles = get_post_meta($product_id, 'product_downloadable_files', true);
+	$isActivatedFreeDownload = get_post_meta($product_id, 'product_is_activated_free_download', true);
+	$freeSlug = get_post_meta($product_id, 'product_free_slug', true);
 
     $mappedSubscriptions[] = [
         'id' => $subscription->get('variation_id'),
         'type' => 'subscription',
         'status' => $subscription_status,
-        'downloads' => bsaGetDownloadableFiles($subscription->get('variation_id'), [
-			'download-token' => $downloadToken,
-			'fallback-downloadable-files' => $fallbackDownloadableFiles,
-		]),
+        'downloads' => bsaGetDownloadableFiles($subscription->get('variation_id'), compact('fallbackDownloadableFiles', 'isActivatedFreeDownload', 'freeSlug')),
         'productTitle' => get_the_title($product_id),
         'productLogo' => get_the_post_thumbnail_url($product_id),
         'productColor' => get_post_meta($product_id, 'product_color', true),

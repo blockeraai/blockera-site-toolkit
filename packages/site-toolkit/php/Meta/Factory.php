@@ -23,7 +23,7 @@ class Factory
         // Product Custom Fields.
         add_action('add_meta_boxes', [$this, 'AddProductCustomFields']);
         add_action('save_post_product', [$this, 'saveProductCustomFields']);
-        add_action('woocommerce_single_product_summary', [$this, 'displayProductCustomFields'], 25);
+        // add_action('woocommerce_single_product_summary', [$this, 'displayProductCustomFields'], 25);
     }
 
     /**
@@ -55,17 +55,20 @@ class Factory
         wp_nonce_field('product_custom_fields', 'product_custom_fields_nonce');
 
         // Get existing values.
-		$product_id = get_post_meta($post->ID, 'product_id', true);
+        $product_id = get_post_meta($post->ID, 'product_id', true);
         $product_version = get_post_meta($post->ID, 'product_version', true);
         $product_color = get_post_meta($post->ID, 'product_color', true);
-		$product_download_file = get_post_meta($post->ID, 'product_download_file', true);
+        $product_downloadable_files = get_post_meta($post->ID, 'product_downloadable_files', true);
+        $is_activated_free_download = get_post_meta($post->ID, 'product_is_activated_free_download', true);
+        $product_free_slug = get_post_meta($post->ID, 'product_free_slug', true);
 
-        View::load('product-meta-box-custom-fields', 
-			compact('product_id','product_version', 'product_color', 'product_download_file'),
-			[
-				'root-path' => trailingslashit(__DIR__),
-			]
-		);
+        View::load(
+            'product-meta-box-custom-fields',
+            compact('product_id', 'product_version', 'product_color', 'product_downloadable_files', 'is_activated_free_download', 'product_free_slug'),
+            [
+                'root-path' => trailingslashit(__DIR__),
+            ]
+        );
     }
 
     /**
@@ -86,7 +89,7 @@ class Factory
             return;
         }
 
-		// Save product id.
+        // Save product id.
         if (isset($_POST['product_id'])) {
             update_post_meta(
                 $post_id,
@@ -113,12 +116,39 @@ class Factory
             );
         }
 
-		// Save product download file.
-		if (isset($_POST['product_download_file'])) {
+        // Save product is activated free download.
+        if (isset($_POST['product_is_activated_free_download'])) {
+            update_post_meta(
+                $post_id,
+                'product_is_activated_free_download',
+                sanitize_text_field($_POST['product_is_activated_free_download'])
+            );
+        }
+
+        // Save product download file.
+        if (isset($_POST['_blockera_file_urls'])) {
+
+			$downloadableFiles = [];
+
+			foreach($_POST['_blockera_file_names'] as $index => $name) {
+				$downloadableFiles[$name] = [
+					'hash' => wp_generate_uuid4(),
+					'file' => $_POST['_blockera_file_urls'][$index],
+				];
+			}
+
+            update_post_meta(
+                $post_id,
+                'product_downloadable_files',
+                $downloadableFiles
+            );
+        }
+
+		if(isset($_POST['product_free_slug'])) {
 			update_post_meta(
 				$post_id,
-				'product_download_file',
-				sanitize_text_field($_POST['product_download_file'])
+				'product_free_slug',
+				sanitize_text_field($_POST['product_free_slug'])
 			);
 		}
     }
@@ -133,12 +163,12 @@ class Factory
         global $product;
 
         if ($product) {
-			// Product ID.
+            // Product ID.
             $product_id = get_post_meta($product->get_id(), 'product_id', true);
 
-			if ($product_id) {
-				echo '<div class="product-id">ID: ' . esc_html($product_id) . '</div>';
-			}
+            if ($product_id) {
+                echo '<div class="product-id">ID: ' . esc_html($product_id) . '</div>';
+            }
 
             $product_version = get_post_meta($product->get_id(), 'product_version', true);
 
@@ -150,6 +180,18 @@ class Factory
 
             if ($product_color) {
                 echo '<div class="product-color" style="background-color: ' . esc_attr($product_color) . ';">Color: ' . esc_html($product_color) . '</div>';
+            }
+
+            $product_downloadable_files = get_post_meta($product->get_id(), 'product_downloadable_files', true);
+
+            if ($product_downloadable_files) {
+                echo '<div class="product-downloadable-files">Downloadable Files: ' . esc_html($product_downloadable_files) . '</div>';
+            }
+
+            $is_activated_free_download = get_post_meta($product->get_id(), 'product_is_activated_free_download', true);
+
+            if ($is_activated_free_download) {
+                echo '<div class="product-is-activated-free-download">Is Activated Free Download: ' . esc_html($is_activated_free_download) . '</div>';
             }
         }
     }
@@ -224,9 +266,9 @@ class Factory
         global $product;
 
         if ($product && $product->is_type('variable')) {
-			View::load('product-variation-custom-fields', [], [
-				'root-path' => trailingslashit(__DIR__),
-			]);
+            View::load('product-variation-custom-fields', [], [
+                'root-path' => trailingslashit(__DIR__),
+            ]);
         }
     }
 

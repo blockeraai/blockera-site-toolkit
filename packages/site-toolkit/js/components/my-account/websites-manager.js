@@ -98,7 +98,7 @@ const Row = ({
 	};
 
 	return (
-		<>
+		<Flex direction="row" justifyContent="space-between" gap={10}>
 			<span className="domain">
 				<span className="number">{num}</span>
 
@@ -228,7 +228,7 @@ const Row = ({
 					</Flex>
 				</Modal>
 			)}
-		</>
+		</Flex>
 	);
 };
 

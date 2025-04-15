@@ -26,6 +26,8 @@ const Row = ({
 	enabled,
 	filename,
 	id,
+	resource,
+	file,
 }: {
 	id: string,
 	num: number,
@@ -34,6 +36,7 @@ const Row = ({
 	file: string,
 	filename: string,
 	enabled: boolean,
+	resource: 'wp' | 'api',
 }): MixedElement => {
 	const { blockeraaiNonce } = window;
 	const [isBusy, setIsBusy] = useState(false);
@@ -42,70 +45,93 @@ const Row = ({
 	const [isDestructive, setIsDestructive] = useState(false);
 
 	return (
-		<>
+		<Flex direction="row" gap={10} justifyContent="space-between">
 			<span className="name">
 				<span className="number">{num}</span>
 				{name}
 			</span>
 			<span className="version">{version}</span>
 			<div className="download-button">
-				<Button
-					className="license-button-primary"
-					variant="primary"
-					data-id={id}
-					disabled={!enabled}
-					isBusy={isBusy}
-					isDestructive={isDestructive}
-					onClick={() => {
-						setIsBusy(true);
+				{'api' === resource && (
+					<Button
+						className="license-button-primary"
+						variant="primary"
+						data-id={id}
+						disabled={!enabled}
+						isBusy={isBusy}
+						isDestructive={isDestructive}
+						onClick={() => {
+							setIsBusy(true);
 
-						apiFetch({
-							method: 'POST',
-							path: '/auth/v1/download',
-							headers: {
-								'X-Blockera-Nonce': blockeraaiNonce,
-							},
-							data: {
-								token: id,
-								name: filename,
-							},
-						})
-							.then((response) => {
-								if (
-									response.success &&
-									response.data.temporary_download_url
-								) {
-									// Create temp link and click it to download
-									const a = document.createElement('a');
-									a.href =
-										response.data.temporary_download_url;
-									a.download = name;
-									a.style.display = 'none';
-
-									// Ensure document.body exists before appending
-									if (document.body) {
-										document.body.appendChild(a);
-										a.click();
-										document.body.removeChild(a);
-									} else {
-										// Fallback if document.body is not available
-										a.click();
-									}
-									setIsBusy(false);
-								}
+							apiFetch({
+								method: 'POST',
+								path: '/auth/v1/download',
+								headers: {
+									'X-Blockera-Nonce': blockeraaiNonce,
+								},
+								data: {
+									token: id,
+									name: filename,
+								},
 							})
-							.catch((error) => {
-								console.error('Download failed:', error);
+								.then((response) => {
+									if (
+										response.success &&
+										response.data.temporary_download_url
+									) {
+										// Create temp link and click it to download
+										const a = document.createElement('a');
+										a.href =
+											response.data.temporary_download_url;
+										a.download = name;
+										a.style.display = 'none';
+
+										// Ensure document.body exists before appending
+										if (document.body) {
+											document.body.appendChild(a);
+											a.click();
+											document.body.removeChild(a);
+										} else {
+											// Fallback if document.body is not available
+											a.click();
+										}
+										setIsBusy(false);
+									}
+								})
+								.catch((error) => {
+									console.error('Download failed:', error);
+									setIsBusy(false);
+									setIsDestructive(true);
+								});
+						}}
+						rel="noopener noreferrer"
+					>
+						{__('Download', 'blockera')}
+					</Button>
+				)}
+				{'wp' === resource && (
+					<Button
+						className="license-button-primary"
+						variant="primary"
+						data-id={id}
+						href={file}
+						disabled={!enabled}
+						isBusy={isBusy}
+						onClick={() => {
+							setIsBusy(true);
+
+							setTimeout(() => {
 								setIsBusy(false);
-								setIsDestructive(true);
-							});
-					}}
-					rel="noopener noreferrer"
-				>
-					{__('Download', 'blockera')}
-				</Button>
+							}, 2000);
+						}}
+						isDestructive={isDestructive}
+						rel="noopener noreferrer"
+					>
+						{__('Download', 'blockera')}
+					</Button>
+				)}
 			</div>
-		</>
+		</Flex>
 	);
 };
 

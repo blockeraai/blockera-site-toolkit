@@ -231,6 +231,10 @@
 				strong.table-title:first-child {
 					padding-left: 25px;
 				}
+
+				.table-column-content {
+					width: 100%;
+				}
 			}
 
 			.table-row {
@@ -241,11 +245,15 @@
 					border-bottom: none;
 				}
 
-				span:first-child {
+				.table-row-content {
+					width: 100%;
+				}
+
+				span.name {
 					width: 50%;
 				}
 
-				*:not(a,svg) {
+				span.version, .download-button {
 					width: 25%;
 				}
 

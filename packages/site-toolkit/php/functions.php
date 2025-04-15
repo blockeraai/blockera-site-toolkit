@@ -532,25 +532,44 @@ if (!function_exists('bsaGetDownloadableFiles')) {
 			foreach ($downloadableFiles as $downloadableFileId => $downloadableFile) {
 
 				$downloads[$downloadableFileId] = [
+					'resource' => 'api',
                     'name' => $downloadableFile['name'],
                     'filename' => basename($downloadableFile['file']),
                     'file' => bsaGetEnv('BSA_API_BASE_URL') . '/files/v1/download/' . $downloadableFileId,
                     'enabled' => $downloadableFile['enabled'] ?? true,
-                    'id' => $downloadableFileId
+                    'id' => $downloadableFileId,
                 ];
 			}
 		}
 
 		if(empty($downloads)) {
-			$downloads = array_map(function (string $downloadableUrl)use($args):array {
+			$downloads = array_map(function (array $downloadableFile, string $downloadableFilename):array {
 				return [
-					'name' => pathinfo(basename($downloadableUrl), PATHINFO_FILENAME),
-					'filename' => basename($downloadableUrl),
-					'file' => bsaGetEnv('BSA_API_BASE_URL') . '/files/v1/download/' . $args['download-token'],
+					'resource' => 'api',
+					'name' => $downloadableFilename,
+					'filename' => basename($downloadableFile['file']),
+					'file' => bsaGetEnv('BSA_API_BASE_URL') . '/files/v1/download/' . $downloadableFile['hash'],
 					'enabled' => true,
-					'id' => $args['download-token'],
+					'id' => $downloadableFile['hash'],
 				];
-			}, $args['fallback-downloadable-files']);
+			}, $args['fallbackDownloadableFiles'], array_keys($args['fallbackDownloadableFiles']));
+		}
+		
+		if ($args['isActivatedFreeDownload']) {
+			$freeVersion = [
+				'resource' => 'wp', 
+				'name' => 'Blockera Free',
+				'filename' => 'blockera.latest.zip',
+				'enabled' => true,
+				'id' => wp_generate_uuid4(),
+				'file' => sprintf('https://downloads.wordpress.org/plugin/%s.latest-stable.zip', $args['freeSlug']),
+			];
+
+			if(!empty($downloads)) {
+				array_unshift($downloads, $freeVersion);
+			} else {
+				$downloads[] = $freeVersion;
+			}
 		}
 
 		return $downloads;
