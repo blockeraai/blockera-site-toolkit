@@ -15,7 +15,6 @@ import {
 	Flex,
 	Button,
 	ToggleControl,
-	LoadingComponent,
 	ControlContextProvider,
 } from '@blockera/controls';
 
@@ -24,8 +23,9 @@ import {
  */
 import { Image } from '../image';
 
-const AttachIcon = ({ fill }: { fill: string }) => (
+const AttachIcon = ({ fill, style }: { fill: string, style: Object }) => (
 	<svg
+		style={style}
 		width="12"
 		height="13"
 		viewBox="0 0 12 13"
@@ -68,11 +68,9 @@ const License = ({
 	// status,
 	onChange,
 }: LicenseProps): MixedElement => {
-	const [isActive, setIsActive] = useState(_isActive);
 	const remainingDomains = maxDomains - activeWebsites.length;
 
 	const onActiveChange = (licenseId: number) => {
-		setIsActive(!isActive);
 		onChange(licenseId);
 	};
 
@@ -110,13 +108,13 @@ const License = ({
 				<ControlContextProvider
 					value={{
 						name: `toggle${plan.replace(/\s+/g, '')}`,
-						value: isActive,
+						value: licenseId === _isActive,
 					}}
 				>
 					<ToggleControl
 						labelType={'self'}
 						id={`toggle${plan.replace(/\s+/g, '')}`}
-						defaultValue={isActive}
+						defaultValue={licenseId === _isActive}
 						onChange={() => onActiveChange(licenseId)}
 					/>
 				</ControlContextProvider>
@@ -200,23 +198,24 @@ export const ConsentForm = ({
 							key={license.productTitle}
 							{...license}
 							onChange={setPickedLicense}
-							_isActive={1 === licenses.length}
+							_isActive={pickedLicense}
 						/>
 					))}
 					<Button
 						className="connect-button"
 						variant="primary"
+						isBusy={
+							connectionState.isConnecting &&
+							!connectionState.isConnected
+						}
 						onClick={handleConnect}
 					>
 						{/* <Icon name="attach" /> */}
-						<AttachIcon fill="#ffffff" />
-						{!connectionState.isConnected &&
-							__('Connect', 'blockera')}
-						{connectionState.isConnected &&
-							__('Connected and Redirecting …', 'blockera')}
-						{connectionState.isConnecting && (
-							<LoadingComponent color="#ffffff" />
-						)}
+						<AttachIcon
+							style={{ marginRight: '10px' }}
+							fill="#ffffff"
+						/>
+						{__('Connect', 'blockera')}
 					</Button>
 				</>
 			)}
