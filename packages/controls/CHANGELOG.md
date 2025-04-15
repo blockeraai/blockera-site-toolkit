@@ -1,5 +1,8 @@
 ## Unreleased
 
+### Improvements
+- Improve Modal.
+
 ## 1.1.2 (2025-03-29)
 
 ### Improvements
