@@ -82,7 +82,7 @@ class ProductController
 			update_post_meta(
 				$postId,
 				'product_downloadable_token',
-				wp_generate_password(36)
+				wp_generate_uuid4()
 			);
 		}
 

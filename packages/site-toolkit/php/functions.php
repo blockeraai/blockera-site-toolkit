@@ -512,3 +512,47 @@ if (!function_exists('bsaFilterActiveLicenses')) {
         });
     }
 }
+
+if (!function_exists('bsaGetDownloadableFiles')) {
+    /**
+     * Get the downloadable files.
+     *
+	 * @param int $variationId The ID of the variation.
+	 * @param array $args The extra arguments. includes 
+     *
+     * @return array The downloadable files.
+     */
+    function bsaGetDownloadableFiles(int $variationId, array $args): array
+    {
+		$downloads = [];
+		$downloadableFiles = get_post_meta($variationId, '_downloadable_files', true);
+
+		if (!empty($downloadableFiles)) {
+
+			foreach ($downloadableFiles as $downloadableFileId => $downloadableFile) {
+
+				$downloads[$downloadableFileId] = [
+                    'name' => $downloadableFile['name'],
+                    'filename' => basename($downloadableFile['file']),
+                    'file' => bsaGetEnv('BSA_API_BASE_URL') . '/files/v1/download/' . $downloadableFileId,
+                    'enabled' => $downloadableFile['enabled'] ?? true,
+                    'id' => $downloadableFileId
+                ];
+			}
+		}
+
+		if(empty($downloads)) {
+			$downloads = array_map(function (string $downloadableUrl)use($args):array {
+				return [
+					'name' => pathinfo(basename($downloadableUrl), PATHINFO_FILENAME),
+					'filename' => basename($downloadableUrl),
+					'file' => bsaGetEnv('BSA_API_BASE_URL') . '/files/v1/download/' . $args['download-token'],
+					'enabled' => true,
+					'id' => $args['download-token'],
+				];
+			}, $args['fallback-downloadable-files']);
+		}
+
+		return $downloads;
+    }
+}

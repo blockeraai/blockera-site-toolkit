@@ -73,11 +73,17 @@ foreach ($non_subscription_orders as $order) {
             )
         );
 
+		$fallbackDownloadableFiles = get_post_meta($product_id, 'product_download_file');
+		$downloadToken = get_post_meta($product_id, 'product_downloadable_token', true);
+
         $mappedSubscriptions[] = [
             'id' => $product_id,
             'type' => 'non-subscription',
             'status' => $order->get_status(),
-            'downloads' => get_post_meta($product_id, '_downloadable_files', true),
+            'downloads' => bsaGetDownloadableFiles($variation_id, [
+				'download-token' => $downloadToken,
+				'fallback-downloadable-files' => $fallbackDownloadableFiles,
+			]),
             'productTitle' => $product->get_name(),
             'productLogo' => get_the_post_thumbnail_url($product_id),
             'productColor' => get_post_meta($product_id, 'product_color', true),
@@ -116,12 +122,18 @@ foreach ($subscriptions as $subscription_post) {
             $subscription_id
         )
     );
+	
+	$fallbackDownloadableFiles = get_post_meta($product_id, 'product_download_file');
+	$downloadToken = get_post_meta($product_id, 'product_downloadable_token', true);
 
     $mappedSubscriptions[] = [
         'id' => $subscription->get('variation_id'),
         'type' => 'subscription',
         'status' => $subscription_status,
-        'downloads' => get_post_meta($subscription->get('variation_id'), '_downloadable_files', true),
+        'downloads' => bsaGetDownloadableFiles($subscription->get('variation_id'), [
+			'download-token' => $downloadToken,
+			'fallback-downloadable-files' => $fallbackDownloadableFiles,
+		]),
         'productTitle' => get_the_title($product_id),
         'productLogo' => get_the_post_thumbnail_url($product_id),
         'productColor' => get_post_meta($product_id, 'product_color', true),
