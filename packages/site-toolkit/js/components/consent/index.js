@@ -41,7 +41,21 @@ const AttachIcon = ({ fill, style }: { fill: string, style: Object }) => (
 	</svg>
 );
 
+type LicenseOnChangeHandler = (params: {
+	type: 'subscription' | 'no-subscription',
+	orderId: number,
+	licenseId: number,
+	productId: number,
+	variationId: number,
+	subscriptionId: number,
+}) => void;
+
 type LicenseProps = {
+	type: 'subscription' | 'no-subscription',
+	orderId: number,
+	productId: number,
+	variationId: number,
+	subscriptionId: number,
 	productLogo: string,
 	plan: string,
 	_isActive: boolean,
@@ -52,27 +66,28 @@ type LicenseProps = {
 	maxDomains: number,
 	expiryDate: string,
 	activeWebsites: Array<string>,
-	onChange: (licenseId: number) => void,
+	onChange: LicenseOnChangeHandler,
 };
 
 const License = ({
-	productTitle,
-	// productColor,
-	productLogo,
-	licenseId,
+	type,
 	plan,
+	orderId,
 	_isActive,
+	productId,
+	licenseId,
 	maxDomains,
+	variationId,
+	productLogo,
+	productTitle,
 	// expiryDate,
+	subscriptionId,
 	activeWebsites,
+	// productColor,
 	// status,
 	onChange,
 }: LicenseProps): MixedElement => {
 	const remainingDomains = maxDomains - activeWebsites.length;
-
-	const onActiveChange = (licenseId: number) => {
-		onChange(licenseId);
-	};
 
 	return (
 		<div className="license-box-wrapper">
@@ -115,7 +130,16 @@ const License = ({
 						labelType={'self'}
 						id={`toggle${plan.replace(/\s+/g, '')}`}
 						defaultValue={licenseId === _isActive}
-						onChange={() => onActiveChange(licenseId)}
+						onChange={() =>
+							onChange({
+								type,
+								orderId,
+								licenseId,
+								productId,
+								variationId,
+								subscriptionId,
+							})
+						}
 					/>
 				</ControlContextProvider>
 			</Flex>
@@ -141,7 +165,7 @@ export const ConsentForm = ({
 	licenses: Array<LicenseProps>,
 }): MixedElement => {
 	const [pickedLicense, setPickedLicense] = useState(
-		1 === licenses.length ? licenses[0].licenseId : null
+		1 === licenses.length ? licenses[0] : null
 	);
 	const [connectionState, setConnectionState] = useState({
 		isConnected: false,
@@ -163,7 +187,12 @@ export const ConsentForm = ({
 			data: {
 				domain: clientUrl,
 				client_id: clientId,
-				license_id: pickedLicense,
+				type: pickedLicense.type,
+				order_id: pickedLicense.orderId,
+				product_id: pickedLicense.productId,
+				license_id: pickedLicense.licenseId,
+				variation_id: pickedLicense.variationId,
+				subscription_id: pickedLicense.subscriptionId,
 			},
 		}).then((response) => {
 			if (response?.success) {
@@ -175,7 +204,14 @@ export const ConsentForm = ({
 					redirectUrl + '&connectedWithYourAccount=true';
 			}
 		});
-	}, [pickedLicense]);
+	}, [
+		clientId,
+		clientUrl,
+		redirectUrl,
+		consentNonce,
+		pickedLicense,
+		connectionState,
+	]);
 
 	return (
 		<Flex direction="column" className="consent-form" gap="3rem">
@@ -198,7 +234,7 @@ export const ConsentForm = ({
 							key={license.productTitle}
 							{...license}
 							onChange={setPickedLicense}
-							_isActive={pickedLicense}
+							_isActive={pickedLicense?.licenseId}
 						/>
 					))}
 					<Button

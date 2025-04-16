@@ -16,6 +16,11 @@ domReady(() => {
 	const {
 		blockeraSiteToolkitLicenses: licenses = [
 			{
+				type: 'no-subscription',
+				orderId: 0,
+				productId: 0,
+				variationId: 0,
+				subscriptionId: 0,
 				productTitle: '',
 				productColor: '',
 				productLogo: '',
