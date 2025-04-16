@@ -210,6 +210,8 @@ class Setup extends Application
         // Register activation and deactivation hooks.
         register_activation_hook($this->getPluginFile(), [$this, 'activate']);
 
+        add_action('init', [$this, 'addEndpoint']);
+
         return $this;
     }
 
@@ -223,6 +225,16 @@ class Setup extends Application
         // Rewrite rules.
         $this->rewriteRules();
         flush_rewrite_rules();
+    }
+
+    /**
+     * Add the endpoint for the pages in my account to manage the subscription list and view.
+     *
+     * @since 1.0.0
+     */
+    public function addEndpoint()
+    {
+        WC()->query->query_vars['licenses'] = 'licenses';
     }
 
     /**

@@ -3,8 +3,11 @@
 namespace BlockeraAI\SiteToolkit\Providers;
 
 use BlockeraAI\SiteToolkit\Setup;
+use Blockera\Bootstrap\Application;
 use Blockera\Bootstrap\ServiceProvider;
 use BlockeraAI\SiteToolkit\Meta\Factory as Meta;
+use BlockeraAI\SiteToolkit\Repositories\OrderRepository;
+use BlockeraAI\SiteToolkit\Repositories\LicenseRepository;
 use BlockeraAI\SiteToolkit\Http\Controller\ProductController;
 use BlockeraAI\SiteToolkit\Http\Middlewares\RefererMiddleware;
 use BlockeraAI\SiteToolkit\Http\Middlewares\MiddlewarePipeline;
@@ -20,6 +23,17 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(MiddlewarePipeline::class);
         $this->app->singleton(RefererMiddleware::class);
+		$this->app->singleton(LicenseRepository::class);
+
+		$this->app->singleton(OrderRepository::class, function (Application $app) {
+			$orders = wc_get_orders([
+				'customer_id' => get_current_user_id(),
+				'status' => ['completed'],
+				'limit' => -1
+			]);
+
+			return new OrderRepository($app, $orders);
+		});
     }
 
     /**
@@ -51,7 +65,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         add_filter('woocommerce_account_menu_items', [$this, 'reorderMenuItems'], 9e2);
-        add_filter('woocommerce_locate_template', [$this, 'overrideTemplates'], 10, 2);
+		add_filter('woocommerce_account_licenses_endpoint', [$this, 'getLicensesTemplate']);
 
         if (is_admin()) {
             // FIXME: Refactor this.
@@ -138,33 +152,39 @@ class AppServiceProvider extends ServiceProvider
             $new_items[$key] = $item;
 
             if ($key === 'dashboard') {
-                $new_items['subscriptions'] = __('Licenses', 'blockera-site-toolkit');
+                $new_items['licenses'] = __('Licenses', 'blockera-site-toolkit');
             }
         }
 
         return $new_items;
     }
 
-    /**
-     * Override the default woocommerce templates.
-     *
-     * @param string $template The template path.
-     * @param string $templateName The template name.
-     *
-     * @return string The template path.
-     */
-    public function overrideTemplates(string $template, string $templateName): string
-    {
-        if ('myaccount/my-subscriptions-view.php' === $templateName && false !== strpos($_SERVER['REQUEST_URI'], 'my-account/my-subscription')) {
-			$build_file = $this->app->getPath() . '/vendor/blockera/build/src/SiteToolkit/Views/licenses.php';
+	/**
+	 * Get the licenses template.
+	 *
+	 * @return void
+	 */
+	public function getLicensesTemplate(): void
+	{		
+		if (!function_exists('wc_get_template')) {
+			return;
+		}
 
-			if (file_exists($build_file)) {
-				return $build_file;
-			}
-			
-            return $this->app->getPath() . '/vendor/blockera/site-toolkit/php/Views/licenses.php';
-        }
+		$build_file = $this->app->getPath() . '/vendor/blockera/build/src/SiteToolkit/Views/licenses.php';
 
-        return $template;
-    }
+		if (file_exists($build_file)) {
+			$default_path = $this->app->getPath() . '/vendor/blockera/build/src/SiteToolkit/';
+		}else{ 
+			$default_path = $this->app->getPath() . '/vendor/blockera/site-toolkit/php/';
+		}
+
+		$mappedLicenses = $this->app->make(OrderRepository::class)->getLicenses();
+
+		wc_get_template(
+			'Views/licenses.php',
+			compact('mappedLicenses'),
+			'',
+			$default_path
+		);
+	}
 }
