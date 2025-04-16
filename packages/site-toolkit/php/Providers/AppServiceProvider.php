@@ -5,7 +5,6 @@ namespace BlockeraAI\SiteToolkit\Providers;
 use BlockeraAI\SiteToolkit\Setup;
 use Blockera\Bootstrap\ServiceProvider;
 use BlockeraAI\SiteToolkit\Meta\Factory as Meta;
-use BlockeraAI\SiteToolkit\Guard\SecureDownloadManager;
 use BlockeraAI\SiteToolkit\Http\Controller\ProductController;
 use BlockeraAI\SiteToolkit\Http\Middlewares\RefererMiddleware;
 use BlockeraAI\SiteToolkit\Http\Middlewares\MiddlewarePipeline;
@@ -21,10 +20,6 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(MiddlewarePipeline::class);
         $this->app->singleton(RefererMiddleware::class);
-
-        // $this->app->singleton(SecureDownloadManager::class, function (Application $app) {
-        //     return new SecureDownloadManager($app, new SecureDownloadRepository());
-        // });
     }
 
     /**
@@ -36,11 +31,6 @@ class AppServiceProvider extends ServiceProvider
     {
         if (!$this->app instanceof Setup) {
             return;
-        }
-
-        // Process download zip file request.
-        if (!empty($_GET['action']) && 'download' === $_GET['action'] && !empty($_GET['token']) && !empty($_GET['hash'])) {
-            $this->app->make(SecureDownloadManager::class)->processDownload($_GET['token'], $_GET['hash']);
         }
 
         // Register REST API routes.

@@ -3,7 +3,6 @@
 namespace BlockeraAI\SiteToolkit\Http\Controller;
 
 use Blockera\Bootstrap\Application;
-use BlockeraAI\SiteToolkit\Guard\SecureDownloadManager;
 use BlockeraAI\SiteToolkit\Repositories\ClientRepository;
 use BlockeraAI\SiteToolkit\Repositories\SubscriptionRepository;
 
@@ -372,124 +371,6 @@ class LicenseManagerController
             'code' => $responseCode,
             'success' => $responseCode === 200,
         ], $responseCode);
-    }
-
-    /**
-     * Validate the zip file.
-     *
-     * @param \WP_REST_Request $request The request object.
-     *
-     * @return \WP_REST_Response The response object.
-     */
-    public function validateZipFile(\WP_REST_Request $request): \WP_REST_Response
-    {
-        if (empty($request->get_param('zip_file'))) {
-            $this->errors['invalid_zip_file'] = __('Zip file url field is required!', 'blockera-site-toolkit');
-        }
-
-        if (!filter_var($request->get_param('zip_file'), FILTER_VALIDATE_URL)) {
-            $this->errors['invalid_zip_file'] = __('Invalid zip file url format.', 'blockera-site-toolkit');
-        }
-
-        if (empty($request->get_param('client_id'))) {
-            $this->errors['invalid_client_id'] = __('Client ID field is required!', 'blockera-site-toolkit');
-        }
-
-        if (!empty($this->errors)) {
-            return new \WP_REST_Response([
-                'code' => 400,
-                'success' => false,
-                'errors' => $this->errors,
-            ], 400);
-        }
-
-        $isValidZipFile = $this->licenseRepository->isValidZipFile($request->get_param('zip_file'));
-
-        if (!$isValidZipFile) {
-            return new \WP_REST_Response([
-                'code' => 400,
-                'success' => false,
-                'errors' => [
-                    'not_found' => __('Invalid zip file.', 'blockera-site-toolkit'),
-                ],
-            ], 400);
-        }
-
-        return new \WP_REST_Response([
-            'code' => 200,
-            'success' => true,
-        ], 200);
-    }
-
-    /**
-     * Get the zip file by domain.
-     *
-     * @param \WP_REST_Request $request The request object.
-     *
-     * @return \WP_REST_Response The response object.
-     */
-    public function getZipFile(\WP_REST_Request $request): \WP_REST_Response
-    {
-        if (empty($request->get_param('client_id'))) {
-            $this->errors['invalid_client_id'] = __('Client ID field is required!', 'blockera-site-toolkit');
-        }
-
-        if (empty($request->get_param('subscription_id'))) {
-            $this->errors['invalid_subscription_id'] = __('Subscription ID field is required!', 'blockera-site-toolkit');
-        }
-
-        try {
-            $userId = $this->app->make('clientRepository')->getClientBy('client_id', $request->get_param('client_id'))->user_id;
-
-            if (empty($userId)) {
-                throw new \Exception('User ID field is required!');
-            }
-
-            wp_set_current_user($userId);
-            wp_set_auth_cookie($userId);
-
-            $isDownloadable = $this->app->make(
-                'subscriptionRepository',
-                [
-                    'clientRepository' => $this->app->make('clientRepository'),
-                    'licenseRepository' => $this->app->make('licenseRepository'),
-                ]
-            )->isDownloadable($request->get_param('domain'), $userId);
-
-            if (!$isDownloadable) {
-                throw new \Exception('You are not allowed to download the zip file.');
-            }
-
-            $clientId = $this->app->make('clientRepository')->getClientBy('domain', $request->get_param('domain'))->client_id;
-
-            if (empty($clientId)) {
-                throw new \Exception('Client ID field is required!');
-            }
-
-            $secureDownloadManager = $this->app->make(SecureDownloadManager::class);
-
-            $downloadLink = $secureDownloadManager->generateDownloadLink(
-                $clientId,
-                $request->get_param('client_id'),
-                $request->get_param('subscription_id')
-            );
-        } catch (\Exception $e) {
-            return new \WP_REST_Response([
-                'code' => 500,
-                'success' => false,
-                'errors' => [
-                    'database_error' => [
-                        'database_error' => $e->getMessage(),
-                    ],
-                ],
-            ], 500);
-        }
-
-        return new \WP_REST_Response([
-            'code' => 200,
-            'success' => true,
-            'data' => compact('downloadLink'),
-        ], 200);
     }
 
     /**
