@@ -3,7 +3,7 @@
 namespace BlockeraAI\SiteToolkit\Http\Controller;
 
 use Blockera\Bootstrap\Application;
-use BlockeraAI\SiteToolkit\Repositories\ClientRepository;
+use BlockeraAI\SiteToolkit\Repositories\OrderRepository;
 use BlockeraAI\SiteToolkit\Repositories\SubscriptionRepository;
 
 class LicenseManagerController
@@ -185,8 +185,8 @@ class LicenseManagerController
             }
 
             $licenses = array_map(function (array $license) {
-                $subscriptionRepository = new SubscriptionRepository();
-                $subscriptionInfo = $subscriptionRepository->getSubscriptionInfo($license['license_id']);
+                $orderRepository = $this->app->make(OrderRepository::class);
+                $subscriptionInfo = $orderRepository->getLicenseInfo($license);
 
                 return array_merge([
                     'domain' => $license['domain'],
@@ -304,7 +304,7 @@ class LicenseManagerController
         return new \WP_REST_Response([
             'code' => 400,
             'success' => false,
-            'errors' => $body['data']['errors'],
+            'errors' => $body['errors'],
         ], 400);
     }
 
