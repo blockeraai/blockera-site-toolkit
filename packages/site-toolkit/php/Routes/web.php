@@ -1,7 +1,9 @@
 <?php
 
 use Blockera\Utils\Utils;
+use Blockera\Utils\View;
 use BlockeraAI\SiteToolkit\Setup;
+use BlockeraAI\SiteToolkit\Repositories\OrderRepository;
 
 // Register query variable.
 add_filter('query_vars', 'registerVars');
@@ -55,13 +57,48 @@ add_action(
 
             wp_head();
 
-            $build_file = Setup::getInstance()->getPath() . '/vendor/blockera/build/src/SiteToolkit/Views/consent-form.php';
+			$setupInstance = Setup::getInstance();
+			$mappedLicenses = $setupInstance->make(OrderRepository::class)->getLicenses();
+			
+			$user = wp_get_current_user();
+			$userId = $user->ID;
 
-			if (file_exists($build_file)) {
-				include $build_file;
-			}else{
-				include Setup::getInstance()->getPath() . '/vendor/blockera/site-toolkit/php/Views/consent-form.php';
+			if (!$userId) {
+				echo '<script>window.location.href = "' . esc_url(home_url('/my-account')) . '";</script>';
+				exit;
 			}
+
+			$currentUrl = Utils::getCurrentPageURL();
+			$transientKey = 'blockera-site-toolkit-user' . $userId . '__redirect_uri';
+			$transient = get_transient($transientKey);
+
+			if (!empty($transient)) {
+				delete_transient($transientKey);
+
+				echo '<script>window.location.href = "' . esc_url(urldecode($transient)) . '";</script>';
+				exit;
+			} elseif (empty($mappedLicenses)) {
+				set_transient($transientKey, urlencode($currentUrl), 60 * 60 * 24);
+
+				echo '<script>window.location.href = "' . esc_url(home_url('/shop')) . '";</script>';
+				exit;
+			}
+
+			$clientInfo = get_user_meta(get_current_user_id(), 'blockera_api_client_info', true);
+			$clientId = $clientInfo['client_id'] ?? '';
+			$rawUrl = parse_url(urldecode($_GET['redirect_uri']));
+			$domain = '<div class="client-website"><span class="client-website-scheme">' . $rawUrl['scheme'] . '://' . '</span> ' . $rawUrl['host'] . '</div>';
+
+
+            $templateFile = 'build.src.SiteToolkit.Views.consent-form';
+
+			if (!file_exists($templateFile)) {
+				$templateFile = 'site-toolkit.php.Views.consent-form';
+			}
+
+			View::load($templateFile, compact('mappedLicenses', 'clientId', 'rawUrl', 'domain'), [
+				'root-path' => $setupInstance->getPath() . '/vendor/blockera/',
+			]);
 
             wp_footer();
 
