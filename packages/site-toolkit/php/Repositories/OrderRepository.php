@@ -257,10 +257,10 @@ class OrderRepository
 			$name = sprintf('%s - %s', $subscription->get_number(), $subscription->get('product_name'));
 			$subscriptionStatus = $subscription->get_status();
 			$status = $subscription_statuses[$subscriptionStatus];
-			$nextPaymentDueDate = (! in_array($status, array('paused', 'cancelled'), true) && $subscription->get('payment_due_date')) ? date_i18n(wc_date_format(), $subscription->get('payment_due_date')) : '<span class="empty-date">-</span>';
-			$startDate = ($subscription->get('start_date')) ? date_i18n(wc_date_format(), $subscription->get('start_date')) : '<div class="empty-date">-</div>';
+			$nextPaymentDueDate = (! in_array($status, array('paused', 'cancelled'), true) && $subscription->get('payment_due_date')) ? date_i18n(wc_date_format(), $subscription->get('payment_due_date')) : '';
+			$startDate = ($subscription->get('start_date')) ? date_i18n(wc_date_format(), $subscription->get('start_date')) : '';
 			$endDate = ($subscription->get('end_date')) ? date_i18n(wc_date_format(), $subscription->get('end_date')) : false;
-			$endDate = ! $endDate && ($subscription->get('expired_date')) ? date_i18n(wc_date_format(), $subscription->get('expired_date')) : '<div class="empty-date">-</div>';
+			$endDate = ! $endDate && ($subscription->get('expired_date')) ? date_i18n(wc_date_format(), $subscription->get('expired_date')) : '';
 			$description = empty($subscription->get('post_content')) ? $subscription->get('post_content') : $subscription->get('post_excerpt');
 			$downloads = get_post_meta($subscription->get('variation_id'), '_downloadable_files', true);
 			$productId = $subscription->get('product_id');
