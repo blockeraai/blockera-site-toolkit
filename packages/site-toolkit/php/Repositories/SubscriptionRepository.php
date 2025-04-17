@@ -9,6 +9,13 @@ class SubscriptionRepository
 	use RepositoryTrait;
 
 	/**
+	 * Store the table name.
+	 *
+	 * @var string $table_name The table name property.
+	 */
+	protected $table_name = 'yith_ywsbs_stats';
+
+	/**
 	 * Get the subscriptions by user id.
 	 *
 	 * @param int $user_id The user id.

@@ -180,7 +180,7 @@ class LicenseManagerController
                 return new \WP_REST_Response([
                     'code' => 400,
                     'success' => false,
-                    'errors' => $body['data']['errors'],
+                    'errors' => $body['data']['errors'] ?? $body['errors'],
                 ], 400);
             }
 

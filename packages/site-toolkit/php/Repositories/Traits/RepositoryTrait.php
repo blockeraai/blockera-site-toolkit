@@ -32,6 +32,11 @@ trait RepositoryTrait
 	 */
 	protected string $api_table_prefix = '';
 
+	/**
+	 * The constructor.
+	 *
+	 * @return void
+	 */
 	public function __construct()
 	{
 		global $wpdb;
@@ -77,10 +82,16 @@ trait RepositoryTrait
 	/**
 	 * Get the first result.
 	 *
+	 * @param string $prefix_type The prefix type.
+	 *
 	 * @return array|null
 	 */
-	public function first(): ?array
+	public function first(string $prefix_type = 'default'): ?array
 	{
+		if('default' === $prefix_type) {
+			$this->api_table_prefix = $this->wpdb->prefix;
+		}
+
 		$where = implode(' ', $this->where);
 
 		return $this->wpdb->get_row($this->wpdb->prepare("SELECT * FROM {$this->api_table_prefix}{$this->table_name} WHERE {$where}"), ARRAY_A);
@@ -89,10 +100,16 @@ trait RepositoryTrait
 	/**
 	 * Get all results.
 	 *
+	 * @param string $prefix_type The prefix type.
+	 *
 	 * @return array
 	 */
-	public function get(): array
+	public function get(string $prefix_type = 'default'): array
 	{
+		if('default' === $prefix_type) {
+			$this->api_table_prefix = $this->wpdb->prefix;
+		}
+
 		$where = implode(' ', $this->where);
 
 		return $this->wpdb->get_results($this->wpdb->prepare("SELECT * FROM {$this->api_table_prefix}{$this->table_name} WHERE {$where}"), ARRAY_A);
@@ -101,10 +118,16 @@ trait RepositoryTrait
 	/**
 	 * Get the count of results.
 	 *
+	 * @param string $prefix_type The prefix type.
+	 *
 	 * @return int
 	 */
-	public function count(): int
+	public function count(string $prefix_type = 'default'): int
 	{
+		if('default' === $prefix_type) {
+			$this->api_table_prefix = $this->wpdb->prefix;
+		}
+
 		$where = implode(' ', $this->where);
 
 		return $this->wpdb->get_var($this->wpdb->prepare("SELECT COUNT(*) FROM {$this->api_table_prefix}{$this->table_name} WHERE {$where}"));

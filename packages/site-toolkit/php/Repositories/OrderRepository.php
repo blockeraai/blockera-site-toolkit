@@ -122,7 +122,7 @@ class OrderRepository
             $licenseRepository
                 ->where('license_id', $productId)
                 ->orWhere('license_id', $variationId)
-                ->get()
+                ->get('api')
         );
 		$developmentWebsites = $this->getNormalizedWebsites($licenses, 'development');
 		$productionWebsites = $this->getNormalizedWebsites($licenses, 'production');
@@ -249,13 +249,14 @@ class OrderRepository
 	 */
 	public function getLicenseInfo(array $license): array
 	{
-		$licenseId = $license['id'];
+		$licenseId = $license['license_id'];
 
 		if('subscription' === $license['type']) {	
 			$subscription_statuses = ywsbs_get_status();
 			$subscription = ywsbs_get_subscription($licenseId);
 			$name = sprintf('%s - %s', $subscription->get_number(), $subscription->get('product_name'));
-			$status = $subscription_statuses[$subscription->get_status()];
+			$subscriptionStatus = $subscription->get_status();
+			$status = $subscription_statuses[$subscriptionStatus];
 			$nextPaymentDueDate = (! in_array($status, array('paused', 'cancelled'), true) && $subscription->get('payment_due_date')) ? date_i18n(wc_date_format(), $subscription->get('payment_due_date')) : '<span class="empty-date">-</span>';
 			$startDate = ($subscription->get('start_date')) ? date_i18n(wc_date_format(), $subscription->get('start_date')) : '<div class="empty-date">-</div>';
 			$endDate = ($subscription->get('end_date')) ? date_i18n(wc_date_format(), $subscription->get('end_date')) : false;
