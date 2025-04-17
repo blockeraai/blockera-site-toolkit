@@ -26,6 +26,7 @@ export const LicenseManager = ({
 	expiryDate,
 	downloads,
 	activeWebsites,
+	developmentWebsites,
 	status,
 }: {
 	type: 'subscription' | 'non-subscription',
@@ -47,7 +48,12 @@ export const LicenseManager = ({
 			file: string,
 		},
 	},
-	activeWebsites: { [key: string]: string },
+	activeWebsites: {
+		[key: string]: { mode: 'production' | 'development', website: string },
+	},
+	developmentWebsites: {
+		[key: string]: { mode: 'production' | 'development', website: string },
+	},
 	status: string,
 }): MixedElement => {
 	return (
@@ -73,6 +79,7 @@ export const LicenseManager = ({
 					plan={plan}
 					version={productVersion}
 					activeWebsites={activeWebsites}
+					developmentWebsites={developmentWebsites}
 					maxDomains={maxDomains}
 					startDate={startDate}
 					expiryDate={expiryDate}
@@ -82,6 +89,7 @@ export const LicenseManager = ({
 				/>
 			) : (
 				<LicenseInformation
+					developmentWebsites={developmentWebsites}
 					subscriptionId={subscriptionId}
 					plan={plan}
 					version={productVersion}

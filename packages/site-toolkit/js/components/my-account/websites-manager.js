@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import type { MixedElement } from 'react';
 import { useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
@@ -13,7 +13,7 @@ import apiFetch from '@wordpress/api-fetch';
  */
 import { Icon } from '@blockera/icons';
 import { Flex, Modal, Button } from '@blockera/controls';
-import { isLocalhost, isUndefined } from '@blockera/utils';
+import { isUndefined } from '@blockera/utils';
 
 /**
  * Internal dependencies
@@ -29,16 +29,18 @@ const Row = ({
 	remainingDomains,
 	setRemainingDomains,
 	setWebsites,
+	setDevWebsites,
 	blockeraaiNonce,
 	productColor,
 }: {
 	num: number,
-	website: string,
+	website: { mode: 'production' | 'development', website: string },
 	websiteId: string,
 	remainingDomains?: number,
 	setRemainingDomains?: Function,
 	onChange?: Function,
 	setWebsites?: Function,
+	setDevWebsites?: Function,
 	subscriptionId: number,
 	websites?: { [key: string]: string },
 	blockeraaiNonce?: string,
@@ -58,7 +60,7 @@ const Row = ({
 				'X-Blockera-Nonce': blockeraaiNonce,
 			},
 			data: {
-				domain: website,
+				domain: website.website,
 				domain_id: websiteId,
 			},
 		})
@@ -74,8 +76,15 @@ const Row = ({
 						)
 					);
 
-					if ('function' === typeof setWebsites) {
-						setWebsites(newWebsites);
+					if (
+						'function' === typeof setWebsites &&
+						'function' === typeof setDevWebsites
+					) {
+						if (website.mode === 'production') {
+							setWebsites(newWebsites);
+						} else {
+							setDevWebsites(newWebsites);
+						}
 					}
 
 					if (
@@ -102,13 +111,19 @@ const Row = ({
 			<span className="domain">
 				<span className="number">{num}</span>
 
-				<a href={website} target="_blank" rel="noopener noreferrer">
-					{website.replace('https://', '').replace('http://', '')}
+				<a
+					href={website.website}
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					{website.website
+						.replace('https://', '')
+						.replace('http://', '')}
 				</a>
 			</span>
 
 			<span className="type">
-				{isLocalhost(website)
+				{'development' === website.mode
 					? __('Development', 'blockera')
 					: __('Production', 'blockera')}
 			</span>
@@ -173,7 +188,7 @@ const Row = ({
 									target="_blank"
 									rel="noopener noreferrer"
 								>
-									{website}
+									{website.website}
 								</a>
 							</Flex>
 						</Flex>
@@ -242,10 +257,16 @@ export const WebsitesManager = ({
 	subscriptionId,
 	activeWebsites,
 	productColor,
+	developmentWebsites,
 }: {
 	maxDomains: number,
 	subscriptionId: number,
-	activeWebsites: { [key: string]: string },
+	activeWebsites: {
+		[key: string]: { mode: 'production' | 'development', website: string },
+	},
+	developmentWebsites: {
+		[key: string]: { mode: 'production' | 'development', website: string },
+	},
 	productColor: string,
 }): MixedElement => {
 	// const [{ hasError, errorMessage }, setError] = useState({
@@ -257,6 +278,7 @@ export const WebsitesManager = ({
 		0 < maxDomains ? maxDomains - activatedCount : 0
 	);
 	const [websites, setWebsites] = useState(activeWebsites);
+	const [devWebsites, setDevWebsites] = useState(developmentWebsites);
 	const { blockeraaiNonce } = window; // blockeraUserAccessToken
 
 	return (
@@ -279,7 +301,7 @@ export const WebsitesManager = ({
 				}
 			/>
 
-			{Object.keys(websites).length > 0 ? (
+			{Object.keys({ ...websites, ...devWebsites }).length > 0 ? (
 				<Table
 					headerBackground="#F7F7F7"
 					cols={[
@@ -293,15 +315,25 @@ export const WebsitesManager = ({
 							{__('Action', 'blockera')}
 						</strong>,
 					]}
-					rows={Object.entries(websites)?.map(
-						([websiteId, website]: [string, string], index) => (
+					rows={Object.entries({ ...websites, ...devWebsites })?.map(
+						(
+							[websiteId, website]: [
+								string,
+								{
+									mode: 'production' | 'development',
+									website: string,
+								}
+							],
+							index
+						) => (
 							<Row
 								key={index}
 								num={index + 1}
 								website={website}
-								websites={websites}
+								websites={{ ...websites, ...devWebsites }}
 								websiteId={websiteId}
 								setWebsites={setWebsites}
+								setDevWebsites={setDevWebsites}
 								subscriptionId={subscriptionId}
 								blockeraaiNonce={blockeraaiNonce}
 								remainingDomains={remainingDomains}

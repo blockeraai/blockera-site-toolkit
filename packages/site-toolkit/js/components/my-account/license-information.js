@@ -33,6 +33,7 @@ export const LicenseInformation = ({
 	subscriptionId,
 	activeWebsites,
 	productColor,
+	developmentWebsites,
 }: {
 	plan: string,
 	version: string,
@@ -47,7 +48,12 @@ export const LicenseInformation = ({
 	startDate: string,
 	maxDomains: number,
 	subscriptionId: number,
-	activeWebsites: { [key: string]: string },
+	activeWebsites: {
+		[key: string]: { mode: 'production' | 'development', website: string },
+	},
+	developmentWebsites: {
+		[key: string]: { mode: 'production' | 'development', website: string },
+	},
 	productColor: string,
 }): MixedElement => {
 	return (
@@ -79,6 +85,7 @@ export const LicenseInformation = ({
 			<Downloads downloads={downloads} version={version} />
 
 			<WebsitesManager
+				developmentWebsites={developmentWebsites}
 				subscriptionId={subscriptionId}
 				activeWebsites={activeWebsites}
 				maxDomains={maxDomains}

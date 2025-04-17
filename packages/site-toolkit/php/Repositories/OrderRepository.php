@@ -124,6 +124,8 @@ class OrderRepository
                 ->orWhere('license_id', $variationId)
                 ->get()
         );
+		$developmentWebsites = $this->getNormalizedWebsites($licenses, 'development');
+		$productionWebsites = $this->getNormalizedWebsites($licenses, 'production');
 
         $fallbackDownloadableFiles = get_post_meta($productId, 'product_downloadable_files', true);
         $isActivatedFreeDownload = get_post_meta($productId, 'product_is_activated_free_download', true);
@@ -149,7 +151,8 @@ class OrderRepository
             'productVersion' => get_post_meta($productId, 'product_version', true),
             'updatedOn' => date_i18n(wc_date_format(), $order->get_date_modified()->getTimestamp()),
             'startDate' => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
-            'activeWebsites' => array_combine(array_column($licenses, 'id'), array_column($licenses, 'domain')),
+			'developmentWebsites' => $developmentWebsites,
+            'activeWebsites' => $productionWebsites,
 			'downloads' => bsaGetDownloadableFiles($variationId, compact('fallbackDownloadableFiles', 'isActivatedFreeDownload', 'freeSlug')),
         ];
 
@@ -204,6 +207,8 @@ class OrderRepository
                 $subscriptionId
             )
         );
+		$developmentWebsites = $this->getNormalizedWebsites($licenses, 'development');
+		$productionWebsites = $this->getNormalizedWebsites($licenses, 'production');
 
         $fallbackDownloadableFiles = get_post_meta($productId, 'product_downloadable_files', true);
         $isActivatedFreeDownload = get_post_meta($productId, 'product_is_activated_free_download', true);
@@ -214,8 +219,8 @@ class OrderRepository
             'type' => 'subscription',
 			'productId' => $productId,
             'startDate' => $startDate,
-			'licenseId' => $variationId,
 			'variationId' => $variationId,
+			'licenseId' => $subscriptionId,
             'status' => $subscriptionStatus,
             'subscriptionId' => $subscriptionId,
 			'orderId' => $subscription->get_order()->id,
@@ -228,7 +233,8 @@ class OrderRepository
             'productColor' => get_post_meta($productId, 'product_color', true),
             'productVersion' => get_post_meta($productId, 'product_version', true),
             'updatedOn' => date_i18n(wc_date_format(), $subscription->post_modified),
-            'activeWebsites' => array_combine(array_column($licenses, 'id'), array_column($licenses, 'domain')),
+            'developmentWebsites' => $developmentWebsites,
+            'activeWebsites' => $productionWebsites,
             'expiryDate' => wp_kses_post(date_i18n(wc_date_format(), strtotime('+1 year', strtotime($startDate)))),
             'downloads' => bsaGetDownloadableFiles($variationId, compact('fallbackDownloadableFiles', 'isActivatedFreeDownload', 'freeSlug')),
         ];
@@ -347,5 +353,30 @@ class OrderRepository
 		}
 
 		return 0;
+	}
+
+	/**
+	 * Get the normalized websites.
+	 *
+	 * @param array $licenses The licenses.
+	 * @param string $type The domain type. default is production.
+	 *
+	 * @return array
+	 */
+	protected function getNormalizedWebsites(array $licenses, string $type = 'production'): array
+	{
+		$websites = [];
+		$filteredLicenses = array_filter($licenses, function(array $license)use($type):bool{
+			return $type === $license['domain_type'];
+		});
+
+		foreach ($filteredLicenses as $license) {
+			$websites[$license['id']] = [
+				'website' => $license['domain'],
+				'mode' => $license['domain_type'],
+			];
+		}
+
+		return $websites;
 	}
 }

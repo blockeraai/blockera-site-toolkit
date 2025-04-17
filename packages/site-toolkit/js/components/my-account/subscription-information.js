@@ -31,6 +31,7 @@ export const SubscriptionInformation = ({
 	startDate,
 	expiryDate,
 	activeWebsites,
+	developmentWebsites,
 	downloads,
 	version,
 	subscriptionId,
@@ -43,7 +44,12 @@ export const SubscriptionInformation = ({
 	expiryDate: string,
 	maxDomains: number,
 	version: string,
-	activeWebsites: { [key: string]: string },
+	activeWebsites: {
+		[key: string]: { mode: 'production' | 'development', website: string },
+	},
+	developmentWebsites: {
+		[key: string]: { mode: 'production' | 'development', website: string },
+	},
 	downloads: {
 		[key: string]: {
 			name: string,
@@ -58,7 +64,7 @@ export const SubscriptionInformation = ({
 
 	const remainingDays = Math.ceil(
 		(new Date(expiryDate).getTime() - new Date().getTime()) /
-		(1000 * 60 * 60 * 24)
+			(1000 * 60 * 60 * 24)
 	);
 
 	let statusText = status === 'active' ? __('Active', 'blockera') : status;
@@ -130,6 +136,7 @@ export const SubscriptionInformation = ({
 			<Downloads downloads={downloads} version={version} />
 
 			<WebsitesManager
+				developmentWebsites={developmentWebsites}
 				subscriptionId={subscriptionId}
 				activeWebsites={activeWebsites}
 				maxDomains={maxDomains}

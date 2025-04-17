@@ -36,6 +36,7 @@ domReady(() => {
 				renewAmount: '',
 				downloads: [],
 				activeWebsites: [],
+				developmentWebsites: [],
 				status: '',
 			},
 		],
