@@ -4,7 +4,7 @@ namespace BlockeraAI\SiteToolkit\Http\Controller;
 
 use Blockera\Bootstrap\Application;
 use BlockeraAI\SiteToolkit\Repositories\OrderRepository;
-use BlockeraAI\SiteToolkit\Repositories\SubscriptionRepository;
+use BlockeraAI\SiteToolkit\Repositories\ClientRepository;
 
 class LicenseManagerController
 {
