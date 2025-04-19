@@ -180,7 +180,6 @@ class ProductController
 					'timeout' => 30,
 					'sslverify' => false,
 					'headers' => [
-						'Authorization' => $userCredentials['token_type'] . ' ' . $userCredentials['access_token'],
 						'Accept' => 'application/json',
 						'Content-Type' => 'multipart/form-data; boundary=' . $boundary
 					],
