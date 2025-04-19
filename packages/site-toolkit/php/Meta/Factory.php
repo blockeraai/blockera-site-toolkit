@@ -134,6 +134,7 @@ class Factory
 				$downloadableFiles[$name] = [
 					'hash' => wp_generate_uuid4(),
 					'file' => $_POST['_blockera_file_urls'][$index],
+					'version' => $_POST['_blockera_versions'][$index],
 				];
 			}
 

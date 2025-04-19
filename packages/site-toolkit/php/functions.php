@@ -551,6 +551,7 @@ if (!function_exists('bsaGetDownloadableFiles')) {
 					'file' => bsaGetEnv('BSA_API_BASE_URL') . '/files/v1/download/' . $downloadableFile['hash'],
 					'enabled' => true,
 					'id' => $downloadableFile['hash'],
+					'version' => $downloadableFile['version'],
 				];
 			}, $args['fallbackDownloadableFiles'], array_keys($args['fallbackDownloadableFiles']));
 		}
@@ -563,6 +564,7 @@ if (!function_exists('bsaGetDownloadableFiles')) {
 				'enabled' => true,
 				'id' => wp_generate_uuid4(),
 				'file' => sprintf('https://downloads.wordpress.org/plugin/%s.latest-stable.zip', $args['freeSlug']),
+				'version' => bsaGetWPOrgPluginVersion($args['freeSlug']),
 			];
 
 			if(!empty($downloads)) {
@@ -574,4 +576,36 @@ if (!function_exists('bsaGetDownloadableFiles')) {
 
 		return $downloads;
     }
+}
+
+if(!function_exists('bsaGetWPOrgPluginVersion')) {
+	/**
+	 * Get the version of the plugin from the WordPress.org.
+	 * 
+	 * @param string $slug The slug of the plugin.
+	 * 
+	 * @return string The version of the plugin.
+	 */
+	function bsaGetWPOrgPluginVersion(string $slug): string
+	{
+		$transientKey = 'blockera_wp_org_' . $slug . '_plugin_info';
+		$transient = get_transient($transientKey);
+
+		if (false !== $transient) {
+			return $transient['version'] ?? '';
+		}
+
+		$url = sprintf('https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request[slug]=%s', $slug);
+		$response = wp_remote_get($url);
+
+		if(is_wp_error($response)) {
+			return '';
+		}
+
+		$info = json_decode(wp_remote_retrieve_body($response), true);
+
+		set_transient($transientKey, $info, 60 * 60 * 24); // 1 day.
+
+		return $info['version'] ?? '';
+	}
 }

@@ -8,7 +8,7 @@
 	</p>
 	<p class="form-field">
 		<label for="product_version">
-			<?php _e('Version:', 'blockera-site-toolkit'); ?>
+			<?php _e('General Version:', 'blockera-site-toolkit'); ?>
 		</label>
 		<input type="text" id="product_version" name="product_version"
 			value="<?php echo esc_attr($product_version); ?>" />
@@ -39,6 +39,7 @@
 				<tr>
 					<th class="sort">&nbsp;</th>
 					<th><?php esc_html_e('Name', 'blockera-site-toolkit'); ?></th>
+					<th colspan="1"><?php esc_html_e('Version', 'blockera-site-toolkit'); ?></th>
 					<th colspan="2"><?php esc_html_e('File URL', 'blockera-site-toolkit'); ?></th>
 					<th>&nbsp;</th>
 				</tr>
@@ -48,6 +49,7 @@
 				if ($product_downloadable_files) {
 					foreach ($product_downloadable_files as $name => $fileData) {
 						$fileUrl = $fileData['file'];
+						$version = $fileData['version'] ?? '';
 						include 'html-product-download.php';
 					}
 				}
@@ -61,6 +63,9 @@
 								'file' => '',
 								'name' => ''
 							);
+							$name = '';
+							$fileUrl = '';
+							$version = '';
 							$disabled_download = false;
 							ob_start();
 							include 'html-product-download.php';

@@ -3,6 +3,9 @@
 	<td class="file_name">
 		<input type="text" class="input_text" placeholder="<?php esc_attr_e( 'File name', 'blockera-site-toolkit' ); ?>" name="_blockera_file_names[]" value="<?php echo esc_attr( $name ); ?>" />
 	</td>
+	<td class="file_version">
+		<input type="text" class="input_text" placeholder="<?php esc_attr_e( 'Version', 'blockera-site-toolkit' ); ?>" name="_blockera_versions[]" value="<?php echo esc_attr( $version ); ?>" />
+	</td>
 	<td class="file_url">
 		<input type="text" class="input_text" placeholder="<?php esc_attr_e( 'http://', 'blockera-site-toolkit' ); ?>" name="_blockera_file_urls[]" value="<?php echo esc_attr( $fileUrl ); ?>" />
 	</td>

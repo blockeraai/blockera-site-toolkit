@@ -23,6 +23,7 @@ const Row = ({
 	num,
 	name,
 	version,
+	generalVersion,
 	enabled,
 	filename,
 	id,
@@ -33,6 +34,7 @@ const Row = ({
 	num: number,
 	name: string,
 	version: string,
+	generalVersion: string,
 	file: string,
 	filename: string,
 	enabled: boolean,
@@ -50,7 +52,7 @@ const Row = ({
 				<span className="number">{num}</span>
 				{name}
 			</span>
-			<span className="version">{version}</span>
+			<span className="version">{version || generalVersion}</span>
 			<div className="download-button">
 				{'api' === resource && (
 					<Button
@@ -182,7 +184,7 @@ export const Downloads = ({
 					<Row
 						key={index}
 						{...download}
-						version={version}
+						generalVersion={version}
 						num={index + 1}
 					/>
 				))}
