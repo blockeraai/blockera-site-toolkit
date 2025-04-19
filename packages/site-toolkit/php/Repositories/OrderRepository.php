@@ -101,7 +101,7 @@ class OrderRepository
         $itemSubscriptions = $order->get_meta('subscriptions');
 
         if(!empty($itemSubscriptions)) {
-			$mappedSubscriptionLicenses = $this->processOrderItemSubscriptions($itemSubscriptions);
+			$mappedSubscriptionLicenses = $this->processOrderItemSubscriptions($itemSubscriptions, $item);
 
 			if (!empty($mappedSubscriptionLicenses)) {
 				$mappedLicenses = array_merge($mappedLicenses, $mappedSubscriptionLicenses);
@@ -142,8 +142,11 @@ class OrderRepository
 			'variationId' => $variationId,
 			'orderId' => $order->get_id(),
             'status' => $order->get_status(),
+			'orderItemId' => $item->get_id(),
             'subscriptionId' => $order->get_id(),
             'productTitle' => $product->get_name(),
+            'activeWebsites' => $productionWebsites,
+			'developmentWebsites' => $developmentWebsites,
             'productLogo' => get_the_post_thumbnail_url($productId),
             'plan' => get_post_meta($variationId, 'attribute_plan', true),
             'maxDomains' => get_post_meta($variationId, 'max_domains', true),
@@ -151,8 +154,6 @@ class OrderRepository
             'productVersion' => get_post_meta($productId, 'product_version', true),
             'updatedOn' => date_i18n(wc_date_format(), $order->get_date_modified()->getTimestamp()),
             'startDate' => date_i18n(wc_date_format(), $order->get_date_created()->getTimestamp()),
-			'developmentWebsites' => $developmentWebsites,
-            'activeWebsites' => $productionWebsites,
 			'downloads' => bsaGetDownloadableFiles($variationId, compact('fallbackDownloadableFiles', 'isActivatedFreeDownload', 'freeSlug')),
         ];
 
@@ -163,22 +164,26 @@ class OrderRepository
      * Process the order item subscription.
      *
      * @param array $subscriptions The subscriptions array of post ids or objects.
+	 * @param \WC_Order_Item_Product $item The item.
      *
      * @return array
      */
-    protected function processOrderItemSubscriptions(array $subscriptions): array
+    protected function processOrderItemSubscriptions(array $subscriptions, \WC_Order_Item_Product $item): array
     {
-        return array_map([$this, 'processOrderItemSubscription'], $subscriptions);
+        return array_map(function ($subscriptionPost) use ($item) {
+            return $this->processOrderItemSubscription($subscriptionPost, $item);
+        }, $subscriptions);
     }
 
     /**
      * Process the order item subscription.
      *
      * @param \WP_Post|int $subscriptionPost The subscription post.
+	 * @param \WC_Order_Item_Product $item The item.
      *
      * @return array
      */
-    protected function processOrderItemSubscription($subscriptionPost): array
+    protected function processOrderItemSubscription($subscriptionPost, \WC_Order_Item_Product $item): array
     {
         $subscriptionStatusList = ywsbs_get_status();
         $subscriptionId       = is_numeric($subscriptionPost) ? $subscriptionPost : $subscriptionPost->ID;
@@ -222,9 +227,12 @@ class OrderRepository
 			'variationId' => $variationId,
 			'licenseId' => $subscriptionId,
             'status' => $subscriptionStatus,
+			'orderItemId' => $item->get_id(),
             'subscriptionId' => $subscriptionId,
-			'orderId' => $subscription->get_order()->id,
+            'activeWebsites' => $productionWebsites,
             'productTitle' => get_the_title($productId),
+			'orderId' => $subscription->get_order()->id,
+            'developmentWebsites' => $developmentWebsites,
             'upgradable' => $subscription->get('upgradable'),
             'isAutoRenew' => $subscription->get('is_auto_renew'),
             'productLogo' => get_the_post_thumbnail_url($productId),
@@ -233,8 +241,6 @@ class OrderRepository
             'productColor' => get_post_meta($productId, 'product_color', true),
             'productVersion' => get_post_meta($productId, 'product_version', true),
             'updatedOn' => date_i18n(wc_date_format(), $subscription->post_modified),
-            'developmentWebsites' => $developmentWebsites,
-            'activeWebsites' => $productionWebsites,
             'expiryDate' => wp_kses_post(date_i18n(wc_date_format(), strtotime('+1 year', strtotime($startDate)))),
             'downloads' => bsaGetDownloadableFiles($variationId, compact('fallbackDownloadableFiles', 'isActivatedFreeDownload', 'freeSlug')),
         ];

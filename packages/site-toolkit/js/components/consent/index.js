@@ -44,6 +44,7 @@ const AttachIcon = ({ fill, style }: { fill: string, style: Object }) => (
 type LicenseOnChangeHandler = (params: {
 	type: 'subscription' | 'no-subscription',
 	orderId: number,
+	orderItemId: number,
 	licenseId: number,
 	productId: number,
 	variationId: number,
@@ -53,6 +54,7 @@ type LicenseOnChangeHandler = (params: {
 type LicenseProps = {
 	type: 'subscription' | 'no-subscription',
 	orderId: number,
+	orderItemId: number,
 	productId: number,
 	variationId: number,
 	subscriptionId: number,
@@ -78,6 +80,7 @@ const License = ({
 	licenseId,
 	maxDomains,
 	variationId,
+	orderItemId,
 	productLogo,
 	productTitle,
 	// expiryDate,
@@ -137,6 +140,7 @@ const License = ({
 								licenseId,
 								productId,
 								variationId,
+								orderItemId,
 								subscriptionId,
 							})
 						}
@@ -192,6 +196,7 @@ export const ConsentForm = ({
 				product_id: pickedLicense.productId,
 				license_id: pickedLicense.licenseId,
 				variation_id: pickedLicense.variationId,
+				order_item_id: pickedLicense.orderItemId,
 				subscription_id: pickedLicense.subscriptionId,
 			},
 		}).then((response) => {
