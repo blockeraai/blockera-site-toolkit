@@ -143,12 +143,6 @@ class ProductController
 				continue;
 			}
 
-			// Get current user credentials
-			$userCredentials = bsaGetUserAccessToken(null, false);
-			if (empty($userCredentials)) {
-				continue;
-			}
-
 			// Upload file to remote server.
 			$boundary = wp_generate_password(24);
 			$payload = '';
