@@ -187,11 +187,6 @@ jobs:
             - name: Setup Node.js and install dependencies
               uses: ./.github/setup-node
 
-            - name: Setup PHP Composer install dependencies
-              uses: ./.github/setup-php
-              with:
-                  composer-options: '--no-dev -o --apcu-autoloader -a'
-
             - name: Build Plugin Zip File
               uses: ./.github/build-plugin-zip
 

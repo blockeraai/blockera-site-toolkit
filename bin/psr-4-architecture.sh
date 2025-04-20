@@ -18,10 +18,14 @@ find . -type d -name "php" | while read -r php_dir; do
         # Convert directory name to PascalCase
         # Remove leading ./ and convert to PascalCase
         pascal_dir=$(basename "$parent_dir" | tr '-' ' ' | tr '_' ' ' | awk '{for(i=1;i<=NF;i++){$i=toupper(substr($i,1,1)) tolower(substr($i,2))}}1' | tr -d ' ')
-        echo "Pascal dir: $pascal_dir"
+
+        # Exception for WordPress directory!
+        if [ "$pascal_dir" == "Wordpress" ]; then
+            pascal_dir="WordPress"
+        fi
+
         # Only attempt move if pascal_dir is not empty
         if [ -n "$pascal_dir" ]; then
-            echo "Converted directory name to PascalCase: $pascal_dir"
             mv "$parent_dir" "$pascal_dir"
             parent_dir="$pascal_dir"
         else

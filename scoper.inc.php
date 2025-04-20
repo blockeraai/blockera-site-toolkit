@@ -124,7 +124,7 @@ return [
     'exclude-namespaces' => [
         // 'Acme\Foo'                     // The Acme\Foo namespace (and sub-namespaces)
         // '~^PHPUnit\\\\Framework$~',    // The whole namespace PHPUnit\Framework (but not sub-namespaces)
-        // '~^$~',                        // The root namespace only
+        '~^$~',                        // The root namespace only
         // '',                            // Any namespace
     ],
     'exclude-classes' => [

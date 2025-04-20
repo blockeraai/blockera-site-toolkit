@@ -6,8 +6,11 @@ export type ModalProps = {
 	onClose?: () => void,
 	onRequestClose?: () => void,
 	headerIcon?: any,
-	headerTitle?: string,
+	headerTitle?: any,
 	className?: string,
 	size?: 'small' | 'medium' | 'large' | 'fill',
 	isDismissible?: boolean,
+	focusOnMount?: boolean | 'firstContentElement' | 'firstElement',
+	props?: Object,
+	style?: Object,
 };
