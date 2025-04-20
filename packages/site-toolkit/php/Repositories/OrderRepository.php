@@ -25,18 +25,30 @@ class OrderRepository
      *
      * @var array $licenses
      */
-    protected $licenses = [];
+    protected array $licenses = [];
+
+	/**
+	 * Store the context.
+	 *
+	 * @var string $context
+	 */
+	protected string $context = 'licenses';
 
     /**
      * Create a new order repository instance.
      *
      * @param Application $app The application instance.
      * @param array $orders The orders.
+	 * @param string $context The context. default is licenses.
      */
-    public function __construct(Application $app, array $orders)
+    public function __construct(Application $app, array $orders, string $context = '')
     {
         $this->app = $app;
         $this->orders = $orders;
+
+		if (!empty(trim($context))) {
+			$this->context = $context;
+		}
 
         array_map([$this, 'prepareLicense'], $this->orders);
     }
@@ -93,12 +105,18 @@ class OrderRepository
         $product = wc_get_product($productId);
         $variationId = $item->get_variation_id();
 
-		$blockeraProductId = get_post_meta($productId, 'blockera_product_id', true);
-
         // If the product is not a variation or product is not found, skip it.
-        if (! $variationId || !$product || !$blockeraProductId || !isset($_GET['product_id']) || $blockeraProductId !== $_GET['product_id']) {
+        if (! $variationId || !$product) {
             return $mappedLicenses;
         }
+
+		$blockeraProductId = get_post_meta($productId, 'blockera_product_id', true);
+
+		if ('consent-form' === $this->context) {
+			if (!$blockeraProductId || !isset($_GET['product_id']) || $blockeraProductId !== $_GET['product_id']) {
+				return $mappedLicenses;
+			}
+		}
 
         $itemSubscriptions = $order->get_meta('subscriptions');
 

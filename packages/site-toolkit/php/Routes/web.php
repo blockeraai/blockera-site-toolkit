@@ -58,7 +58,7 @@ add_action(
             wp_head();
 
 			$setupInstance = Setup::getInstance();
-			$mappedLicenses = $setupInstance->make(OrderRepository::class)->getLicenses();
+			$mappedLicenses = $setupInstance->make(OrderRepository::class, ['context' => 'consent-form'])->getLicenses();
 			
 			$user = wp_get_current_user();
 			$userId = $user->ID;

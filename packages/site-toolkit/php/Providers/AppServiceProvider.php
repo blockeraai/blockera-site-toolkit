@@ -25,14 +25,14 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(RefererMiddleware::class);
 		$this->app->singleton(LicenseRepository::class);
 
-		$this->app->singleton(OrderRepository::class, function (Application $app) {
+		$this->app->singleton(OrderRepository::class, function (Application $app, array $args = []) {
 			$orders = wc_get_orders([
 				'customer_id' => get_current_user_id(),
 				'status' => ['completed'],
 				'limit' => -1
 			]);
 
-			return new OrderRepository($app, $orders);
+			return new OrderRepository($app, $orders, $args['context'] ?? '');
 		});
     }
 
