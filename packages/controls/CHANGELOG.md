@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Bug Fixes
+- Blockera button design issue fixed. 
+
+
 ### Improvements
 - Improve Modal.
 - Improve Buttons design (Busy state for secondary variant).
