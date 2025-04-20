@@ -31,11 +31,7 @@ export const Table = ({
 				alignItems="center"
 				style={{ backgroundColor: headerBackground }}
 			>
-				<Flex
-					direction="row"
-					className="table-column-content"
-					justifyContent="space-between"
-				>
+				<Flex direction="row" className="table-column-content" gap={0}>
 					{cols}
 				</Flex>
 			</Flex>
@@ -45,7 +41,7 @@ export const Table = ({
 				alignItems="center"
 				gap={0}
 			>
-				<Flex direction="column" className="table-row-content">
+				<Flex direction="column" className="table-row-content" gap={0}>
 					{rows}
 				</Flex>
 			</Flex>

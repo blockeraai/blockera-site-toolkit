@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import type { MixedElement } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 import { useState, useCallback } from '@wordpress/element';
@@ -17,6 +17,7 @@ import {
 	ToggleControl,
 	ControlContextProvider,
 } from '@blockera/controls';
+import { Icon } from '@blockera/icons';
 
 /**
  * Internal dependencies
@@ -95,34 +96,40 @@ const License = ({
 	return (
 		<div className="license-box-wrapper">
 			<Flex
-				className="license license-card-separator product-header"
+				className="license"
 				alignItems="center"
 				justifyContent="space-between"
 			>
-				<Flex alignItems="center">
+				<Flex alignItems="center" gap={17}>
 					<Image
 						src={productLogo}
 						alt={productTitle}
-						className={{
-							'division-68': true,
-							'product-logo': true,
-						}}
+						className="product-logo"
 					/>
-					<Flex direction="column">
+
+					<Flex direction="column" gap={12}>
 						<h3 className="product-title">{productTitle}</h3>
-						<Flex gap={40}>
-							<p className="product-details">{plan}</p>
+
+						<Flex gap={15}>
 							<p className="product-details">
-								{remainingDomains > 0
-									? '(' +
-									  remainingDomains +
-									  ') ' +
-									  __(' Websites Remaining', 'blockera')
-									: __('No Websites Remaining', 'blockera')}
+								{__('License:', 'blockera')} {plan}
+							</p>
+
+							<p className="product-details">
+								{remainingDomains > 0 &&
+									sprintf(
+										// translators: %s is the number of websites remaining.
+										__('%s Websites Remaining', 'blockera'),
+										remainingDomains
+									)}
+
+								{!remainingDomains &&
+									__('No Websites Remaining', 'blockera')}
 							</p>
 						</Flex>
 					</Flex>
 				</Flex>
+
 				<ControlContextProvider
 					value={{
 						name: `toggle${plan.replace(/\s+/g, '')}`,
@@ -218,30 +225,68 @@ export const ConsentForm = ({
 		connectionState,
 	]);
 
+	const urlObject = new URL(clientUrl);
+
 	return (
-		<Flex direction="column" className="consent-form" gap="3rem">
+		<Flex
+			direction="column"
+			alignItems="stretch"
+			className="consent-form"
+			gap={15}
+		>
 			{licenses.length > 0 && (
 				<>
-					<h1>{__('Let’s connect your site', 'blockera')}</h1>
-					<p className="consent-form-description">
-						{__(
-							'Once that’s done, you’ll be able to access your site from the My Blockera dashboard.',
-							'blockera'
-						)}
-					</p>
-					<div dangerouslySetInnerHTML={{ __html: clientWebsite }} />
-					{/* <Icon name="attach" /> */}
-					<div>
-						<AttachIcon fill="#0047EB" />
-					</div>
-					{licenses?.map((license: LicenseProps) => (
-						<License
-							key={license.productTitle}
-							{...license}
-							onChange={setPickedLicense}
-							_isActive={pickedLicense?.licenseId}
-						/>
-					))}
+					<Flex
+						direction="column"
+						alignItems="center"
+						gap={15}
+						style={{ marginBottom: '15px' }}
+					>
+						<h1>{__('Let’s connect your site', 'blockera')}</h1>
+
+						<p className="consent-form-description">
+							{__(
+								'Once that’s done, you’ll be able to access your site from the My Blockera dashboard.',
+
+								'blockera'
+							)}
+						</p>
+					</Flex>
+
+					<Flex direction="column" alignItems="center">
+						<span className="domain">
+							<span>{`${urlObject.protocol}//`}</span>
+							{urlObject.hostname}
+						</span>
+					</Flex>
+
+					<Flex
+						direction="column"
+						alignItems="stretch"
+						className="consent-form-inner"
+						gap={20}
+					>
+						<div className="dashed-line" />
+
+						<Flex
+							className="link-icon-wrapper"
+							direction="column"
+							alignItems="center"
+							gap={4}
+						>
+							<Icon library="ui" icon="link" iconSize={20} />
+						</Flex>
+
+						{licenses?.map((license: LicenseProps) => (
+							<License
+								key={license.productTitle}
+								{...license}
+								onChange={setPickedLicense}
+								_isActive={pickedLicense?.licenseId}
+							/>
+						))}
+					</Flex>
+
 					<Button
 						className="connect-button"
 						variant="primary"
@@ -250,16 +295,15 @@ export const ConsentForm = ({
 							!connectionState.isConnected
 						}
 						onClick={handleConnect}
+						disabled={!pickedLicense}
 					>
-						{/* <Icon name="attach" /> */}
-						<AttachIcon
-							style={{ marginRight: '10px' }}
-							fill="#ffffff"
-						/>
-						{__('Connect', 'blockera')}
+						<Icon library="ui" icon="unlock" iconSize={24} />
+
+						{__('Connect & Activate License', 'blockera')}
 					</Button>
 				</>
 			)}
+
 			{licenses.length === 0 && (
 				<>
 					<h1>

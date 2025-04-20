@@ -107,7 +107,7 @@ const Row = ({
 	};
 
 	return (
-		<Flex direction="row" justifyContent="space-between" gap={10}>
+		<Flex direction="row" gap={0}>
 			<span className="domain">
 				<span className="number">{num}</span>
 
@@ -129,16 +129,18 @@ const Row = ({
 			</span>
 
 			{'function' === typeof setWebsites && (
-				<Button
-					className="delete-row"
-					variant="secondary"
-					size="small"
-					onClick={() => {
-						setIsDeleteModalOpen(true);
-					}}
-				>
-					{__('Remove Website', 'blockera')}
-				</Button>
+				<div className="action-buttons">
+					<Button
+						className="delete-row"
+						variant="secondary"
+						size="small"
+						onClick={() => {
+							setIsDeleteModalOpen(true);
+						}}
+					>
+						{__('Remove Website', 'blockera')}
+					</Button>
+				</div>
 			)}
 
 			{isDeleteModalOpen && (

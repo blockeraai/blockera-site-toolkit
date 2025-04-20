@@ -53,7 +53,7 @@ const Row = ({
 				{name}
 			</span>
 			<span className="version">{version || generalVersion}</span>
-			<div className="download-button">
+			<div className="action-buttons">
 				{'api' === resource && (
 					<Button
 						className="license-button-primary"
@@ -111,6 +111,7 @@ const Row = ({
 						{__('Download', 'blockera')}
 					</Button>
 				)}
+
 				{'wp' === resource && (
 					<Button
 						className="license-button-primary"
@@ -152,6 +153,9 @@ export const Downloads = ({
 			enabled: boolean,
 			id: string,
 			file: string,
+			filename: string,
+			version: string,
+			resource: 'wp' | 'api',
 		},
 	},
 	version: string,
