@@ -19,6 +19,7 @@ defined('YITH_YWSBS_INIT') || exit; // Exit if accessed directly.
 ?>
 <div id="blockera-site-toolkit-consent-form"></div>
 <script>
+	window.blockeraProductId = '<?php echo $_GET['product'] ?? ''; ?>';
 	window.clientId = '<?php echo $clientId; ?>';
 	window.shopUrl = '<?php echo home_url('/shop'); ?>';
 	window.isConsentForm = true;

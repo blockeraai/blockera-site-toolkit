@@ -263,14 +263,13 @@ export const ConsentForm = ({
 			{licenses.length === 0 && (
 				<>
 					<h1>
-						{__(
-							'❌ No subscriptions found for this product',
-							'blockera'
-						)}
+						{__('❌ No Licenses found for ', 'blockera')}
+						<strong>{window.blockeraProductId || 'EMPTY'}</strong>
+						{__(' product', 'blockera')}
 					</h1>
 					<p className="consent-form-description">
 						{__(
-							'Please check your subscriptions and try again.',
+							'Please check your licenses and try again.',
 							'blockera'
 						)}
 					</p>

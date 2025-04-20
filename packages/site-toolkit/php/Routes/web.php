@@ -77,11 +77,6 @@ add_action(
 
 				echo '<script>window.location.href = "' . esc_url(urldecode($transient)) . '";</script>';
 				exit;
-			} elseif (empty($mappedLicenses)) {
-				set_transient($transientKey, urlencode($currentUrl), 60 * 60 * 24);
-
-				echo '<script>window.location.href = "' . esc_url(home_url('/shop')) . '";</script>';
-				exit;
 			}
 
 			$clientInfo = get_user_meta(get_current_user_id(), 'blockera_api_client_info', true);

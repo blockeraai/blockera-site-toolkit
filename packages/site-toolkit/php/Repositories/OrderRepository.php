@@ -93,8 +93,10 @@ class OrderRepository
         $product = wc_get_product($productId);
         $variationId = $item->get_variation_id();
 
+		$blockeraProductId = get_post_meta($productId, 'blockera_product_id', true);
+
         // If the product is not a variation or product is not found, skip it.
-        if (! $variationId || !$product) {
+        if (! $variationId || !$product || !$blockeraProductId || !isset($_GET['product_id']) || $blockeraProductId !== $_GET['product_id']) {
             return $mappedLicenses;
         }
 
