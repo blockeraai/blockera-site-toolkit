@@ -110,10 +110,10 @@ class OrderRepository
             return $mappedLicenses;
         }
 
-		$blockeraProductId = get_post_meta($productId, 'blockera_product_id', true);
+		$blockeraProductId = get_post_meta($productId, 'product_id', true);
 
 		if ('consent-form' === $this->context) {
-			if (!$blockeraProductId || !isset($_GET['product_id']) || $blockeraProductId !== $_GET['product_id']) {
+			if (!$blockeraProductId || !isset($_GET['product']) || $blockeraProductId !== $_GET['product']) {
 				return $mappedLicenses;
 			}
 		}
