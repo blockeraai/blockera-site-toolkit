@@ -558,8 +558,8 @@ if (!function_exists('bsaGetDownloadableFiles')) {
 		
 		if ($args['isActivatedFreeDownload']) {
 			$freeVersion = [
-				'resource' => 'wp', 
-				'name' => 'Blockera Free',
+				'resource' => 'wp',
+                'name' => 'Free Version',
 				'filename' => 'blockera.latest.zip',
 				'enabled' => true,
 				'id' => wp_generate_uuid4(),
