@@ -110,10 +110,8 @@ const License = ({
 					<Flex direction="column" gap={12}>
 						<h3 className="product-title">{productTitle}</h3>
 
-						<Flex gap={15}>
-							<p className="product-details">
-								{__('License:', 'blockera')} {plan}
-							</p>
+						<Flex gap={15} alignItems="center">
+							<p className="product-details">{plan}</p>
 
 							<p className="product-details">
 								{remainingDomains > 0 &&

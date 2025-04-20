@@ -524,6 +524,17 @@
 				font-size: 14px;
 				color: #a3a3a3;
 			}
+
+			.product-details + .product-details:before {
+				content: "";
+				margin-right: 15px;
+				display: inline-block;
+				width: 4px;
+				height: 4px;
+				background-color: color-mix(in srgb, var(--blockera-controls-primary-color) 30%, #ffffff);
+				vertical-align: middle;
+				border-radius: 50%;
+			}
 		}
 
 		.connect-button {
