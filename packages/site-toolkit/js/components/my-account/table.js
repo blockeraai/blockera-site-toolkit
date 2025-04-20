@@ -31,10 +31,19 @@ export const Table = ({
 				alignItems="center"
 				style={{ backgroundColor: headerBackground }}
 			>
-				{cols}
+				<Flex direction="row" className="table-column-content" gap={0}>
+					{cols}
+				</Flex>
 			</Flex>
-			<Flex className={classNames('table-row')} alignItems="center">
-				{rows}
+
+			<Flex
+				className={classNames('table-row')}
+				alignItems="center"
+				gap={0}
+			>
+				<Flex direction="column" className="table-row-content" gap={0}>
+					{rows}
+				</Flex>
 			</Flex>
 		</Flex>
 	);

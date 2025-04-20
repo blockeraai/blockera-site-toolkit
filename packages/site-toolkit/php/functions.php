@@ -127,6 +127,11 @@ if (!function_exists('bsaGetEnv')) {
      */
     function bsaGetEnv(string $key): string
     {
+		// FIXME: remove this statement because we need to sure about .env file to be loaded or not. it seems that it's not loaded in the production environment.
+        if ('BSA_API_BASE_URL' === $key && 'dev' !== BSA_PLUGIN_MODE) {
+            return 'https://api.blockera.ai';
+        }
+
         return $_ENV[$key] ?? '';
     }
 }
@@ -164,17 +169,18 @@ if (!function_exists('bsaGetUserAccessToken')) {
      * Get the user access token.
      *
      * @param \WP_User $user The user object.
+	 * @param bool $redirect The flag to determine if the user should be redirected to the redirect uri. Default is true.
      *
      * @return array
      */
-    function bsaGetUserAccessToken(\WP_User $user = null): array
+    function bsaGetUserAccessToken(\WP_User $user = null, bool $redirect = true): array
     {
         $user = $user ?? wp_get_current_user();
         $metaKey = 'blockera_api_user_info';
         $metadata = get_user_meta($user->ID, $metaKey, true);
 
         // If the user info is already cached, return it.
-        if (!empty($metadata) && 'false' === bsaGetConfig('DEBUG')) {
+        if (!empty($metadata) && 'dev' === BSA_PLUGIN_MODE) {
             return $metadata;
         }
 
@@ -188,7 +194,10 @@ if (!function_exists('bsaGetUserAccessToken')) {
                 'Content-Type' => 'application/json',
             ],
             'body' => json_encode([
+				'user_id' => $user->ID,
                 'email' => $user->user_email,
+				'username' => $user->user_login,
+				'nonce' => md5('blockera-site-toolkit'),
             ]),
         ]);
 
@@ -199,15 +208,23 @@ if (!function_exists('bsaGetUserAccessToken')) {
         $redirectURI = empty($_GET['redirect_uri']) ? home_url() : $_GET['redirect_uri'] . '&' . $query;
 
         if (is_wp_error($response)) {
-            wp_redirect($redirectURI, 302);
-            exit;
+            if ($redirect) {
+				wp_redirect($redirectURI, 302);
+                exit;
+			}
+
+			return [];
         }
 
         $body = json_decode(wp_remote_retrieve_body($response), true);
 
         if (empty($body['success'])) {
-            wp_redirect($redirectURI, 302);
-            exit;
+            if ($redirect) {
+				wp_redirect($redirectURI, 302);
+                exit;
+			}
+
+			return [];
         }
 
         // Cache the user info in the user meta.
@@ -233,7 +250,7 @@ if (!function_exists('bsaDoStoreClient')) {
         $metadata = get_user_meta($user->ID, $metaKey, true);
 
         // If the client info is already cached, return it.
-        if (!empty($metadata) && 'false' === bsaGetConfig('DEBUG')) {
+        if (!empty($metadata) && 'dev' === BSA_PLUGIN_MODE) {
             return $metadata;
         }
 
@@ -262,6 +279,53 @@ if (!function_exists('bsaDoStoreClient')) {
         update_user_meta($user->ID, $metaKey, $body['data']);
 
         return $body['data'];
+    }
+}
+
+if (!function_exists('bsaDoTerminateClient')) {
+    /**
+     * Do the client terminate request.
+	 * 
+	 * @param string $authorization The authorization header.
+     *
+     * @return bool true on success, false on otherwise.
+     */
+    function bsaDoTerminateClient(string $authorization): bool
+    {
+        $user = wp_get_current_user();
+        $metaKey = 'blockera_api_client_info';
+        $metadata = get_user_meta($user->ID, $metaKey, true);
+
+        if (empty($metadata)) {
+            return false;
+        }
+
+        $response = wp_remote_request(bsaGetEnv('BSA_API_BASE_URL') . '/clients-manager/v1/clients/' . $metadata['client_id'], [
+            'timeout' => 30,
+            'redirection' => 5,
+            'httpversion' => '1.1',
+            'sslverify' => false,
+            'method' => 'DELETE',
+            'headers' => [
+                'Authorization' => $authorization,
+            ],
+			'body' => [
+				'client_id' => $metadata['client_id'],
+			]
+        ]);
+
+        if (is_wp_error($response)) {
+			dd($response);
+            return false;
+        }
+
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+
+        if (empty($body['success'])) {
+            return false;
+        }
+        
+        return delete_user_meta($user->ID, $metaKey);
     }
 }
 
@@ -305,7 +369,6 @@ if (!function_exists('bsaDoAuthorization')) {
         ]);
 
         if (is_wp_error($response)) {
-            dd($response->get_error_message());
             return [];
         }
 
@@ -448,4 +511,101 @@ if (!function_exists('bsaFilterActiveLicenses')) {
             return 'deleted' !== $license['status'];
         });
     }
+}
+
+if (!function_exists('bsaGetDownloadableFiles')) {
+    /**
+     * Get the downloadable files.
+     *
+	 * @param int $variationId The ID of the variation.
+	 * @param array $args The extra arguments. includes 
+     *
+     * @return array The downloadable files.
+     */
+    function bsaGetDownloadableFiles(int $variationId, array $args): array
+    {
+		$downloads = [];
+		$downloadableFiles = get_post_meta($variationId, '_downloadable_files', true);
+
+		if (!empty($downloadableFiles)) {
+
+			foreach ($downloadableFiles as $downloadableFileId => $downloadableFile) {
+
+				$downloads[$downloadableFileId] = [
+					'resource' => 'api',
+                    'name' => $downloadableFile['name'],
+                    'filename' => basename($downloadableFile['file']),
+                    'file' => bsaGetEnv('BSA_API_BASE_URL') . '/files/v1/download/' . $downloadableFileId,
+                    'enabled' => $downloadableFile['enabled'] ?? true,
+                    'id' => $downloadableFileId,
+                ];
+			}
+		}
+
+		if(empty($downloads)) {
+			$downloads = array_map(function (array $downloadableFile, string $downloadableFilename):array {
+				return [
+					'resource' => 'api',
+					'name' => $downloadableFilename,
+					'filename' => basename($downloadableFile['file']),
+					'file' => bsaGetEnv('BSA_API_BASE_URL') . '/files/v1/download/' . $downloadableFile['hash'],
+					'enabled' => true,
+					'id' => $downloadableFile['hash'],
+					'version' => $downloadableFile['version'],
+				];
+			}, $args['fallbackDownloadableFiles'], array_keys($args['fallbackDownloadableFiles']));
+		}
+		
+		if ($args['isActivatedFreeDownload']) {
+			$freeVersion = [
+				'resource' => 'wp',
+                'name' => 'Free Version',
+				'filename' => 'blockera.latest.zip',
+				'enabled' => true,
+				'id' => wp_generate_uuid4(),
+				'file' => sprintf('https://downloads.wordpress.org/plugin/%s.latest-stable.zip', $args['freeSlug']),
+				'version' => bsaGetWPOrgPluginVersion($args['freeSlug']),
+			];
+
+			if(!empty($downloads)) {
+				array_unshift($downloads, $freeVersion);
+			} else {
+				$downloads[] = $freeVersion;
+			}
+		}
+
+		return $downloads;
+    }
+}
+
+if(!function_exists('bsaGetWPOrgPluginVersion')) {
+	/**
+	 * Get the version of the plugin from the WordPress.org.
+	 * 
+	 * @param string $slug The slug of the plugin.
+	 * 
+	 * @return string The version of the plugin.
+	 */
+	function bsaGetWPOrgPluginVersion(string $slug): string
+	{
+		$transientKey = 'blockera_wp_org_' . $slug . '_plugin_info';
+		$transient = get_transient($transientKey);
+
+		if (false !== $transient) {
+			return $transient['version'] ?? '';
+		}
+
+		$url = sprintf('https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request[slug]=%s', $slug);
+		$response = wp_remote_get($url);
+
+		if(is_wp_error($response)) {
+			return '';
+		}
+
+		$info = json_decode(wp_remote_retrieve_body($response), true);
+
+		set_transient($transientKey, $info, 60 * 60 * 24); // 1 day.
+
+		return $info['version'] ?? '';
+	}
 }

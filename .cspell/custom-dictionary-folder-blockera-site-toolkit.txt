@@ -1,0 +1,11 @@
+# Custom Dictionary Words
+ABSPATH
+autoloader
+backface
+blockera
+Blocksy
+clsx
+freemius
+phpcs
+sprintf
+woocommerce

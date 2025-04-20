@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import type { MixedElement } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 import { useState, useCallback } from '@wordpress/element';
@@ -15,17 +15,18 @@ import {
 	Flex,
 	Button,
 	ToggleControl,
-	LoadingComponent,
 	ControlContextProvider,
 } from '@blockera/controls';
+import { Icon } from '@blockera/icons';
 
 /**
  * Internal dependencies
  */
 import { Image } from '../image';
 
-const AttachIcon = ({ fill }: { fill: string }) => (
+const AttachIcon = ({ fill, style }: { fill: string, style: Object }) => (
 	<svg
+		style={style}
 		width="12"
 		height="13"
 		viewBox="0 0 12 13"
@@ -41,7 +42,23 @@ const AttachIcon = ({ fill }: { fill: string }) => (
 	</svg>
 );
 
+type LicenseOnChangeHandler = (params: {
+	type: 'subscription' | 'no-subscription',
+	orderId: number,
+	orderItemId: number,
+	licenseId: number,
+	productId: number,
+	variationId: number,
+	subscriptionId: number,
+}) => void;
+
 type LicenseProps = {
+	type: 'subscription' | 'no-subscription',
+	orderId: number,
+	orderItemId: number,
+	productId: number,
+	variationId: number,
+	subscriptionId: number,
 	productLogo: string,
 	plan: string,
 	_isActive: boolean,
@@ -52,72 +69,86 @@ type LicenseProps = {
 	maxDomains: number,
 	expiryDate: string,
 	activeWebsites: Array<string>,
-	onChange: (licenseId: number) => void,
+	onChange: LicenseOnChangeHandler,
 };
 
 const License = ({
-	productTitle,
-	// productColor,
-	productLogo,
-	licenseId,
+	type,
 	plan,
+	orderId,
 	_isActive,
+	productId,
+	licenseId,
 	maxDomains,
+	variationId,
+	orderItemId,
+	productLogo,
+	productTitle,
 	// expiryDate,
+	subscriptionId,
 	activeWebsites,
+	// productColor,
 	// status,
 	onChange,
 }: LicenseProps): MixedElement => {
-	const [isActive, setIsActive] = useState(_isActive);
 	const remainingDomains = maxDomains - activeWebsites.length;
-
-	const onActiveChange = (licenseId: number) => {
-		setIsActive(!isActive);
-		onChange(licenseId);
-	};
 
 	return (
 		<div className="license-box-wrapper">
 			<Flex
-				className="license license-card-separator product-header"
+				className="license"
 				alignItems="center"
 				justifyContent="space-between"
 			>
-				<Flex alignItems="center">
+				<Flex alignItems="center" gap={17}>
 					<Image
 						src={productLogo}
 						alt={productTitle}
-						className={{
-							'division-68': true,
-							'product-logo': true,
-						}}
+						className="product-logo"
 					/>
-					<Flex direction="column">
+
+					<Flex direction="column" gap={12}>
 						<h3 className="product-title">{productTitle}</h3>
-						<Flex gap={40}>
+
+						<Flex gap={15} alignItems="center">
 							<p className="product-details">{plan}</p>
+
 							<p className="product-details">
-								{remainingDomains > 0
-									? '(' +
-									  remainingDomains +
-									  ') ' +
-									  __(' Websites Remaining', 'blockera')
-									: __('No Websites Remaining', 'blockera')}
+								{remainingDomains > 0 &&
+									sprintf(
+										// translators: %s is the number of websites remaining.
+										__('%s Websites Remaining', 'blockera'),
+										remainingDomains
+									)}
+
+								{!remainingDomains &&
+									__('No Websites Remaining', 'blockera')}
 							</p>
 						</Flex>
 					</Flex>
 				</Flex>
+
 				<ControlContextProvider
 					value={{
 						name: `toggle${plan.replace(/\s+/g, '')}`,
-						value: isActive,
+						value: licenseId === _isActive,
 					}}
 				>
 					<ToggleControl
 						labelType={'self'}
 						id={`toggle${plan.replace(/\s+/g, '')}`}
-						defaultValue={isActive}
-						onChange={() => onActiveChange(licenseId)}
+						defaultValue={licenseId === _isActive}
+						onChange={() =>
+							onChange({
+								type,
+								orderId,
+								licenseId,
+								productId,
+								variationId,
+								orderItemId,
+								subscriptionId,
+							})
+						}
 					/>
 				</ControlContextProvider>
 			</Flex>
@@ -126,13 +157,15 @@ const License = ({
 };
 
 export const ConsentForm = ({
+	shopUrl,
 	clientId,
+	licenses,
 	clientUrl,
 	redirectUrl,
 	consentNonce,
-	licenses,
 	clientWebsite,
 }: {
+	shopUrl: string,
 	clientId: string,
 	clientUrl: string,
 	redirectUrl: string,
@@ -141,7 +174,7 @@ export const ConsentForm = ({
 	licenses: Array<LicenseProps>,
 }): MixedElement => {
 	const [pickedLicense, setPickedLicense] = useState(
-		1 === licenses.length ? licenses[0].licenseId : null
+		1 === licenses.length ? licenses[0] : null
 	);
 	const [connectionState, setConnectionState] = useState({
 		isConnected: false,
@@ -163,7 +196,13 @@ export const ConsentForm = ({
 			data: {
 				domain: clientUrl,
 				client_id: clientId,
-				license_id: pickedLicense,
+				type: pickedLicense.type,
+				order_id: pickedLicense.orderId,
+				product_id: pickedLicense.productId,
+				license_id: pickedLicense.licenseId,
+				variation_id: pickedLicense.variationId,
+				order_item_id: pickedLicense.orderItemId,
+				subscription_id: pickedLicense.subscriptionId,
 			},
 		}).then((response) => {
 			if (response?.success) {
@@ -175,44 +214,118 @@ export const ConsentForm = ({
 					redirectUrl + '&connectedWithYourAccount=true';
 			}
 		});
-	}, [pickedLicense]);
+	}, [
+		clientId,
+		clientUrl,
+		redirectUrl,
+		consentNonce,
+		pickedLicense,
+		connectionState,
+	]);
+
+	const urlObject = new URL(clientUrl);
 
 	return (
-		<Flex direction="column" className="consent-form" gap="3rem">
-			<h1>{__('Let’s connect your site', 'blockera')}</h1>
-			<p className="consent-form-description">
-				{__(
-					'Once that’s done, you’ll be able to access your site from the My Blockera dashboard.',
-					'blockera'
-				)}
-			</p>
-			<div dangerouslySetInnerHTML={{ __html: clientWebsite }} />
-			{/* <Icon name="attach" /> */}
-			<div>
-				<AttachIcon fill="#0047EB" />
-			</div>
-			{licenses?.map((license: LicenseProps) => (
-				<License
-					key={license.productTitle}
-					{...license}
-					onChange={setPickedLicense}
-					_isActive={1 === licenses.length}
-				/>
-			))}
-			<Button
-				className="connect-button"
-				variant="primary"
-				onClick={handleConnect}
-			>
-				{/* <Icon name="attach" /> */}
-				<AttachIcon fill="#ffffff" />
-				{!connectionState.isConnected && __('Connect', 'blockera')}
-				{connectionState.isConnected &&
-					__('Connected and Redirecting …', 'blockera')}
-				{connectionState.isConnecting && (
-					<LoadingComponent color="#ffffff" />
-				)}
-			</Button>
+		<Flex
+			direction="column"
+			alignItems="stretch"
+			className="consent-form"
+			gap={15}
+		>
+			{licenses.length > 0 && (
+				<>
+					<Flex
+						direction="column"
+						alignItems="center"
+						gap={15}
+						style={{ marginBottom: '15px' }}
+					>
+						<h1>{__('Let’s connect your site', 'blockera')}</h1>
+
+						<p className="consent-form-description">
+							{__(
+								'Once that’s done, you’ll be able to access your site from the My Blockera dashboard.',
+
+								'blockera'
+							)}
+						</p>
+					</Flex>
+
+					<Flex direction="column" alignItems="center">
+						<span className="domain">
+							<span>{`${urlObject.protocol}//`}</span>
+							{urlObject.hostname}
+						</span>
+					</Flex>
+
+					<Flex
+						direction="column"
+						alignItems="stretch"
+						className="consent-form-inner"
+						gap={20}
+					>
+						<div className="dashed-line" />
+
+						<Flex
+							className="link-icon-wrapper"
+							direction="column"
+							alignItems="center"
+							gap={4}
+						>
+							<Icon library="ui" icon="link" iconSize={20} />
+						</Flex>
+
+						{licenses?.map((license: LicenseProps) => (
+							<License
+								key={license.productTitle}
+								{...license}
+								onChange={setPickedLicense}
+								_isActive={pickedLicense?.licenseId}
+							/>
+						))}
+					</Flex>
+
+					<Button
+						className="connect-button"
+						variant="primary"
+						isBusy={
+							connectionState.isConnecting &&
+							!connectionState.isConnected
+						}
+						onClick={handleConnect}
+						disabled={!pickedLicense}
+					>
+						<Icon library="ui" icon="unlock" iconSize={24} />
+
+						{__('Connect & Activate License', 'blockera')}
+					</Button>
+				</>
+			)}
+
+			{licenses.length === 0 && (
+				<>
+					<h1>
+						{__('❌ No Licenses found for ', 'blockera')}
+						<strong>{window.blockeraProductId || 'EMPTY'}</strong>
+						{__(' product', 'blockera')}
+					</h1>
+					<p className="consent-form-description">
+						{__(
+							'Please check your licenses and try again.',
+							'blockera'
+						)}
+					</p>
+					<Button
+						className="connect-button"
+						variant="primary"
+						onClick={() => {
+							window.location.href = shopUrl;
+						}}
+					>
+						{__('Go to Shop', 'blockera')}
+					</Button>
+				</>
+			)}
 		</Flex>
 	);
 };

@@ -5,12 +5,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import type { MixedElement } from 'react';
+import { useState } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Blockera dependencies
  */
-import { Icon } from '@blockera/icons';
-import { Flex } from '@blockera/controls';
+import { Flex, Button } from '@blockera/controls';
 
 /**
  * Internal dependencies
@@ -22,36 +23,120 @@ const Row = ({
 	num,
 	name,
 	version,
-	file,
+	generalVersion,
 	enabled,
+	filename,
 	id,
+	resource,
+	file,
 }: {
 	id: string,
 	num: number,
 	name: string,
 	version: string,
+	generalVersion: string,
 	file: string,
+	filename: string,
 	enabled: boolean,
-}): MixedElement => (
-	<>
-		<span className="name">
-			<span className="number">{num}</span>
-			{name}
-		</span>
-		<span className="version">{version}</span>
-		<div className="download-button">
-			<a
-				className="components-button blockera-component blockera-component-button size-small variant-primary content-align-center license-button-primary is-primary has-text has-icon"
-				href={enabled ? file : '#'}
-				data-id={id}
-				rel="noopener noreferrer"
-			>
-				<Icon icon="download" library="wp" />
-				{__('Download', 'blockera')}
-			</a>
-		</div>
-	</>
-);
+	resource: 'wp' | 'api',
+}): MixedElement => {
+	const { blockeraaiNonce } = window;
+	const [isBusy, setIsBusy] = useState(false);
+	// FIXME: This is a solution of WordPress Button to show the destructive button when the download fails.
+	// We need to fix our css styles because isDestructive is not working. @ali
+	const [isDestructive, setIsDestructive] = useState(false);
+
+	return (
+		<Flex direction="row" gap={10} justifyContent="space-between">
+			<span className="name">
+				<span className="number">{num}</span>
+				{name}
+			</span>
+			<span className="version">{version || generalVersion}</span>
+			<div className="action-buttons">
+				{'api' === resource && (
+					<Button
+						className="license-button-primary"
+						variant="primary"
+						data-id={id}
+						disabled={!enabled}
+						isBusy={isBusy}
+						isDestructive={isDestructive}
+						onClick={() => {
+							setIsBusy(true);
+
+							apiFetch({
+								method: 'POST',
+								path: '/auth/v1/download',
+								headers: {
+									'X-Blockera-Nonce': blockeraaiNonce,
+								},
+								data: {
+									token: id,
+									name: filename,
+								},
+							})
+								.then((response) => {
+									if (
+										response.success &&
+										response.data.temporary_download_url
+									) {
+										// Create temp link and click it to download
+										const a = document.createElement('a');
+										a.href =
+											response.data.temporary_download_url;
+										a.download = name;
+										a.style.display = 'none';
+
+										// Ensure document.body exists before appending
+										if (document.body) {
+											document.body.appendChild(a);
+											a.click();
+											document.body.removeChild(a);
+										} else {
+											// Fallback if document.body is not available
+											a.click();
+										}
+										setIsBusy(false);
+									}
+								})
+								.catch((error) => {
+									console.error('Download failed:', error);
+									setIsBusy(false);
+									setIsDestructive(true);
+								});
+						}}
+						rel="noopener noreferrer"
+					>
+						{__('Download', 'blockera')}
+					</Button>
+				)}
+
+				{'wp' === resource && (
+					<Button
+						className="license-button-primary"
+						variant="primary"
+						data-id={id}
+						href={file}
+						disabled={!enabled}
+						isBusy={isBusy}
+						onClick={() => {
+							setIsBusy(true);
+
+							setTimeout(() => {
+								setIsBusy(false);
+							}, 2000);
+						}}
+						isDestructive={isDestructive}
+						rel="noopener noreferrer"
+					>
+						{__('Download', 'blockera')}
+					</Button>
+				)}
+			</div>
+		</Flex>
+	);
+};
 
 /**
  * Downloads component.
@@ -68,16 +153,20 @@ export const Downloads = ({
 			enabled: boolean,
 			id: string,
 			file: string,
+			filename: string,
+			version: string,
+			resource: 'wp' | 'api',
 		},
 	},
 	version: string,
 }): MixedElement => {
 	return (
-		<Flex gap={20} direction="column" className="license-card-separator">
+		<Flex gap={20} direction="column" className="license-card-section">
 			<HeaderSection
 				icon={{
-					icon: 'download',
-					library: 'wp',
+					icon: 'download-box',
+					library: 'ui',
+					iconSize: 24,
 				}}
 				title={__('Downloads', 'blockera')}
 			/>
@@ -99,7 +188,7 @@ export const Downloads = ({
 					<Row
 						key={index}
 						{...download}
-						version={version}
+						generalVersion={version}
 						num={index + 1}
 					/>
 				))}

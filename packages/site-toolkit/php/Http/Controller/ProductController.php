@@ -3,7 +3,6 @@
 namespace BlockeraAI\SiteToolkit\Http\Controller;
 
 use BlockeraAI\SiteToolkit\Repositories\ProductRepository;
-use BlockeraAI\SiteToolkit\Repositories\SubscriptionRepository;
 
 class ProductController
 {
@@ -67,21 +66,21 @@ class ProductController
      */
     public function save(int $postId, \WP_Post $post, $update): void
     {
-        // Prevent autosave and revision handling
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-            return;
-        }
-        if (wp_is_post_revision($postId)) {
+        // Prevent autosave and revision handling.
+        if ((defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) || wp_is_post_revision($postId)) {
             return;
         }
 
-        // Check if it's a variable product
+        // Check if it's a variable product.
         $product = wc_get_product($postId);
         if (!$product || !$product->is_type('variable')) {
             return;
         }
 
-        // Get all variations
+        // Upload general file to remote server.
+        $this->uploadGeneralFileToRemoteServer($postId);
+
+        // Get all variations.
         $variations = $product->get_children();
 
         array_map(function ($variationId) use ($postId) {
@@ -89,13 +88,20 @@ class ProductController
         }, $variations);
     }
 
+    /**
+     * Saving variation.
+     *
+     * @param int $variationId The variation id.
+     * @param int $postId The post id.
+     *
+     * @return void
+     */
     protected function savingVariation(int $variationId, int $postId): void
     {
         $variation = wc_get_product($variationId);
         if (!$variation) {
             return;
         }
-
 
         // Get variation object
         $variation = wc_get_product($variationId);
@@ -108,6 +114,100 @@ class ProductController
         }, $variation->get_data()['downloads'] ?? []);
     }
 
+    /**
+     * Upload general file to remote server.
+     *
+     * @param int $postId The post id.
+     *
+     * @return void
+     */
+    protected function uploadGeneralFileToRemoteServer(int $postId): void
+    {
+        $product = wc_get_product($postId);
+        if (!$product) {
+            return;
+        }
+
+        $files = $product->get_meta('product_downloadable_files');
+
+        if (empty($files)) {
+            return;
+        }
+
+        foreach ($files as $fileData) {
+
+			$file = str_replace(get_site_url() . '/', ABSPATH, $fileData['file']);
+
+			// Throw error if file is empty or not exists.
+			if (empty($file) || !file_exists($file)) {
+				continue;
+			}
+
+			// Upload file to remote server.
+			$boundary = wp_generate_password(24);
+			$payload = '';
+
+			// Add text fields
+			$payload .= '--' . $boundary . "\r\n";
+			$payload .= 'Content-Disposition: form-data; name="token"' . "\r\n\r\n";
+			$payload .= $fileData['hash'] . "\r\n";
+
+			$payload .= '--' . $boundary . "\r\n";
+			$payload .= 'Content-Disposition: form-data; name="name"' . "\r\n\r\n";
+			$payload .= basename($file) . "\r\n";
+
+			$payload .= '--' . $boundary . "\r\n";
+			$payload .= 'Content-Disposition: form-data; name="product_id"' . "\r\n\r\n";
+			$payload .= $postId . "\r\n";
+
+			// Add file
+			$payload .= '--' . $boundary . "\r\n";
+			$payload .= 'Content-Disposition: form-data; name="file"; filename="' . basename($file) . '"' . "\r\n";
+			$payload .= 'Content-Type: application/octet-stream' . "\r\n\r\n";
+			$payload .= file_get_contents($file) . "\r\n";
+
+			$payload .= '--' . $boundary . '--';
+
+			$response = wp_remote_post(
+				bsaGetConfig('BSA_API_BASE_URL') . '/files/v1/upload',
+				[
+					'timeout' => 30,
+					'sslverify' => false,
+					'headers' => [
+						'Accept' => 'application/json',
+						'Content-Type' => 'multipart/form-data; boundary=' . $boundary
+					],
+					'body' => $payload
+				]
+			);
+
+			$status = wp_remote_retrieve_response_code($response);
+
+			// Occurs when the file already exists.
+			if (200 === $status) {
+				// Delete the file from the WordPress uploads directory.
+				$this->deleteFile($file);
+
+				continue;
+			}
+
+			// Skip if request failed.
+			if (is_wp_error($response) || $status !== 201) {
+				$body = json_decode(wp_remote_retrieve_body($response), true);
+				wp_die(implode(', ', iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveArrayIterator($body['errors'])))));
+			}
+        }
+    }
+
+    /**
+     * Upload file to remote server.
+     *
+     * @param \WC_Product_Download $download The download object.
+     * @param int $variationId The variation id.
+     * @param int $postId The post id.
+     *
+     * @return void
+     */
     protected function uploadFileToRemoteServer(\WC_Product_Download $download, int $variationId, int $postId): void
     {
         $fileUrl = $download->get_file();
@@ -120,11 +220,11 @@ class ProductController
 
         // Throw error if file is empty or not exists.
         if (empty($file) || !file_exists($file)) {
-            throw new \Exception('File not found: ' . $file . ' for product: ' . $postId . ' and variation: ' . $variationId);
+            return;
         }
 
         // Get current user credentials
-        $userCredentials = bsaGetUserAccessToken();
+        $userCredentials = bsaGetUserAccessToken(null, false);
         if (empty($userCredentials)) {
             return;
         }
@@ -176,6 +276,9 @@ class ProductController
 
         // Occurs when the file already exists.
         if (200 === $status) {
+            // Delete the file from the WordPress uploads directory.
+            $this->deleteFile($fileUrl);
+
             return;
         }
 
@@ -183,7 +286,20 @@ class ProductController
         if (is_wp_error($response) || $status !== 201) {
             $body = json_decode(wp_remote_retrieve_body($response), true);
 
-            throw new \Exception(implode(', ', $body['errors']));
+            wp_die(implode(', ', iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveArrayIterator($body['errors'])))));
         }
+    }
+
+    /**
+     * Delete file from internal server.
+     *
+     * @param string $fileUrl The file url.
+     *
+     * @return void
+     */
+    protected function deleteFile(string $fileUrl): void
+    {
+        $mediaId = attachment_url_to_postid($fileUrl);
+        wp_delete_post($mediaId);
     }
 }

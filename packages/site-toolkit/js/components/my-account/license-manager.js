@@ -9,9 +9,11 @@ import type { MixedElement } from 'react';
  * Internal dependencies
  */
 import { Header } from './header';
+import { SubscriptionInformation } from './subscription-information';
 import { LicenseInformation } from './license-information';
 
 export const LicenseManager = ({
+	type,
 	productTitle,
 	productColor,
 	productLogo,
@@ -20,15 +22,14 @@ export const LicenseManager = ({
 	updatedOn,
 	plan,
 	maxDomains,
-	upgradable,
-	isAutoRenew,
 	startDate,
 	expiryDate,
-	renewAmount,
 	downloads,
 	activeWebsites,
+	developmentWebsites,
 	status,
 }: {
+	type: 'subscription' | 'non-subscription',
 	productColor: string,
 	productTitle: string,
 	productLogo: string,
@@ -37,11 +38,8 @@ export const LicenseManager = ({
 	subscriptionId: number,
 	plan: string,
 	maxDomains: number,
-	upgradable: string,
-	isAutoRenew: boolean,
 	startDate: string,
 	expiryDate: string,
-	renewAmount: string,
 	downloads: {
 		[key: string]: {
 			name: string,
@@ -50,7 +48,12 @@ export const LicenseManager = ({
 			file: string,
 		},
 	},
-	activeWebsites: { [key: string]: string },
+	activeWebsites: {
+		[key: string]: { mode: 'production' | 'development', website: string },
+	},
+	developmentWebsites: {
+		[key: string]: { mode: 'production' | 'development', website: string },
+	},
 	status: string,
 }): MixedElement => {
 	return (
@@ -58,11 +61,10 @@ export const LicenseManager = ({
 			className="license-manager"
 			style={{
 				'--blockera-product-color': productColor,
-				'--blockera-license-card-border-color': '#CFE0FF',
-				'--blockera-license-information-row-border-color': '#F7F7F7',
 			}}
 		>
 			<Header
+				type={type}
 				status={status}
 				expiryDate={expiryDate}
 				logo={productLogo}
@@ -71,19 +73,33 @@ export const LicenseManager = ({
 				updatedOn={updatedOn}
 			/>
 
-			<LicenseInformation
-				subscriptionId={subscriptionId}
-				plan={plan}
-				version={productVersion}
-				activeWebsites={activeWebsites}
-				maxDomains={maxDomains}
-				upgradable={upgradable}
-				isAutoRenew={isAutoRenew}
-				startDate={startDate}
-				expiryDate={expiryDate}
-				renewAmount={renewAmount}
-				downloads={downloads}
-			/>
+			{type === 'subscription' ? (
+				<SubscriptionInformation
+					subscriptionId={subscriptionId}
+					plan={plan}
+					version={productVersion}
+					activeWebsites={activeWebsites}
+					developmentWebsites={developmentWebsites}
+					maxDomains={maxDomains}
+					startDate={startDate}
+					expiryDate={expiryDate}
+					downloads={downloads}
+					status={status}
+					productColor={productColor}
+				/>
+			) : (
+				<LicenseInformation
+					developmentWebsites={developmentWebsites}
+					subscriptionId={subscriptionId}
+					plan={plan}
+					version={productVersion}
+					activeWebsites={activeWebsites}
+					maxDomains={maxDomains}
+					startDate={startDate}
+					downloads={downloads}
+					productColor={productColor}
+				/>
+			)}
 		</div>
 	);
 };

@@ -41,7 +41,7 @@ class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider
     {
         add_filter('blockera/wordpress/' . $this->getId() . '/handle/inline-script', [$this, 'getHandler']);
 
-        if (str_starts_with($_SERVER['REQUEST_URI'], '/my-account/my-subscription') || str_starts_with($_SERVER['REQUEST_URI'], '/consent-form')) {
+        if (str_starts_with($_SERVER['REQUEST_URI'], '/my-account/licenses') || str_starts_with($_SERVER['REQUEST_URI'], '/consent-form')) {
             $this->app->make(
                 $this->getId(),
                 [

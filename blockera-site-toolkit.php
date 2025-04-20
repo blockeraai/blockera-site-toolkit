@@ -50,7 +50,7 @@ add_action('plugins_loaded', function () use ($setup): void {
     });
 });
 
-if('true' === bsaGetConfig('debug')){
+if('dev' === BSA_PLUGIN_MODE){
 	$whoops = new \Whoops\Run();
 	$whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler());
 	$whoops->register();

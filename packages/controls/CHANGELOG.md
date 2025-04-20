@@ -1,5 +1,13 @@
 ## Unreleased
 
+### Bug Fixes
+- Blockera button design issue fixed. 
+
+
+### Improvements
+- Improve Modal.
+- Improve Buttons design (Busy state for secondary variant).
+
 ## 1.1.2 (2025-03-29)
 
 ### Improvements

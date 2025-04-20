@@ -4,32 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fc422e5c96981cadfeeb55ea96155d8b",
+    "content-hash": "169435ce01d2dc2a57f1adadbfd791c9",
     "packages": [
-        {
-            "name": "blockera/build",
-            "version": "1.0.0",
-            "dist": {
-                "type": "path",
-                "url": "build",
-                "reference": "a6bf2e0e1cad1ec44d1b02a9ed1f9db9bb44cd29"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Build\\Packages\\": "src/"
-                },
-                "files": [
-                    "src/Utils/functions.php",
-                    "src/Wordpress/functions.php",
-                    "src/SiteToolkit/functions.php"
-                ]
-            },
-            "description": "A site toolkit plugin for Blockera AI.",
-            "transport-options": {
-                "relative": true
-            }
-        },
         {
             "name": "defuse/php-encryption",
             "version": "v2.4.0",

@@ -10,6 +10,13 @@ class LicenseRepository
 	use RepositoryTrait;
 
 	/**
+	 * Store the table name.
+	 *
+	 * @var string $table_name the table name.
+	 */
+	protected $table_name = 'licenses';
+
+	/**
 	 * Get the license by field name and value.
 	 *
 	 * @param string $field The field name.
@@ -19,7 +26,7 @@ class LicenseRepository
 	 */
 	public function getBy(string $field, $value): ?array
 	{
-		return $this->wpdb->get_results($this->wpdb->prepare("SELECT * FROM api_licenses WHERE $field = %s", $value), ARRAY_A);
+		return $this->wpdb->get_results($this->wpdb->prepare("SELECT * FROM {$this->api_table_prefix}{$this->table_name} WHERE $field = %s", $value), ARRAY_A);
 	}
 
 	/**

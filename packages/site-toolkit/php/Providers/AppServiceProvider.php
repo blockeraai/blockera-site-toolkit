@@ -3,9 +3,11 @@
 namespace BlockeraAI\SiteToolkit\Providers;
 
 use BlockeraAI\SiteToolkit\Setup;
+use Blockera\Bootstrap\Application;
 use Blockera\Bootstrap\ServiceProvider;
 use BlockeraAI\SiteToolkit\Meta\Factory as Meta;
-use BlockeraAI\SiteToolkit\Guard\SecureDownloadManager;
+use BlockeraAI\SiteToolkit\Repositories\OrderRepository;
+use BlockeraAI\SiteToolkit\Repositories\LicenseRepository;
 use BlockeraAI\SiteToolkit\Http\Controller\ProductController;
 use BlockeraAI\SiteToolkit\Http\Middlewares\RefererMiddleware;
 use BlockeraAI\SiteToolkit\Http\Middlewares\MiddlewarePipeline;
@@ -21,10 +23,17 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(MiddlewarePipeline::class);
         $this->app->singleton(RefererMiddleware::class);
+		$this->app->singleton(LicenseRepository::class);
 
-        // $this->app->singleton(SecureDownloadManager::class, function (Application $app) {
-        //     return new SecureDownloadManager($app, new SecureDownloadRepository());
-        // });
+		$this->app->singleton(OrderRepository::class, function (Application $app, array $args = []) {
+			$orders = wc_get_orders([
+				'customer_id' => get_current_user_id(),
+				'status' => ['completed'],
+				'limit' => -1
+			]);
+
+			return new OrderRepository($app, $orders, $args['context'] ?? '');
+		});
     }
 
     /**
@@ -36,11 +45,6 @@ class AppServiceProvider extends ServiceProvider
     {
         if (!$this->app instanceof Setup) {
             return;
-        }
-
-        // Process download zip file request.
-        if (!empty($_GET['action']) && 'download' === $_GET['action'] && !empty($_GET['token']) && !empty($_GET['hash'])) {
-            $this->app->make(SecureDownloadManager::class)->processDownload($_GET['token'], $_GET['hash']);
         }
 
         // Register REST API routes.
@@ -55,12 +59,13 @@ class AppServiceProvider extends ServiceProvider
         }, 10, 2);
 
         // Doing register client request if user is logged in.
+		// This is a workaround for the oauth2 redirect uri and not any other use case.
         if (is_user_logged_in() && isset($_GET['state'], $_GET['response_type'], $_GET['approval_prompt'], $_GET['redirect_uri']) && filter_var($_GET['redirect_uri'], FILTER_VALIDATE_URL)) {
             $this->dispatchLoginEvents();
         }
 
         add_filter('woocommerce_account_menu_items', [$this, 'reorderMenuItems'], 9e2);
-        add_filter('woocommerce_locate_template', [$this, 'overrideTemplates'], 10, 2);
+		add_filter('woocommerce_account_licenses_endpoint', [$this, 'getLicensesTemplate']);
 
         if (is_admin()) {
             // FIXME: Refactor this.
@@ -81,15 +86,26 @@ class AppServiceProvider extends ServiceProvider
         $user_info_cache_key = 'blockera_api_user_info';
         $client_info_cache_key = 'blockera_api_client_info';
 
-        if (!empty(get_user_meta($user_id, $client_info_cache_key))) {
-            return;
-        }
+		$userCredentials = bsaGetUserAccessToken();
+		$authorization = $userCredentials['token_type'] . ' ' . $userCredentials['access_token'];
+		$clientCredentials = get_user_meta($user_id, $client_info_cache_key, true);
 
-        $userCredentials = bsaGetUserAccessToken();
+		// If the user is logged in and the authorized is not set, then we need to terminate the client.
+		// This is a first try to refresh the client credentials and connection.
+        if (!empty($clientCredentials) && empty($_GET['authorized'])) {
+            if (empty($_GET['client_id']) && empty($_GET['client_secret'])) {
+				// We should the terminate the client if the client registered previously.
+                if (!bsaDoTerminateClient($authorization)) {
+                    return;
+                }
+            }
+        }elseif(!empty($clientCredentials)){
+			return;
+		}
 
         $params = bsaGetRegisterClientParams();
 
-        $client = bsaDoStoreClient($params, $userCredentials['token_type'] . ' ' . $userCredentials['access_token']);
+        $client = bsaDoStoreClient($params, $authorization);
 
         if (empty($client)) {
             return;
@@ -136,33 +152,39 @@ class AppServiceProvider extends ServiceProvider
             $new_items[$key] = $item;
 
             if ($key === 'dashboard') {
-                $new_items['subscriptions'] = __('Licenses', 'blockera-site-toolkit');
+                $new_items['licenses'] = __('Licenses', 'blockera-site-toolkit');
             }
         }
 
         return $new_items;
     }
 
-    /**
-     * Override the default woocommerce templates.
-     *
-     * @param string $template The template path.
-     * @param string $templateName The template name.
-     *
-     * @return string The template path.
-     */
-    public function overrideTemplates(string $template, string $templateName): string
-    {
-        if ('myaccount/my-subscriptions-view.php' === $templateName && false !== strpos($_SERVER['REQUEST_URI'], 'my-account/my-subscription')) {
-			$build_file = $this->app->getPath() . '/vendor/blockera/build/src/SiteToolkit/Views/licenses.php';
+	/**
+	 * Get the licenses template.
+	 *
+	 * @return void
+	 */
+	public function getLicensesTemplate(): void
+	{		
+		if (!function_exists('wc_get_template')) {
+			return;
+		}
 
-			if (file_exists($build_file)) {
-				return $build_file;
-			}
-			
-            return $this->app->getPath() . '/vendor/blockera/site-toolkit/php/Views/licenses.php';
-        }
+		$build_file = $this->app->getPath() . '/vendor/blockera/build/src/SiteToolkit/Views/licenses.php';
 
-        return $template;
-    }
+		if (file_exists($build_file)) {
+			$default_path = $this->app->getPath() . '/vendor/blockera/build/src/SiteToolkit/';
+		}else{ 
+			$default_path = $this->app->getPath() . '/vendor/blockera/site-toolkit/php/';
+		}
+
+		$mappedLicenses = $this->app->make(OrderRepository::class)->getLicenses();
+
+		wc_get_template(
+			'Views/licenses.php',
+			compact('mappedLicenses'),
+			'',
+			$default_path
+		);
+	}
 }
