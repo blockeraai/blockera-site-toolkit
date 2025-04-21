@@ -1,3 +1,11 @@
+<?php
+/**
+ * Product Meta Box Custom Fields
+ *
+ * @package Site\Toolkit
+ * @since   1.0.0
+ */
+?>
 <div class="options_group woocommerce_options_panel">
 	<p class="form-field">
 		<label for="product_id">
