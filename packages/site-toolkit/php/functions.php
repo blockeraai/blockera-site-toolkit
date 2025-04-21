@@ -543,6 +543,12 @@ if (!function_exists('bsaGetDownloadableFiles')) {
 		}
 
 		if(empty($downloads)) {
+			$fallbackDownloadableFiles = $args['fallbackDownloadableFiles'] ?? [];
+			
+			if (is_string($fallbackDownloadableFiles)) {
+				$fallbackDownloadableFiles = [];
+			}
+
 			$downloads = array_map(function (array $downloadableFile, string $downloadableFilename):array {
 				return [
 					'resource' => 'api',
@@ -553,7 +559,7 @@ if (!function_exists('bsaGetDownloadableFiles')) {
 					'id' => $downloadableFile['hash'],
 					'version' => $downloadableFile['version'],
 				];
-			}, $args['fallbackDownloadableFiles'], array_keys($args['fallbackDownloadableFiles']));
+			}, $fallbackDownloadableFiles, array_keys($fallbackDownloadableFiles));
 		}
 		
 		if ($args['isActivatedFreeDownload']) {
