@@ -1,12 +1,20 @@
 ## Unreleased
 
-### Bug Fixes
-- Blockera button design issue fixed. 
+### New Features
+- Implemented inner `Code Control` component to allow developers to create code control for any languages.
 
+### Bug Fixes
+- Design issue in popovers after setting `Hover` state for block. 
+
+
+## 1.1.3 (2025-04-12)
 
 ### Improvements
-- Improve Modal.
-- Improve Buttons design (Busy state for secondary variant).
+- Add WP 6.8 compatibility.
+- Improve overall codes.
+- Improve Unit Inputs for 'No Unit' state. 
+- Border feature improved to show a warning for color if width was set and the color wasn't!
+
 
 ## 1.1.2 (2025-03-29)
 
