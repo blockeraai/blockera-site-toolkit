@@ -1,5 +1,39 @@
 ## Unreleased
 
+### Bug Fixes
+- Flex layout feature not working properly on breakpoints reported by Davor Jovanović 🙏🏼 [[🔗 Bug](https://community.blockera.ai/bugs-mdhyb8nc/post/block-row-doesn-t-accept-justify-content-center-bZeVoRwgQ5xhnbm)]
+
+### New Features
+- Inline block renaming by clicking on block card [[🔗 Feature request](https://community.blockera.ai/feature-request-1rsjg2ck/post/block-renaming-quick-block-renaming-from-the-block-card-j7XmvUiOTj36VFn)]
+- Custom CSS Code Feature: Allows you to add custom CSS codes per block. [Pro Feature]
+- Smart autocomplete suggestions for CSS variables in code editor by typing `--`.
+- Smart `.block` autocomplete for current block selector in code editor.
+
+
+### Improvements
+- Improve block card design.
+- Improve overall codes.
+
+### Automated Tests
+- Added E2E tests to check inline block renaming.
+- Added E2E test to check inline block renaming for blocks with variations.
+- Added E2E tests to check Custom CSS feature.
+
+
+## 1.2.4 (2025-04-16)
+
+### Improvements
+- The block card now displays the custom block name if it has been set.
+
+### Automated Tests
+- Added E2E tests to check showing block custom name on block card.
+
+## 1.2.3 (2025-04-12)
+
+### Improvements
+- UX & design improvements for block section settings.
+
+
 ## 1.2.2 (2025-03-29)
 
 ### Automated Tests

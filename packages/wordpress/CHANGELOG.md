@@ -1,5 +1,18 @@
 ## Unreleased
 
+## 1.1.2 (2025-04-16)
+
+### Bug Fixes
+- Fixed a bug in the front end where the style engine was not being flushed and rewritten when the block content was created by blockera site builder.
+
+### Improvements
+- Improve admin page design.
+
+## 1.1.1 (2025-04-12)
+
+### Improvements
+- Refactored the registration of the block type to be a single time to improved performance.
+
 ## 1.1.0 (2025-03-15)
 
 ### New Features
