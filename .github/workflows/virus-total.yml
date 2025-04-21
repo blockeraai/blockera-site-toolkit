@@ -32,6 +32,7 @@ jobs:
               uses: ./.github/setup-php
               with:
                   composer-options: '--no-dev -o --apcu-autoloader -a'
+                  php-version: '8.2'
 
             - name: Build Plugin Zip File
               uses: ./.github/build-plugin-zip
