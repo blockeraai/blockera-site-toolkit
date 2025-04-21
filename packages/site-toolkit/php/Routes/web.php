@@ -1,7 +1,6 @@
 <?php
 
 use Blockera\Utils\Utils;
-use Blockera\Utils\View;
 use BlockeraAI\SiteToolkit\Setup;
 use BlockeraAI\SiteToolkit\Repositories\OrderRepository;
 
@@ -84,16 +83,13 @@ add_action(
 			$rawUrl = parse_url(urldecode($_GET['redirect_uri']));
 			$domain = '<div class="client-website"><span class="client-website-scheme">' . $rawUrl['scheme'] . '://' . '</span> ' . $rawUrl['host'] . '</div>';
 
-
-            $templateFile = 'build.src.SiteToolkit.Views.consent-form';
+            $templateFile = $setupInstance->getPath() . '/vendor/blockera/build/src/SiteToolkit/Views/consent-form.php';
 
 			if (!file_exists($templateFile)) {
-				$templateFile = 'site-toolkit.php.Views.consent-form';
+				$templateFile = $setupInstance->getPath() . '/vendor/blockera/site-toolkit/php/Views/consent-form.php';
 			}
 
-			View::load($templateFile, compact('mappedLicenses', 'clientId', 'rawUrl', 'domain'), [
-				'root-path' => $setupInstance->getPath() . '/vendor/blockera/',
-			]);
+			include $templateFile;
 
             wp_footer();
 
