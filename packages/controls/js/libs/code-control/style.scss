@@ -6,9 +6,8 @@
 
 	& > section {
 		background-color: #f6f6f6;
-		border-radius: 2px;
-    	padding-top: 5px;
-	}
+		border-radius: 5px;
+   }
 
 	.blockera-control-code-control__description {
 		display: flex;
@@ -33,7 +32,7 @@
 
 	.blockera-control-code-control__placeholder {
 		position: absolute;
-		top: 5px;
+		top: 10px;
 		left: 28px;
 		right: 10px;
 		color: #7d8a99;
@@ -46,6 +45,20 @@
 		line-height: 20px;
 		letter-spacing: 0;
 		pointer-events: none;
+	}
+
+	.monaco-editor {
+		border-radius: 5px;
+		padding: 0;
+		outline: 0;
+
+		&.focused {
+    		box-shadow: 0 0 0 2px var(--blockera-controls-primary-color);
+		}
+
+		.overflow-guard {
+			border-radius: 5px;
+		}
 	}
 }
 
