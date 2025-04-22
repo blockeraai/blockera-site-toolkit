@@ -298,7 +298,7 @@ const CodeControl = ({
 		<BaseControl columns={columns} controlName={field} {...labelProps}>
 			<div className={controlClassNames('code', className)}>
 				<Editor
-					width={width || 250}
+					width={width || 248}
 					height={height || 200}
 					defaultLanguage={lang}
 					defaultValue={value}
@@ -323,6 +323,9 @@ const CodeControl = ({
 						lineNumbersMinChars: 2,
 						readOnly: !editable,
 						allowEditorOverflow: false,
+						padding: {
+							top: 10,
+						},
 					}}
 					beforeMount={(monaco: any) => {
 						if (monaco?.blockeraInitialised === undefined) {
@@ -392,7 +395,7 @@ const CodeControl = ({
 															.CompletionItemKind
 															.Class,
 														insertText:
-															'.block {\n\t$0\n}',
+															'.block {\n\t$0\n}\n',
 														insertTextRules:
 															monaco.languages
 																.CompletionItemInsertTextRule
@@ -402,10 +405,43 @@ const CodeControl = ({
 															'blockera'
 														),
 														detail: __(
-															'Blockera Block Selector',
+															'Current Block',
 															'blockera'
 														),
 														sortText: '.block',
+														range: {
+															startLineNumber:
+																position.lineNumber,
+															startColumn:
+																position.column -
+																1,
+															endLineNumber:
+																position.lineNumber,
+															endColumn:
+																position.column,
+														},
+													},
+													{
+														label: '.block:hover',
+														kind: monaco.languages
+															.CompletionItemKind
+															.Class,
+														insertText:
+															'.block:hover {\n\t$0\n}\n',
+														insertTextRules:
+															monaco.languages
+																.CompletionItemInsertTextRule
+																.InsertAsSnippet,
+														documentation: __(
+															'Target the current block on hover',
+															'blockera'
+														),
+														detail: __(
+															'Current Block on Hover',
+															'blockera'
+														),
+														sortText:
+															'.block:hover',
 														range: {
 															startLineNumber:
 																position.lineNumber,
@@ -487,6 +523,17 @@ const CodeControl = ({
 
 						if (value !== editor.getValue()) {
 							editor.setValue(value);
+						}
+
+						// Set cursor position between curly braces for CSS
+						if (lang === 'css' && value === '.block {\n    \n}\n') {
+							const position = editor.getPosition();
+							if (position) {
+								editor.setPosition({
+									lineNumber: 2,
+									column: 4,
+								});
+							}
 						}
 					}}
 				/>
