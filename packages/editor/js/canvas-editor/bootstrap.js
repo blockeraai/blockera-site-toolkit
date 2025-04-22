@@ -24,7 +24,7 @@ export const bootstrapCanvasEditor = (): void | Object => {
 	const observerPlugin = 'blockera-canvas-editor-observer';
 
 	const { version } = getEntity('wp');
-	const { header, previewDropdown, postPreviewElement } = getTargets(version);
+	const { header } = getTargets(version);
 
 	const registry = () => {
 		registerPlugin(observerPlugin, {
@@ -40,13 +40,9 @@ export const bootstrapCanvasEditor = (): void | Object => {
 						cache.set(componentSelector, true);
 
 						new IntersectionObserverRenderer(
-							'.editor-header__center',
+							header,
 							(): MixedElement => (
 								<CanvasEditor
-									{...{
-										previewDropdown,
-										postPreviewElement,
-									}}
 									target={document.querySelector(header)}
 								/>
 							),
