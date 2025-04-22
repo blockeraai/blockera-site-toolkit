@@ -2,22 +2,32 @@
 
 ### Bug Fixes
 - Flex layout feature not working properly on breakpoints reported by Davor Jovanović 🙏🏼 [[🔗 Bug](https://community.blockera.ai/bugs-mdhyb8nc/post/block-row-doesn-t-accept-justify-content-center-bZeVoRwgQ5xhnbm)]
+- Duplicate preview button on non-English websites reported by Hoang 🙏🏼.
+- Fixed duplicate preview button in editor header section.
+- Strange issue that shows block `General` tab items in `Style` tab.
+- Wrong `General` tab settings for inner blocks.
+
 
 ### New Features
 - Inline block renaming by clicking on block card [[🔗 Feature request](https://community.blockera.ai/feature-request-1rsjg2ck/post/block-renaming-quick-block-renaming-from-the-block-card-j7XmvUiOTj36VFn)]
 - Custom CSS Code Feature: Allows you to add custom CSS codes per block. [Pro Feature]
 - Smart autocomplete suggestions for CSS variables in code editor by typing `--`.
 - Smart `.block` autocomplete for current block selector in code editor.
+- Smart `.block:hover` autocomplete for current block hover state in code editor.
 
 
 ### Improvements
+- Aspect ratio feature improved to smartly set the width and height while switching to custom ratio.
 - Improve block card design.
 - Improve overall codes.
+- Added `blockera-editor` class to the admin body class to improve canvas editor UI and styles.
+- Improve overall block editor design.
 
 ### Automated Tests
 - Added E2E tests to check inline block renaming.
 - Added E2E test to check inline block renaming for blocks with variations.
 - Added E2E tests to check Custom CSS feature.
+- Aspect ratio tests updated for latest updates.
 
 
 ## 1.2.4 (2025-04-16)
