@@ -419,6 +419,23 @@
 		width: 100%;
 		max-width: 610px;
 		margin: auto;
+		height: 100%;
+
+		.consent-form-inner-wrapper { 
+			height: 100%;
+		}
+		
+		.consent-text { 
+			color: #838383;
+			margin: 20px 0;
+			font-size: 15px;
+
+			a {
+				color: var(--blockera-controls-primary-color);
+				text-decoration: none;
+			}
+		}
+
 
 		.license-box-wrapper {
 			margin: 0;
@@ -534,6 +551,31 @@
 				background-color: color-mix(in srgb, var(--blockera-controls-primary-color) 30%, #ffffff);
 				vertical-align: middle;
 				border-radius: 50%;
+			}
+
+			.product-status {
+				--status-color: #0fa600;
+				border-radius: 100px;
+				background-color: color-mix(in srgb, var(--status-color) 17%, #ffffff);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 4px 13px 4px 7px;
+				gap: 5px;
+				font-size: 14px;
+				font-weight: 500;
+				color: var(--status-color);
+				text-transform: capitalize;
+
+				svg {
+					fill: var(--status-color);
+				}
+
+				&.status-max-domains,
+				&.status-expiring,
+				&.status-expired {
+					--status-color: #e60000;
+				}
 			}
 		}
 

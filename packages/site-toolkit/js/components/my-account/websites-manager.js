@@ -138,7 +138,7 @@ const Row = ({
 							setIsDeleteModalOpen(true);
 						}}
 					>
-						{__('Remove Website', 'blockera')}
+						{__('Deactivate', 'blockera')}
 					</Button>
 				</div>
 			)}
@@ -148,7 +148,7 @@ const Row = ({
 					className="delete-modal"
 					size="large"
 					headerTitle={__(
-						'Are you sure, you want to remove this website?',
+						'Are you sure, you want to deactivate this website?',
 						'blockera'
 					)}
 					onRequestClose={() => setIsDeleteModalOpen(false)}
@@ -167,13 +167,13 @@ const Row = ({
 						<Flex direction="column" gap={20}>
 							<p style={{ margin: 0 }}>
 								{__(
-									'By removing this website, you will deactivate Pro features on the site. You can reassign it to another site later if needed. Proceed with caution.',
+									'By deactivating this website, you will deactivate Pro features on the site. You can reassign it to another site later if needed. Proceed with caution.',
 									'blockera'
 								)}
 							</p>
 
 							<Flex direction="row" gap={10} alignItems="center">
-								{__('Removing website:', 'blockera')}
+								{__('Deactivating website:', 'blockera')}
 								<a
 									style={{
 										margin: 0,
@@ -209,7 +209,7 @@ const Row = ({
 								onClick={handleDelete}
 								isBusy={isDeleting}
 							>
-								{__('Yes, Remove', 'blockera')}
+								{__('Yes, Deactivate', 'blockera')}
 							</Button>
 
 							{isDeleting && (
@@ -221,7 +221,7 @@ const Row = ({
 									}}
 								>
 									{__(
-										'Removing website, please wait…',
+										'Deactivating website, please wait…',
 										'blockera'
 									)}
 								</p>
@@ -236,7 +236,7 @@ const Row = ({
 									}}
 								>
 									{__(
-										'An error occurred while removing the website. Please try again or contact support.',
+										'An error occurred while deactivating the website. Please try again or contact support.',
 										'blockera'
 									)}
 								</p>
@@ -294,7 +294,7 @@ export const WebsitesManager = ({
 				title={__('Websites', 'blockera')}
 				description={
 					<>
-						{__('Remaining websites:', 'blockera')}
+						{__('Remaining production websites:', 'blockera')}
 						<span>{remainingDomains}</span>
 					</>
 				}
