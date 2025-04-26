@@ -154,7 +154,7 @@ class ProductController
 
 			$payload .= '--' . $boundary . "\r\n";
 			$payload .= 'Content-Disposition: form-data; name="name"' . "\r\n\r\n";
-			$payload .= basename($file) . "\r\n";
+			$payload .= bsaGetFileName($file) . "\r\n";
 
 			$payload .= '--' . $boundary . "\r\n";
 			$payload .= 'Content-Disposition: form-data; name="product_id"' . "\r\n\r\n";
@@ -240,7 +240,7 @@ class ProductController
 
         $payload .= '--' . $boundary . "\r\n";
         $payload .= 'Content-Disposition: form-data; name="name"' . "\r\n\r\n";
-        $payload .= $download->get_name() . "\r\n";
+        $payload .= bsaGetFileName($file) . "\r\n";
 
         $payload .= '--' . $boundary . "\r\n";
         $payload .= 'Content-Disposition: form-data; name="variation_id"' . "\r\n\r\n";

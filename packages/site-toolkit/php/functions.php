@@ -534,7 +534,7 @@ if (!function_exists('bsaGetDownloadableFiles')) {
 				$downloads[$downloadableFileId] = [
 					'resource' => 'api',
                     'name' => $downloadableFile['name'],
-                    'filename' => basename($downloadableFile['file']),
+                    'filename' => bsaGetFileName($downloadableFile['file']),
                     'file' => bsaGetEnv('BSA_API_BASE_URL') . '/files/v1/download/' . $downloadableFileId,
                     'enabled' => $downloadableFile['enabled'] ?? true,
                     'id' => $downloadableFileId,
@@ -553,7 +553,7 @@ if (!function_exists('bsaGetDownloadableFiles')) {
 				return [
 					'resource' => 'api',
 					'name' => $downloadableFilename,
-					'filename' => basename($downloadableFile['file']),
+					'filename' => bsaGetFileName($downloadableFile['file']),
 					'file' => bsaGetEnv('BSA_API_BASE_URL') . '/files/v1/download/' . $downloadableFile['hash'],
 					'enabled' => true,
 					'id' => $downloadableFile['hash'],
@@ -613,5 +613,26 @@ if(!function_exists('bsaGetWPOrgPluginVersion')) {
 		set_transient($transientKey, $info, 60 * 60 * 24); // 1 day.
 
 		return $info['version'] ?? '';
+	}
+}
+
+if(!function_exists('bsaGetFileName')) {
+	/**
+	 * Get file name.
+	 * 
+	 * @param string $file The file url.
+	 *
+	 * @return string 
+	 */
+	function bsaGetFileName(string $file): string
+	{
+		$filename = basename($file);
+
+		// Remove random string from filename if present (e.g. blockera-pro-x5ttot.zip -> blockera-pro.zip)
+		if (preg_match('/-[a-zA-Z0-9]{6}\.([\w\d]+)$/', $filename, $matches)) {
+			$filename = preg_replace('/-[a-zA-Z0-9]{6}\./', '.', $filename);
+		}
+
+		return $filename;
 	}
 }
