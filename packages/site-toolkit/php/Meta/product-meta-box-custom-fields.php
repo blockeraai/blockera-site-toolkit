@@ -85,27 +85,55 @@
 		</table>
 	</div>
 
-	<script>
-		jQuery(document).ready(function($) {
+	<script type="text/javascript">
+		jQuery(function($) {
+			var downloadable_file_frame;
+			var current_file_button;
+			
 			// File uploads
 			$('.downloadable_files').on('click', '.upload_file_button', function(e) {
 				e.preventDefault();
 				
-				var $button = $(this);
-				var file_frame = wp.media({
-					title: $button.data('choose'),
+				current_file_button = $(this);
+				var $row = current_file_button.closest('tr');
+				var $url_field = $row.find('input.input_text[name="_blockera_file_urls[]"]');
+
+				// If frame exists, reopen it
+				if (downloadable_file_frame) {
+					downloadable_file_frame.open();
+					return;
+				}
+
+				// Create the media frame
+				downloadable_file_frame = wp.media({
+					title: current_file_button.data('choose'),
 					button: {
-						text: $button.data('update')
+						text: current_file_button.data('update')
 					},
-					multiple: false
+					multiple: false,
+					library: {
+						type: ''
+					},
+					states: [
+						new wp.media.controller.Library({
+							title: current_file_button.data('choose'),
+							filterable: 'all',
+							multiple: false
+						})
+					]
 				});
 
-				file_frame.on('select', function() {
-					var attachment = file_frame.state().get('selection').first().toJSON();
-					$button.closest('tr').find('input.input_text[name="_blockera_file_urls[]"]').val(attachment.url);
+				// When file is selected
+				downloadable_file_frame.on('select', function() {
+					var selection = downloadable_file_frame.state().get('selection');
+					var attachment = selection.first().toJSON();
+					$url_field.val(attachment.url).trigger('change');
+					
+					// Clear selection after inserting URL
+					downloadable_file_frame.state().get('selection').reset();
 				});
 
-				file_frame.open();
+				downloadable_file_frame.open();
 			});
 
 			// Add row
@@ -132,7 +160,10 @@
 				cursor: 'move',
 				axis: 'y',
 				handle: '.sort',
-				scrollSensitivity: 40
+				scrollSensitivity: 40,
+				forcePlaceholderSize: true,
+				helper: 'clone',
+				opacity: 0.65
 			});
 		});
 	</script>
