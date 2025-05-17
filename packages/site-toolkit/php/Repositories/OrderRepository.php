@@ -292,16 +292,21 @@ class OrderRepository
 			$productId = $subscription->get('product_id');
 			$productVersion = get_post_meta($productId, 'product_version', true);
 			$thumbnail = get_the_post_thumbnail_url($productId);
-			$file = is_array($downloads) ? $this->getLatestVersionFile($downloads) : [];
-			$versionId = $file['id'] ?? null;
-			$productName = get_post_meta($productId, 'product_id', true);
+			$fallbackDownloadableFiles = get_post_meta($productId, 'product_downloadable_files', true);
 			$id = $subscription->get('id');
+			$downloads = bsaGetDownloadableFiles($id, compact('fallbackDownloadableFiles'));
+			$file = is_array($downloads) ? $this->getLatestVersionFile($downloads) : [];
+			$versionId = $file['id'] ?? $downloads[0]['id'] ?? null;
+			$productName = get_post_meta($productId, 'product_id', true);
 			$type = 'subscription';
 
 			return compact('id', 'type', 'name', 'description', 'status', 'thumbnail', 'nextPaymentDueDate', 'startDate', 'endDate', 'productName', 'productId', 'productVersion', 'versionId');
 		}
 
 		$product = wc_get_product($license['product_id']);
+		$fallbackDownloadableFiles = get_post_meta($license['product_id'], 'product_downloadable_files', true);
+		$downloads = bsaGetDownloadableFiles($license['product_id'], compact('fallbackDownloadableFiles'));
+		$versionId = $file['id'] ?? $downloads[0]['id'] ?? null;
 
 		return [
 			'type' => 'non-subscription',
@@ -316,7 +321,7 @@ class OrderRepository
 			'productName' => $product->get_name(),
 			'productId' => $license['product_id'],
 			'productVersion' => get_post_meta($license['product_id'], 'product_version', true),
-			'versionId' => null,
+			'versionId' => $versionId,
 		];
 	}
 

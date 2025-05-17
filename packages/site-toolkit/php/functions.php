@@ -562,7 +562,7 @@ if (!function_exists('bsaGetDownloadableFiles')) {
 			}, $fallbackDownloadableFiles, array_keys($fallbackDownloadableFiles));
 		}
 		
-		if ($args['isActivatedFreeDownload']) {
+		if (isset($args['isActivatedFreeDownload']) && $args['isActivatedFreeDownload']) {
 			$freeVersion = [
 				'resource' => 'wp',
                 'name' => 'Free Version',
