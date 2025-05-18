@@ -288,25 +288,17 @@ class OrderRepository
 			$endDate = ($subscription->get('end_date')) ? date_i18n(wc_date_format(), $subscription->get('end_date')) : false;
 			$endDate = ! $endDate && ($subscription->get('expired_date')) ? date_i18n(wc_date_format(), $subscription->get('expired_date')) : '';
 			$description = empty($subscription->get('post_content')) ? $subscription->get('post_content') : $subscription->get('post_excerpt');
-			$downloads = get_post_meta($subscription->get('variation_id'), '_downloadable_files', true);
 			$productId = $subscription->get('product_id');
 			$productVersion = get_post_meta($productId, 'product_version', true);
 			$thumbnail = get_the_post_thumbnail_url($productId);
-			$fallbackDownloadableFiles = get_post_meta($productId, 'product_downloadable_files', true);
 			$id = $subscription->get('id');
-			$downloads = bsaGetDownloadableFiles($id, compact('fallbackDownloadableFiles'));
-			$file = is_array($downloads) ? $this->getLatestVersionFile($downloads) : [];
-			$versionId = $file['id'] ?? $downloads[0]['id'] ?? null;
 			$productName = get_post_meta($productId, 'product_id', true);
 			$type = 'subscription';
 
-			return compact('id', 'type', 'name', 'description', 'status', 'thumbnail', 'nextPaymentDueDate', 'startDate', 'endDate', 'productName', 'productId', 'productVersion', 'versionId');
+			return compact('id', 'type', 'name', 'description', 'status', 'thumbnail', 'nextPaymentDueDate', 'startDate', 'endDate', 'productName', 'productId', 'productVersion');
 		}
 
 		$product = wc_get_product($license['product_id']);
-		$fallbackDownloadableFiles = get_post_meta($license['product_id'], 'product_downloadable_files', true);
-		$downloads = bsaGetDownloadableFiles($license['product_id'], compact('fallbackDownloadableFiles'));
-		$versionId = $file['id'] ?? $downloads[0]['id'] ?? null;
 
 		return [
 			'type' => 'non-subscription',
@@ -321,7 +313,6 @@ class OrderRepository
 			'productName' => $product->get_name(),
 			'productId' => $license['product_id'],
 			'productVersion' => get_post_meta($license['product_id'], 'product_version', true),
-			'versionId' => $versionId,
 		];
 	}
 
