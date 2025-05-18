@@ -77,14 +77,16 @@ class ProductController
             return;
         }
 
+		$version = get_post_meta($postId, 'product_version', true);
+
         // Upload general file to remote server.
-        $this->uploadGeneralFileToRemoteServer($postId);
+        $this->uploadGeneralFileToRemoteServer($postId, $version);
 
         // Get all variations.
         $variations = $product->get_children();
 
-        array_map(function ($variationId) use ($postId) {
-            $this->savingVariation($variationId, $postId);
+        array_map(function ($variationId) use ($postId, $version) {
+            $this->savingVariation($variationId, $postId, $version);
         }, $variations);
     }
 
@@ -93,10 +95,11 @@ class ProductController
      *
      * @param int $variationId The variation id.
      * @param int $postId The post id.
+	 * @param string $version The version.
      *
      * @return void
      */
-    protected function savingVariation(int $variationId, int $postId): void
+    protected function savingVariation(int $variationId, int $postId, string $version = ''): void
     {
         $variation = wc_get_product($variationId);
         if (!$variation) {
@@ -109,8 +112,8 @@ class ProductController
             return;
         }
 
-        array_map(function ($download) use ($variationId, $postId) {
-            $this->uploadFileToRemoteServer($download, $variationId, $postId);
+        array_map(function ($download) use ($variationId, $postId, $version) {
+            $this->uploadFileToRemoteServer($download, compact('variationId', 'postId', 'version'));
         }, $variation->get_data()['downloads'] ?? []);
     }
 
@@ -121,7 +124,7 @@ class ProductController
      *
      * @return void
      */
-    protected function uploadGeneralFileToRemoteServer(int $postId): void
+    protected function uploadGeneralFileToRemoteServer(int $postId, string $version = ''): void
     {
         $product = wc_get_product($postId);
         if (!$product) {
@@ -134,7 +137,7 @@ class ProductController
             return;
         }
 
-        foreach ($files as $fileData) {
+        foreach ($files as $key => $fileData) {
 
 			$file = str_replace(get_site_url() . '/', ABSPATH, $fileData['file']);
 
@@ -155,6 +158,10 @@ class ProductController
 			$payload .= '--' . $boundary . "\r\n";
 			$payload .= 'Content-Disposition: form-data; name="name"' . "\r\n\r\n";
 			$payload .= bsaGetFileName($file) . "\r\n";
+
+			$payload .= '--' . $boundary . "\r\n";
+			$payload .= 'Content-Disposition: form-data; name="version"' . "\r\n\r\n";
+			$payload .= ($fileData['version'] ?? $version) . "\r\n";
 
 			$payload .= '--' . $boundary . "\r\n";
 			$payload .= 'Content-Disposition: form-data; name="product_id"' . "\r\n\r\n";
@@ -185,6 +192,14 @@ class ProductController
 
 			// Occurs when the file already exists.
 			if (200 === $status) {
+				$body = json_decode(wp_remote_retrieve_body($response), true);
+
+				if(isset($body['data']['download_token']) && $body['data']['download_token'] !== $fileData['hash']) {
+					$files[$key]['hash'] = $body['data']['download_token'];
+
+					update_post_meta($postId, 'product_downloadable_files', $files);
+				}
+
 				// Delete the file from the WordPress uploads directory.
 				$this->deleteFile($file);
 
@@ -203,13 +218,18 @@ class ProductController
      * Upload file to remote server.
      *
      * @param \WC_Product_Download $download The download object.
-     * @param int $variationId The variation id.
-     * @param int $postId The post id.
+     * @param array $args {
+     *     Array of arguments.
+     *     @type int    $variationId The variation id.
+     *     @type int    $postId     The post id.
+     *     @type string $version    The version.
+     * }
      *
      * @return void
      */
-    protected function uploadFileToRemoteServer(\WC_Product_Download $download, int $variationId, int $postId): void
+    protected function uploadFileToRemoteServer(\WC_Product_Download $download, array $args): void
     {
+		extract($args);
         $fileUrl = $download->get_file();
         $file = str_replace(get_site_url() . '/', ABSPATH, $fileUrl);
 
@@ -249,6 +269,10 @@ class ProductController
         $payload .= '--' . $boundary . "\r\n";
         $payload .= 'Content-Disposition: form-data; name="product_id"' . "\r\n\r\n";
         $payload .= $postId . "\r\n";
+
+		$payload .= '--' . $boundary . "\r\n";
+        $payload .= 'Content-Disposition: form-data; name="version"' . "\r\n\r\n";
+        $payload .= $version . "\r\n";
 
         // Add file
         $payload .= '--' . $boundary . "\r\n";
