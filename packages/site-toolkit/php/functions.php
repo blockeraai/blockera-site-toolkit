@@ -297,7 +297,7 @@ if (!function_exists('bsaDoTerminateClient')) {
         $metadata = get_user_meta($user->ID, $metaKey, true);
 
         if (empty($metadata)) {
-            return false;
+            return true;
         }
 
         $response = wp_remote_request(bsaGetEnv('BSA_API_BASE_URL') . '/clients-manager/v1/clients/' . $metadata['client_id'], [
@@ -315,14 +315,13 @@ if (!function_exists('bsaDoTerminateClient')) {
         ]);
 
         if (is_wp_error($response)) {
-			dd($response);
             return false;
         }
 
         $body = json_decode(wp_remote_retrieve_body($response), true);
 
         if (empty($body['success'])) {
-            return false;
+            return true;
         }
         
         return delete_user_meta($user->ID, $metaKey);
