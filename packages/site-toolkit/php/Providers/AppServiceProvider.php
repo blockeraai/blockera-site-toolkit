@@ -88,7 +88,7 @@ class AppServiceProvider extends ServiceProvider
 
 		$userCredentials = bsaGetUserAccessToken();
 		$authorization = $userCredentials['token_type'] . ' ' . $userCredentials['access_token'];
-		$clientCredentials = get_user_meta($user_id, $client_info_cache_key, true);
+		// $clientCredentials = get_user_meta($user_id, $client_info_cache_key, true);
 
 		// If the user is logged in and the authorized is not set, then we need to terminate the client.
 		// This is a first try to refresh the client credentials and connection.
