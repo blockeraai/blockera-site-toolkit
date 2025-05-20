@@ -161,7 +161,7 @@ class ProductController
 
 			$payload .= '--' . $boundary . "\r\n";
 			$payload .= 'Content-Disposition: form-data; name="version"' . "\r\n\r\n";
-			$payload .= ($fileData['version'] ?? $version) . "\r\n";
+			$payload .= (empty($fileData['version']) ? $version : $fileData['version']) . "\r\n";
 
 			$payload .= '--' . $boundary . "\r\n";
 			$payload .= 'Content-Disposition: form-data; name="product_id"' . "\r\n\r\n";
