@@ -51,7 +51,7 @@ type LicenseProps = {
 	status: string,
 	maxDomains: number,
 	expiryDate: string,
-	activeWebsites: Array<string>,
+	activeWebsites: Object,
 	onChange: LicenseOnChangeHandler,
 };
 
@@ -74,7 +74,8 @@ const License = ({
 	// status,
 	onChange,
 }: LicenseProps): MixedElement => {
-	const remainingDomains = Number(maxDomains) - activeWebsites.length;
+	const remainingDomains =
+		Number(maxDomains) - Object.keys(activeWebsites).length;
 
 	return (
 		<div className="license-box-wrapper">
@@ -270,14 +271,20 @@ export const ConsentForm = ({
 								<Icon library="ui" icon="link" iconSize={20} />
 							</Flex>
 
-							{licenses?.map((license: LicenseProps) => (
-								<License
-									key={license.productTitle}
-									{...license}
-									onChange={setPickedLicense}
-									_isActive={pickedLicense?.licenseId}
-								/>
-							))}
+							{licenses?.map((license: LicenseProps) => {
+								if (Array.isArray(license.activeWebsites)) {
+									license.activeWebsites = {};
+								}
+
+								return (
+									<License
+										key={license.productTitle}
+										{...license}
+										onChange={setPickedLicense}
+										_isActive={pickedLicense?.licenseId}
+									/>
+								);
+							})}
 						</Flex>
 
 						<Button
