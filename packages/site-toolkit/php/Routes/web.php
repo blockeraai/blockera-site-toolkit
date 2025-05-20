@@ -78,7 +78,7 @@ add_action(
 				exit;
 			}
 
-			$clientInfo = $_COOKIE['token_key'] ? get_user_meta(get_current_user_id(), $_COOKIE['token_key'], true) : [];
+			$clientInfo = $_COOKIE['token_key'] ? get_user_meta(get_current_user_id(), $_COOKIE['token_key'] ?? '', true) : [];
 			$clientId = $clientInfo['client_id'] ?? '';
 			$rawUrl = parse_url(urldecode($_GET['redirect_uri']));
 			$domain = '<div class="client-website"><span class="client-website-scheme">' . $rawUrl['scheme'] . '://' . '</span> ' . $rawUrl['host'] . '</div>';
