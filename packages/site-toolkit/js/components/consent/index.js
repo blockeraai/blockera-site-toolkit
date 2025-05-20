@@ -74,7 +74,7 @@ const License = ({
 	// status,
 	onChange,
 }: LicenseProps): MixedElement => {
-	const remainingDomains = maxDomains - activeWebsites.length;
+	const remainingDomains = Number(maxDomains) - activeWebsites.length;
 
 	return (
 		<div className="license-box-wrapper">
