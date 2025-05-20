@@ -328,7 +328,7 @@ class LicenseManagerController
         }
 
         try {
-            $userCredentials = bsaGetUserAccessToken(null, false);
+            $userCredentials = bsaGetUserAccessToken('blockera_api_user_info_' . md5($request->get_param('domain')), null, false);
 
             if (empty($userCredentials)) {
                 throw new \Exception('User credentials not found!');
@@ -426,7 +426,7 @@ class LicenseManagerController
         ];
 
         if (empty($client)) {
-            $client = bsaDoStoreClient($requiredParams, $authorization);
+            $client = bsaDoStoreClient($requiredParams, $authorization, 'blockera_api_client_info_' . md5($params['domain']));
 
             if (empty($client)) {
                 throw new \Exception('Unable to register your client. Please check your connection and try again. If the issue persists, contact support.');

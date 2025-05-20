@@ -82,30 +82,59 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function dispatchLoginEvents(): void
     {
+		$params = bsaGetRegisterClientParams();
         $user_id = get_current_user_id();
-        $user_info_cache_key = 'blockera_api_user_info';
-        $client_info_cache_key = 'blockera_api_client_info';
+		$domain = $params['domain'];
 
-		$userCredentials = bsaGetUserAccessToken();
+		// If the domain is not set, then we need to return.
+		if(empty($domain)){
+			return;
+		}
+
+		// Cache keys for the user info and client info.
+        $user_info_cache_key = 'blockera_api_user_info_' . md5($domain);
+        $client_info_cache_key = 'blockera_api_client_info_' . md5($domain);
+
+		$userCredentials = bsaGetUserAccessToken($user_info_cache_key);
 		$authorization = $userCredentials['token_type'] . ' ' . $userCredentials['access_token'];
-		// $clientCredentials = get_user_meta($user_id, $client_info_cache_key, true);
+		$clientCredentials = get_user_meta($user_id, $client_info_cache_key, true);
 
-		// If the user is logged in and the authorized is not set, then we need to terminate the client.
+		// If the user is logged in and the authorized is not set, then we need to authorize the client.
 		// This is a first try to refresh the client credentials and connection.
-        // if (!empty($clientCredentials) && empty($_GET['authorized'])) {
-        //     if (empty($_GET['client_id']) && empty($_GET['client_secret'])) {
-		// 		// We should the terminate the client if the client registered previously.
-        //         if (!bsaDoTerminateClient($authorization)) {
-        //             return;
-        //         }
-        //     }
-        // }elseif(!empty($clientCredentials)){
-		// 	return;
-		// }
+        if (!empty($clientCredentials) && empty($_GET['authorized']) && empty($_GET['product'])) { 
+			// We should the authorize the client if the client registered previously.
+			$client_id = $clientCredentials['client_id'];
+			$client_secret = $clientCredentials['client_secret'];
 
-        $params = bsaGetRegisterClientParams();
+			$params = [
+				'params' => $client_id && $client_secret ? array_merge($params, [
+					'client_id' => $client_id,
+					'client_secret' => $client_secret,
+				]) : $params,
+				'authorization' => $userCredentials['token_type'] . ' ' . $userCredentials['access_token'],
+			];
 
-        $client = bsaDoStoreClient($params, $authorization);
+			$authorizeResponse = bsaDoAuthorization($params);
+
+			if (empty($authorizeResponse)) {
+				delete_user_meta($user_id, $user_info_cache_key);
+				delete_user_meta($user_id, $client_info_cache_key);
+
+				return;
+			}
+
+			// Redirect to the client page.
+			wp_redirect($authorizeResponse['redirect_to_client'] . "&client_id=$client_id&client_secret=$client_secret&redirect_to=" . urlencode($authorizeResponse['redirect_to_consent_page']), 302);
+			// Stop further WordPress execution for this request.
+			exit;
+        }
+
+		if(empty($userCredentials) || !empty($_GET['product'])){
+			$_COOKIE['token_key'] = $client_info_cache_key;
+			return;
+		}
+
+        $client = bsaDoStoreClient($params, $authorization, $client_info_cache_key);
 
         if (empty($client)) {
             return;

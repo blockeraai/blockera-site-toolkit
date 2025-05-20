@@ -70,7 +70,7 @@ class FileController
 			$this->errors['invalid_name'] = __('Name field is required!', 'blockera-site-toolkit');
 		}
 
-        $userCredentials = bsaGetUserAccessToken(null, false);
+        $userCredentials = bsaGetUserAccessToken('',null, false);
 
         if (empty($userCredentials) || empty($userCredentials['access_token'])) {
             $this->errors['invalid_authorization'] = __('Authorization field is required!', 'blockera-site-toolkit');

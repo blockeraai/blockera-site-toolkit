@@ -1,12 +1,6 @@
 <?php
 
 use Blockera\Utils\Utils;
-use BlockeraAI\SiteToolkit\Setup;
-use League\OAuth2\Server\CryptKey;
-use League\OAuth2\Server\ResourceServer;
-use League\OAuth2\Server\AuthorizationServer;
-use BlockeraAI\SiteToolkit\Http\Controller\ClientController;
-use League\OAuth2\Server\Middleware\ResourceServerMiddleware;
 
 if (!function_exists('bsaGetRegisterClientParams')) {
     /**
@@ -65,38 +59,6 @@ if (!function_exists('bsaGetRegisterClientParams')) {
     }
 }
 
-// FIXME: remove this function and move to api website while implementing the resource server.
-if (!function_exists('bsaValidateAccessToken')) {
-    /**
-     * Validate the access token.
-     *
-     * @param string $accessToken The access token.
-     * @param AuthorizationServer $server The authorization server.
-     * @param WP_REST_Request $request The request object.
-     *
-     * @return bool true on success, false on otherwise!
-     */
-    function bsaValidateAccessToken(WP_REST_Request $request): bool
-    {
-        $clientController = new ClientController();
-
-        try {
-            $resourceServer = new ResourceServer(
-                new AccessTokenRepository(),
-                new CryptKey(Setup::getInstance()->getPath() . 'public.key', null, false)
-            );
-
-            // Convert WP request to PSR-7 request.
-            $psr7Request = \GuzzleHttp\Psr7\ServerRequest::fromGlobals();
-            $resourceServer->validateAuthenticatedRequest($psr7Request);
-            new ResourceServerMiddleware($resourceServer);
-
-            return $clientController->permission($request);
-        } catch (Exception $e) {
-            return false;
-        }
-    }
-}
 if (!function_exists('bsaGetAccessTokenIdentifier')) {
     /**
      * Get the access token identifier.
@@ -168,21 +130,25 @@ if (!function_exists('bsaGetUserAccessToken')) {
     /**
      * Get the user access token.
      *
-     * @param \WP_User $user The user object.
+     * @param string $cacheKey The cache key.
+	 * @param \WP_User $user The user object.
 	 * @param bool $redirect The flag to determine if the user should be redirected to the redirect uri. Default is true.
      *
      * @return array
      */
-    function bsaGetUserAccessToken(\WP_User $user = null, bool $redirect = true): array
+    function bsaGetUserAccessToken(string $cacheKey = '', \WP_User $user = null, bool $redirect = true): array
     {
         $user = $user ?? wp_get_current_user();
-        $metaKey = 'blockera_api_user_info';
-        $metadata = get_user_meta($user->ID, $metaKey, true);
 
-        // If the user info is already cached, return it.
-        if (!empty($metadata) && 'dev' === BSA_PLUGIN_MODE) {
-            return $metadata;
-        }
+		// If the cache key is set, then we need to check if the user info is already cached.
+        if (!empty($cacheKey)) {	
+			$metadata = get_user_meta($user->ID, $cacheKey, true);
+
+			// If the user info is already cached, return it.
+			if (!empty($metadata)) {
+				return $metadata;
+			}
+		}
 
         $response = wp_remote_post(bsaGetEnv('BSA_API_BASE_URL') . '/auth/v1/token', [
             'timeout' => 30,
@@ -228,7 +194,9 @@ if (!function_exists('bsaGetUserAccessToken')) {
         }
 
         // Cache the user info in the user meta.
-        update_user_meta($user->ID, $metaKey, $body['data']);
+        if (!empty($cacheKey)) {
+			update_user_meta($user->ID, $cacheKey, $body['data']);
+		}
 
         return $body['data'];
     }
@@ -240,17 +208,17 @@ if (!function_exists('bsaDoStoreClient')) {
      *
      * @param array $params The parameters to pass to the request.
      * @param string $authorization The authorization header.
+	 * @param string $cacheKey The cache key.
      *
      * @return array
      */
-    function bsaDoStoreClient(array $params, string $authorization): array
+    function bsaDoStoreClient(array $params, string $authorization, string $cacheKey): array
     {
         $user = wp_get_current_user();
-        $metaKey = 'blockera_api_client_info';
-        $metadata = get_user_meta($user->ID, $metaKey, true);
+		$metadata = get_user_meta($user->ID, $cacheKey, true);
 
         // If the client info is already cached, return it.
-        if (!empty($metadata) && 'dev' === BSA_PLUGIN_MODE) {
+        if (!empty($metadata)) {
             return $metadata;
         }
 
@@ -276,7 +244,7 @@ if (!function_exists('bsaDoStoreClient')) {
         }
 
         // Cache the client info in the user meta.
-        update_user_meta($user->ID, $metaKey, $body['data']);
+		update_user_meta($user->ID, $cacheKey, $body['data']);
 
         return $body['data'];
     }

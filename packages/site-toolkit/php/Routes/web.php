@@ -34,14 +34,14 @@ add_action(
             }
 
 			// If the product is set, then we need to add it to the client credentials.
-			if (!empty($_GET['product'])) {
+			if (!empty($_GET['product']) && !empty($_COOKIE['token_key'])) {
 				$userId = wp_get_current_user()->ID;
-				$clientCredentials = get_user_meta($userId, 'blockera_api_client_info', true);
+				$clientCredentials = get_user_meta($userId, $_COOKIE['token_key'], true);
 
 				if (!empty($clientCredentials) && !empty($clientCredentials['products']) && !in_array($_GET['product'], $clientCredentials['products'])) {
 					$clientCredentials['products'][] = $_GET['product'];
 
-					update_user_meta($userId, 'blockera_api_client_info', $clientCredentials);
+					update_user_meta($userId, $_COOKIE['token_key'], $clientCredentials);
 				}
 			}
 
@@ -78,7 +78,7 @@ add_action(
 				exit;
 			}
 
-			$clientInfo = get_user_meta(get_current_user_id(), 'blockera_api_client_info', true);
+			$clientInfo = $_COOKIE['token_key'] ? get_user_meta(get_current_user_id(), $_COOKIE['token_key'], true) : [];
 			$clientId = $clientInfo['client_id'] ?? '';
 			$rawUrl = parse_url(urldecode($_GET['redirect_uri']));
 			$domain = '<div class="client-website"><span class="client-website-scheme">' . $rawUrl['scheme'] . '://' . '</span> ' . $rawUrl['host'] . '</div>';
@@ -93,6 +93,9 @@ add_action(
 
             wp_footer();
 
+			// Unset the token key cookie.
+			unset($_COOKIE['token_key']);
+
             exit;
         }
 
@@ -104,7 +107,7 @@ add_action(
             $params['event'] = 'auto-connect';
 
             $userCredentials = bsaGetUserAccessToken();
-            bsaDoStoreClient($params, $userCredentials['token_type'] . ' ' . $userCredentials['access_token']);
+            bsaDoStoreClient($params, $userCredentials['token_type'] . ' ' . $userCredentials['access_token'], 'blockera_api_client_info_' . md5($params['domain']));
         }
     }
 );

@@ -244,7 +244,7 @@ class ProductController
         }
 
         // Get current user credentials
-        $userCredentials = bsaGetUserAccessToken(null, false);
+        $userCredentials = bsaGetUserAccessToken('',null, false);
         if (empty($userCredentials)) {
             return;
         }
