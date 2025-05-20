@@ -92,16 +92,16 @@ class AppServiceProvider extends ServiceProvider
 
 		// If the user is logged in and the authorized is not set, then we need to terminate the client.
 		// This is a first try to refresh the client credentials and connection.
-        if (!empty($clientCredentials) && empty($_GET['authorized'])) {
-            if (empty($_GET['client_id']) && empty($_GET['client_secret'])) {
-				// We should the terminate the client if the client registered previously.
-                if (!bsaDoTerminateClient($authorization)) {
-                    return;
-                }
-            }
-        }elseif(!empty($clientCredentials)){
-			return;
-		}
+        // if (!empty($clientCredentials) && empty($_GET['authorized'])) {
+        //     if (empty($_GET['client_id']) && empty($_GET['client_secret'])) {
+		// 		// We should the terminate the client if the client registered previously.
+        //         if (!bsaDoTerminateClient($authorization)) {
+        //             return;
+        //         }
+        //     }
+        // }elseif(!empty($clientCredentials)){
+		// 	return;
+		// }
 
         $params = bsaGetRegisterClientParams();
 
@@ -115,11 +115,14 @@ class AppServiceProvider extends ServiceProvider
         $client_secret = $client['client_secret'];
 
         $params = [
-            'params' => $params,
+            'params' => $client_id && $client_secret ? array_merge($params, [
+                'client_id' => $client_id,
+                'client_secret' => $client_secret,
+            ]) : $params,
             'authorization' => $userCredentials['token_type'] . ' ' . $userCredentials['access_token'],
         ];
 
-        $authorizeResponse = bsaDoAuthorization($client_id, $client_secret, $params);
+        $authorizeResponse = bsaDoAuthorization($params);
 
         if (empty($authorizeResponse)) {
             delete_user_meta($user_id, $user_info_cache_key);

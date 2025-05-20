@@ -332,13 +332,11 @@ if (!function_exists('bsaDoAuthorization')) {
     /**
      * Do the authorization request.
      *
-     * @param string $clientId The client id.
-     * @param string $clientSecret The client secret.
      * @param array $args The extra arguments.
      *
      * @return array
      */
-    function bsaDoAuthorization(string $clientId, string $clientSecret, array $args): array
+    function bsaDoAuthorization(array $args): array
     {
         $params = $args['params'] ?? [];
         $authorization = $args['authorization'] ?? '';
@@ -347,9 +345,7 @@ if (!function_exists('bsaDoAuthorization')) {
             $params = array_merge(
                 $params,
                 [
-                    'client_id' => $clientId,
                     'response_type' => 'code',
-                    'client_secret' => $clientSecret,
                     'state' => bin2hex(random_bytes(16)),
                     // 'redirect_uri' => $_SERVER['HTTP_REFERER'] ?? '',
                 ]
