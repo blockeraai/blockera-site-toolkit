@@ -140,8 +140,8 @@ class OrderRepository
 
         $licenses = bsaFilterActiveLicenses(
             $licenseRepository
-                ->where('license_id', $productId)
-                ->orWhere('license_id', $variationId)
+				->where('license_id', $productId)
+                ->where('order_item_id', $item->get_id())
                 ->get('api')
         );
 		$developmentWebsites = $this->getNormalizedWebsites($licenses, 'development');
@@ -241,10 +241,11 @@ class OrderRepository
         $licenseRepository = $this->app->make(LicenseRepository::class);
 
         $licenses = bsaFilterActiveLicenses(
-            $licenseRepository->getBy(
-                'license_id',
-                $subscriptionId
-            )
+            $licenseRepository
+				->where('license_id', $subscriptionId)
+				->where('product_id', $productId)
+				->where('order_item_id', $item->get_id())
+				->get('api')
         );
 		$developmentWebsites = $this->getNormalizedWebsites($licenses, 'development');
 		$productionWebsites = $this->getNormalizedWebsites($licenses, 'production');
