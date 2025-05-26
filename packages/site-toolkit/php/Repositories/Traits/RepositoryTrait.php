@@ -112,7 +112,12 @@ trait RepositoryTrait
 
 		$where = implode(' ', $this->where);
 
-		return $this->wpdb->get_results($this->wpdb->prepare("SELECT * FROM {$this->api_table_prefix}{$this->table_name} WHERE {$where}"), ARRAY_A);
+		$results = $this->wpdb->get_results($this->wpdb->prepare("SELECT * FROM {$this->api_table_prefix}{$this->table_name} WHERE {$where}"), ARRAY_A);
+
+		// Reset the WHERE clause.
+		$this->resetWhere();
+
+		return $results;
 	}
 
 	/**
@@ -131,5 +136,17 @@ trait RepositoryTrait
 		$where = implode(' ', $this->where);
 
 		return $this->wpdb->get_var($this->wpdb->prepare("SELECT COUNT(*) FROM {$this->api_table_prefix}{$this->table_name} WHERE {$where}"));
+	}
+
+	/**
+	 * Reset the WHERE clause.
+	 *
+	 * @return self
+	 */
+	public function resetWhere(): self
+	{
+		$this->where = [];
+
+		return $this;
 	}
 }
