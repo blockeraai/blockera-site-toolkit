@@ -145,7 +145,7 @@ if (!function_exists('bsaGetUserAccessToken')) {
 			$metadata = get_user_meta($user->ID, $cacheKey, true);
 
 			// If the user info is already cached, return it.
-			if (!empty($metadata)) {
+			if (!empty($metadata) && isset($metadata['expires_at']) && $metadata['expires_at'] > time()) {
 				return $metadata;
 			}
 		}
