@@ -272,6 +272,14 @@ export const ConsentForm = ({
 							</Flex>
 
 							{licenses?.map((license: LicenseProps) => {
+								if (
+									!['active', 'completed'].includes(
+										license.status
+									)
+								) {
+									return <></>;
+								}
+
 								if (Array.isArray(license.activeWebsites)) {
 									license.activeWebsites = {};
 								}

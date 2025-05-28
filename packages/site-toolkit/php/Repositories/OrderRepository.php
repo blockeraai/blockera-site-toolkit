@@ -151,7 +151,9 @@ class OrderRepository
         $isActivatedFreeDownload = get_post_meta($productId, 'product_is_activated_free_download', true);
         $freeSlug = get_post_meta($productId, 'product_free_slug', true);
 
-		for ($i = 0; $i < $item->get_quantity(); $i++) {
+		$quantity = 'consent-form' === $this->context ? 1 : $item->get_quantity();
+
+		for ($i = 0; $i < $quantity; $i++) {
 
 			$mappedLicenses[] = [
 				'number' => $i,
@@ -196,7 +198,9 @@ class OrderRepository
     {
 		$mappedLicenses = [];
 
-		for ($i = 0; $i < $item->get_quantity(); $i++) {
+		$quantity = 'consent-form' === $this->context ? 1 : $item->get_quantity();
+
+		for ($i = 0; $i < $quantity; $i++) {
 			$mappedLicenses = array_merge(
 				$mappedLicenses,
 				array_map(function ($subscriptionPost) use ($item, $i) {
