@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import { select } from '@wordpress/data';
 import { applyFilters } from '@wordpress/hooks';
 
 /**
@@ -21,7 +22,7 @@ import {
 } from './helpers';
 import { isBaseBreakpoint } from '../../canvas-editor';
 import { isInnerBlock } from '../../extensions/components';
-import { isNormalStateOnBaseBreakpoint } from '../../extensions/libs/block-states/helpers';
+import { isNormalStateOnBaseBreakpoint } from '../../extensions/libs/block-card/block-states/helpers';
 
 const reducer = (state: Object = {}, action: Object): Object => {
 	const {
@@ -71,6 +72,7 @@ const reducer = (state: Object = {}, action: Object): Object => {
 			),
 		},
 	];
+	const { getState, getInnerState } = select('blockera/editor');
 
 	switch (type) {
 		case 'UPDATE_NORMAL_STATE':
@@ -170,6 +172,31 @@ const reducer = (state: Object = {}, action: Object): Object => {
 
 		case 'UPDATE_BLOCK_STATES':
 		case 'UPDATE_INNER_BLOCK_INSIDE_PARENT_STATE':
+			const blockeraBlockStates = memoizedBlockStates(state, action, {
+				currentState,
+				insideInnerBlock:
+					'UPDATE_INNER_BLOCK_INSIDE_PARENT_STATE' === type,
+				currentBlock,
+				getState,
+				getInnerState,
+			});
+			const {
+				settings: { hasContent },
+			} = getState(currentState) ||
+				getInnerState(currentState) || {
+					settings: { hasContent: false },
+				};
+
+			if (
+				hasContent &&
+				!blockeraBlockStates.value[currentState].hasOwnProperty(
+					'content'
+				)
+			) {
+				blockeraBlockStates.value[currentState].content =
+					blockeraBlockStates.value[currentState].content || '';
+			}
+
 			/**
 			 * Filterable attributes before set next state.
 			 * usefully in add WordPress compatibility and any other filters.
@@ -183,17 +210,7 @@ const reducer = (state: Object = {}, action: Object): Object => {
 				mergeObject(
 					state,
 					{
-						blockeraBlockStates: memoizedBlockStates(
-							state,
-							action,
-							{
-								currentState,
-								insideInnerBlock:
-									'UPDATE_INNER_BLOCK_INSIDE_PARENT_STATE' ===
-									type,
-								currentBlock,
-							}
-						),
+						blockeraBlockStates,
 					},
 					{
 						deletedProps: [attributeId],
@@ -204,6 +221,40 @@ const reducer = (state: Object = {}, action: Object): Object => {
 			);
 
 		case 'UPDATE_INNER_BLOCK_STATES':
+			const _blockeraBlockStates = memoizedBlockStates(
+				(state.blockeraInnerBlocks[currentBlock] || {})?.attributes ||
+					{},
+				action,
+				{
+					currentState: currentInnerBlockState,
+					insideInnerBlock: false,
+					currentBlock,
+				}
+			);
+
+			const {
+				settings: { hasContent: _hasContent },
+			} = getState(currentInnerBlockState) ||
+				getInnerState(currentInnerBlockState) || {
+					settings: { hasContent: false },
+				};
+
+			if (
+				(
+					(_hasContent &&
+						!((
+							(state.blockeraInnerBlocks[currentBlock] || {})
+								?.attributes || {}
+						)?.blockeraBlockStates || {})[
+							currentInnerBlockState
+						]) ||
+					{}
+				)?.hasOwnProperty('content')
+			) {
+				_blockeraBlockStates[currentInnerBlockState].content =
+					_blockeraBlockStates[currentInnerBlockState].content || '';
+			}
+
 			/**
 			 * Filterable attributes before set next state.
 			 * usefully in add WordPress compatibility and any other filters.
@@ -222,20 +273,7 @@ const reducer = (state: Object = {}, action: Object): Object => {
 								[currentBlock]: {
 									attributes: {
 										blockeraBlockStates:
-											memoizedBlockStates(
-												(
-													state.blockeraInnerBlocks[
-														currentBlock
-													] || {}
-												)?.attributes || {},
-												action,
-												{
-													currentState:
-														currentInnerBlockState,
-													insideInnerBlock: false,
-													currentBlock,
-												}
-											),
+											_blockeraBlockStates,
 									},
 								},
 							},
