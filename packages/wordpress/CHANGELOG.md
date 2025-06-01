@@ -1,5 +1,21 @@
 ## Unreleased
 
+### Bug Fixes
+- Fixed a bug in the panel admin React components to improve user experience.
+
+### Improvements
+- Improved the assets loader to be more flexible and easier to use of packages versions and dependencies.
+
+## 1.1.4 (2025-05-25)
+
+### Improvements
+- Improved the APIs of the `blockera/wordpress` package to be more flexible and easier to use.
+
+## 1.1.3 (2025-05-24)
+
+### Bug Fixes
+- Fixed a bug where the style engine failed to generate when block content was created through shortcodes in the front end.
+
 ## 1.1.2 (2025-04-16)
 
 ### Bug Fixes

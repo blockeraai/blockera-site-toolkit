@@ -39,7 +39,7 @@ import {
 	EditorAdvancedLabelControl,
 } from '../../components';
 import { STORE_NAME } from '../store/constants';
-import { useStoreSelectors } from '../../hooks';
+import { useStoreSelectors, useBlockSideEffectsRestore } from '../../hooks';
 import { sanitizeDefaultAttributes } from './utils';
 import { isBlockTypeExtension, isEnabledExtension } from '../api/utils';
 import { BlockApp, BlockBase, BlockIcon, BlockPortals } from '../components';
@@ -73,6 +73,8 @@ const useSharedBlockSideEffect = (): void => {
 			tabs.style.display = 'block';
 		}
 	}, [selectedBlock]);
+
+	useBlockSideEffectsRestore(selectedBlock);
 };
 
 const EdiBlockWithoutExtensions = ({
@@ -86,8 +88,9 @@ const EdiBlockWithoutExtensions = ({
 
 type extraArguments = {
 	currentUser: Object,
-	notAllowedUsers: Array<string>,
+	allowedUsers: Array<string>,
 	unsupportedBlocks: Array<string>,
+	allowedPostTypes: Array<string>,
 };
 
 /**
@@ -175,8 +178,9 @@ function mergeBlockSettings(
 	additional: Object,
 	{
 		unsupportedBlocks = [],
-		notAllowedUsers = [],
+		allowedUsers = [],
 		currentUser,
+		allowedPostTypes = [],
 	}: extraArguments
 ): Object {
 	if (!isEnabledExtension(additional)) {
@@ -187,11 +191,69 @@ function mergeBlockSettings(
 		getSharedBlockAttributes = () => ({}),
 		getBlockTypeAttributes = () => ({}),
 	} = select('blockera/extensions') || {};
+	const { blockeraCurrentPostType } = window;
 
-	const isAvailableBlock = () =>
-		!unsupportedBlocks.includes(settings.name) &&
-		!notAllowedUsers.filter((role) => currentUser.roles.includes(role))
-			.length;
+	const isAvailableBlock = () => {
+		// While the not changed, the block is available.
+		if (
+			!unsupportedBlocks.length &&
+			!allowedUsers.length &&
+			!allowedPostTypes.length
+		) {
+			return true;
+		}
+
+		// If the block is not supported with restricted visibility by block type name and post type, it is not available.
+		if (
+			!allowedUsers.length &&
+			allowedPostTypes.length &&
+			unsupportedBlocks.length
+		) {
+			return !blockeraCurrentPostType
+				? !unsupportedBlocks.includes(settings.name)
+				: !unsupportedBlocks.includes(settings.name) &&
+						allowedPostTypes.includes(blockeraCurrentPostType);
+		}
+
+		// If the block is not supported with restricted visibility by user roles and block type name, it is not available.
+		if (
+			!allowedPostTypes.length &&
+			allowedUsers.length &&
+			unsupportedBlocks.length
+		) {
+			return (
+				!unsupportedBlocks.includes(settings.name) &&
+				allowedUsers.filter((role) => currentUser.roles.includes(role))
+					.length
+			);
+		}
+
+		// If the block is not supported with restricted visibility by user roles and post type, it is not available.
+		if (
+			!unsupportedBlocks.length &&
+			allowedUsers.length &&
+			allowedPostTypes.length &&
+			blockeraCurrentPostType
+		) {
+			return (
+				allowedUsers.filter((role) => currentUser.roles.includes(role))
+					.length &&
+				allowedPostTypes.includes(blockeraCurrentPostType)
+			);
+		}
+
+		// If the block is not supported with restricted visibility by user roles, block type name, and post type, it is not available.
+		return !blockeraCurrentPostType
+			? !unsupportedBlocks.includes(settings.name) &&
+					allowedUsers.filter((role) =>
+						currentUser.roles.includes(role)
+					).length
+			: !unsupportedBlocks.includes(settings.name) &&
+					allowedUsers.filter((role) =>
+						currentUser.roles.includes(role)
+					).length &&
+					allowedPostTypes.includes(blockeraCurrentPostType);
+	};
 
 	const getVariations = (): Array<Object> => {
 		if (!isAvailableBlock()) {
