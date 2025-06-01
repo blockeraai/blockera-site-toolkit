@@ -236,6 +236,7 @@ class Utils {
 		}
 
 		if ($with_scheme) {
+
 			return "{$parsed_redirect_url['scheme']}://{$host}";
 		}
 
