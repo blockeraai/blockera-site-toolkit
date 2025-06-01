@@ -1,8 +1,14 @@
+.blockera-control-box-spacing-container {
+	height: 160px;
+	display: flex;
+	justify-content: center;
+}
+
 .blockera-control-box-spacing {
 	position: relative;
-	height: 158px;
-	width: 250px;
-	margin: 0 auto 15px;
+	height: 150px;
+	width: 235px;
+	margin: 0 0 0 -1px;
 	z-index: 99; // for advanced select control
 	user-select: none;
 
@@ -11,7 +17,6 @@
 	}
 
 	&.disable-pointer-events {
-
 		pointer-events: none;
 
 		.blockera-control-spacing-shape-side {
@@ -25,6 +30,7 @@
 		stroke: var(--blockera-controls-border-color-soft);
 		user-select: none;
 		stroke-linejoin: round;
+		outline: none;
 
 		&.selected-side,
 		&:hover {
@@ -91,7 +97,7 @@
 			display: flex;
 			justify-content: center;
 			align-items: center;
-			padding: 0;
+			padding: 0 1px;
 			min-width: 15px;
 			height: 12px;
 			min-height: 12px;
@@ -108,7 +114,7 @@
 				color: #b9b9b9;
 				position: absolute;
 				left: calc(100% + 4px);
-				top: -8px;
+				top: -2px;
 			}
 
 			b {
@@ -161,7 +167,7 @@
 			}
 
 			i {
-				top: 18px;
+				top: 20px;
 				width: 30px;
 				left: 0;
 				right: 0;
@@ -178,8 +184,8 @@
 			}
 
 			i {
-				top: 18px;
-				width: 30px;
+				top: 20px;
+				width: 28px;
 				left: 0;
 				right: 0;
 				padding: 0 4px 0 0;
@@ -199,7 +205,7 @@
 			top: 0;
 			right: 0;
 			left: 0;
-			height: 30px;
+			height: 28px;
 
 			.blockera-control-value-addon-pointers {
 				top: -13.5px;
@@ -211,7 +217,7 @@
 			top: 0;
 			right: 0;
 			bottom: 0;
-			width: 30px;
+			width: 28px;
 
 			.blockera-control-value-addon-pointers {
 				right: -13.5px;
@@ -220,10 +226,10 @@
 		}
 
 		&.side-margin-bottom {
-			bottom: 0;
+			bottom: 1px;
 			right: 0;
 			left: 0;
-			height: 30px;
+			height: 28px;
 
 			.blockera-control-value-addon-pointers {
 				right: initial;
@@ -238,7 +244,7 @@
 			top: 0;
 			bottom: 0;
 			left: 0;
-			width: 30px;
+			width: 28px;
 
 			.blockera-control-value-addon-pointers {
 				text-align: left;
@@ -250,10 +256,10 @@
 		}
 
 		&.side-padding-top {
-			top: 36px;
+			top: 35px;
 			right: 39px;
 			left: 38px;
-			height: 30px;
+			height: 28px;
 
 			.blockera-control-value-addon-pointers {
 				top: -12.5px;
@@ -263,9 +269,9 @@
 
 		&.side-padding-right {
 			top: 38px;
-			right: 37px;
+			right: 35px;
 			bottom: 38px;
-			width: 30px;
+			width: 28px;
 
 			.blockera-control-value-addon-pointers {
 				right: -13.5px;
@@ -277,7 +283,7 @@
 			bottom: 36px;
 			right: 39px;
 			left: 38px;
-			height: 30px;
+			height: 28px;
 
 			.blockera-control-value-addon-pointers {
 				right: initial;
@@ -291,8 +297,8 @@
 		&.side-padding-left {
 			top: 38px;
 			bottom: 38px;
-			left: 37px;
-			width: 30px;
+			left: 35px;
+			width: 28px;
 
 			.blockera-control-value-addon-pointers {
 				text-align: left;
@@ -327,7 +333,7 @@
 		&.box-mode-padding {
 			text-align: center;
 			position: absolute;
-			top: 67px;
+			top: 62px;
 			width: auto;
 			left: 50%;
 			transform: translateX(-50%);
@@ -384,13 +390,13 @@
 		&.padding-lock {
 			top: 50%;
 			transform: translateY(-50%);
-			left: 162px;
+			left: 152px;
 			z-index: 7;
 		}
 
 		&.margin-lock {
 			bottom: -21px;
-			left: 162px;
+			left: 152px;
 		}
 
 		[role="listbox"] {
@@ -406,12 +412,13 @@
 }
 
 .blockera-control-side-popover-action-buttons {
+	--blockera-controls-input-height: 26px;
 
 	.blockera-component-button {
 		width: 100%;
 	}
 
 	.blockera-component-button.auto-btn {
-		height: 68px !important;
+		height: calc(var(--blockera-controls-input-height) * 2 + 8px) !important;
 	}
 }
