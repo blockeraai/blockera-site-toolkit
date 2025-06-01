@@ -30,6 +30,9 @@ if (!function_exists('bsaGetRegisterClientParams')) {
             $parsed_redirect_uri = parse_url($params['redirect_uri'] ?? '');
             $scheme = $parsed_redirect_uri['scheme'] ?? '';
             $host = $parsed_redirect_uri['host'] ?? '';
+			if (!empty($parsed_redirect_uri['port'])) {
+				$host .= ':' . $parsed_redirect_uri['port'];
+			}
             $domain = "{$scheme}://{$host}";
 
             // Sanitize and get form data.

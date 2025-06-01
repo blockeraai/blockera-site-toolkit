@@ -15,6 +15,15 @@
 use Blockera\Utils\Utils;
 
 defined('YITH_YWSBS_INIT') || exit; // Exit if accessed directly.
+
+$host = $rawUrl['host'];
+
+if (isset($rawUrl['port']) && !empty($rawUrl['port'])) {
+    $host .= ":{$rawUrl['port']}";
+}
+
+$clientUrl = $rawUrl['scheme'] . '://' . $host;
+
 ?>
 <div id="blockera-site-toolkit-consent-form"></div>
 <script>
@@ -22,7 +31,7 @@ defined('YITH_YWSBS_INIT') || exit; // Exit if accessed directly.
 	window.clientId = '<?php echo $clientId; ?>';
 	window.shopUrl = '<?php echo home_url('/shop'); ?>';
 	window.isConsentForm = true;
-	window.clientUrl = '<?php echo $rawUrl['scheme'] . '://' . $rawUrl['host']; ?>';
+	window.clientUrl = '<?php echo $clientUrl;?>';
 	window.clientWebsite = '<?php echo $domain; ?>';
 	window.redirectUrl = '<?php echo add_query_arg('registered-client', 'true', Utils::extractParamFromURL(Utils::getCurrentPageURL(), 'redirect_uri')); ?>';
 	window.consentNonce = '<?php echo wp_create_nonce('blockera-site-toolkit'); ?>';
