@@ -1,7 +1,5 @@
 ## Unreleased
 
-## 1.1.5 (2025-06-03)
-
 ### Bug Fixes
 - Fixed a bug in the panel admin React components to improve user experience.
 
