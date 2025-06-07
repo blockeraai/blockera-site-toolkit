@@ -408,7 +408,7 @@ class LicenseManagerController
         $client = $clientRepository->getBy('domain', $params['domain']);
         $user = wp_get_current_user();
 
-        $redirectUri = admin_url('admin.php/?page=blockera-settings-connect-with-account');
+        $redirectUri = $client['redirect_uri'] ?? $params['domain'] . '/wp-admin/admin.php?page=blockera-settings-account';
 
         $requiredParams = empty($client) ? array_merge(bsaGetRegisterClientParams(false), [
             'domain' => $params['domain'],
@@ -434,11 +434,14 @@ class LicenseManagerController
         }
 
         $requiredParams = [
-            'params' => $requiredParams,
+            'params' => array_merge($requiredParams, [
+				'client_id' => $client['client_id'], 
+				'client_secret' => $client['client_secret'],
+			]),
             'authorization' => $authorization,
         ];
 
-        $authorizeResponse = bsaDoAuthorization($client['client_id'], $client['client_secret'], $requiredParams);
+        $authorizeResponse = bsaDoAuthorization($requiredParams);
 
         if (empty($authorizeResponse['redirect_to_client'])) {
             throw new \Exception('Client authorization failed!');
