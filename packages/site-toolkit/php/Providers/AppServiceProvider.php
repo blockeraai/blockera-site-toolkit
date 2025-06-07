@@ -99,6 +99,12 @@ class AppServiceProvider extends ServiceProvider
 		$authorization = $userCredentials['token_type'] . ' ' . $userCredentials['access_token'];
 		$clientCredentials = get_user_meta($user_id, $client_info_cache_key, true);
 
+		// If client credentials are not correct, then we try again to store the new client credentials.
+		if (!empty($clientCredentials) && $user_id !== $clientCredentials['user_id']) {
+			$clientCredentials = '';
+			delete_user_meta($user_id, $client_info_cache_key);
+		}
+
 		// If the user is logged in and the authorized is not set, then we need to authorize the client.
 		// This is a first try to refresh the client credentials and connection.
         if (!empty($clientCredentials) && empty($_GET['authorized']) && empty($_GET['product'])) { 

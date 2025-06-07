@@ -220,8 +220,8 @@ if (!function_exists('bsaDoStoreClient')) {
         $user = wp_get_current_user();
 		$metadata = get_user_meta($user->ID, $cacheKey, true);
 
-        // If the client info is already cached, return it.
-        if (!empty($metadata)) {
+        // If the client info is already cached and the user id is the same, then return it.
+        if (!empty($metadata) && isset($metadata['user_id']) && $user->ID === $metadata['user_id']) {
             return $metadata;
         }
 
