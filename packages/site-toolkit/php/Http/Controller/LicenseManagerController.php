@@ -164,9 +164,7 @@ class LicenseManagerController
                     'headers' => [
                         'Authorization' => $request->get_header('Authorization'),
                     ],
-                    'body' => [
-                        'domain' => $request->get_param('domain'),
-                    ],
+                    'body' => $request->get_params(),
                 ]
             );
 
