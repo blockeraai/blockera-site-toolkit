@@ -6,6 +6,7 @@ use BlockeraAI\SiteToolkit\Setup;
 use Blockera\Bootstrap\Application;
 use Blockera\Bootstrap\ServiceProvider;
 use BlockeraAI\SiteToolkit\Meta\Factory as Meta;
+use BlockeraAI\SiteToolkit\Services\UploadService;
 use BlockeraAI\SiteToolkit\Repositories\OrderRepository;
 use BlockeraAI\SiteToolkit\Repositories\LicenseRepository;
 use BlockeraAI\SiteToolkit\Http\Controller\ProductController;
@@ -21,6 +22,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+		$this->app->singleton(UploadService::class);
         $this->app->singleton(MiddlewarePipeline::class);
         $this->app->singleton(RefererMiddleware::class);
 		$this->app->singleton(LicenseRepository::class);
@@ -72,7 +74,10 @@ class AppServiceProvider extends ServiceProvider
             $this->app->make(Meta::class);
         }
 
-        add_action('save_post_product', [$this->app->make(ProductController::class), 'save'], 9e8, 3);
+		$productController = $this->app->make(ProductController::class);
+		$productController->setUploadService($this->app->make(UploadService::class));
+
+        add_action('save_post_product', [$productController, 'save'], 9e8, 3);
     }
 
     /**
