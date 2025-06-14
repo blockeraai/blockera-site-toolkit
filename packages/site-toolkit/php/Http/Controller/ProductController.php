@@ -75,6 +75,159 @@ class ProductController
         ], 200);
     }
 
+	/**
+	 * Release a new version of the product.
+	 *
+	 * @param \WP_REST_Request $request The request object.
+	 * 
+	 * @return \WP_REST_Response The response object.
+	 */
+	public function releaseVersion(\WP_REST_Request $request): \WP_REST_Response
+	{
+		$allowedParams = [
+			'action',
+			'metaKey',
+			'api_key',
+			'filename',
+			'product_id', 
+			'product_version',
+		];
+
+		if (!array_intersect($allowedParams, array_keys($request->get_params()))) {
+			return new \WP_REST_Response([
+				'code' => 400,
+				'success' => false,
+				'errors' => [
+					'meta_keys' => __('Request parameters are not allowed', 'blockera-site-toolkit'),
+				],
+			], 400);
+		}
+
+		$action = $request->get_param('action');
+		$apiKey = $request->get_param('api_key');
+		$metaKey = $request->get_param('metaKey');
+		$filename = $request->get_param('filename');
+		$version = $request->get_param('product_version');
+		$productId = (int)$request->get_param('product_id');
+
+		// Get file from either file params or body params
+		$file = null;
+		if ($request->get_file_params() && !empty($request->get_file_params()['file'])) {
+			$file = $request->get_file_params()['file'];
+		} else if ($request->get_body_params() && !empty($request->get_body_params()['file'])) {
+			$file = $request->get_body_params()['file'];
+		}
+
+		$errors = [];
+
+		// Validate required fields ...
+		if (empty($action)) {
+			$errors['action'] = __('Action is required', 'blockera-site-toolkit');
+		}
+		if (empty($action) || $action !== 'release-blockera-products-new-version') {
+			$errors['action'] = __('Action is not allowed', 'blockera-site-toolkit');
+		}
+		if (empty($apiKey)) {
+			$errors['api_key'] = __('API key is required', 'blockera-site-toolkit');
+		}
+		// Validate API Key based on the user email.
+		if (empty($apiKey) || $apiKey !== md5('blockeraai+githubbot@gmail.com')) {
+			$errors['api_key'] = __('API key is invalid', 'blockera-site-toolkit');
+		}
+		if (empty($metaKey)) {
+			$errors['meta_key'] = __('Meta key is required', 'blockera-site-toolkit');
+		}
+		if (empty($productId)) {
+			$errors['product_id'] = __('Product ID is required', 'blockera-site-toolkit');
+		}
+		if (empty($version)) {
+			$errors['product_version'] = __('Product version is required', 'blockera-site-toolkit'); 
+		}
+		if (empty($file)) {
+			$errors['product_file'] = __('Product file is required', 'blockera-site-toolkit');
+		}
+		if(empty($filename)){
+			$errors['filename'] = __('Filename is required', 'blockera-site-toolkit');
+		}
+
+		// Handle file upload to WooCommerce uploads directory
+		if (!empty($file['tmp_name'])) {
+			$upload_dir = wp_upload_dir();
+			$woocommerce_uploads = $upload_dir['basedir'] . '/woocommerce_uploads';
+
+			// Create woocommerce_uploads directory if it doesn't exist
+			if (!file_exists($woocommerce_uploads)) {
+				wp_mkdir_p($woocommerce_uploads);
+			}
+
+			// Create year/month directories
+			$year = date('Y');
+			$month = date('m');
+			$year_dir = $woocommerce_uploads . '/' . $year;
+			$month_dir = $year_dir . '/' . $month;
+
+			// Create directories if they don't exist
+			if (!file_exists($year_dir)) {
+				wp_mkdir_p($year_dir);
+			}
+			if (!file_exists($month_dir)) {
+				wp_mkdir_p($month_dir);
+			}
+
+			// Generate unique filename.
+			$unique_filename = wp_unique_filename($month_dir, $filename);
+			$upload_path = $month_dir . '/' . $unique_filename;
+
+			// Move uploaded file
+			if (!move_uploaded_file($file['tmp_name'], $upload_path)) {
+				$errors['upload'] = __('Failed to upload file', 'blockera-site-toolkit');
+			}
+
+			// Update file path to be relative to uploads directory
+			$file = $upload_dir['baseurl'] . '/woocommerce_uploads/' . $year . '/' . $month . '/' . $unique_filename;
+		}
+
+		// Validate version format (e.g. 1.0.0 or 1.0.0-beta.1)
+		if (!empty($version) && !preg_match('/^(\d+\.)?(\d+\.)?(\*|\d+)(-[a-zA-Z0-9]+(\.[0-9]+)?)?$/', $version)) {
+			$errors['product_version'] = __('Invalid version format. Must be in semantic versioning format (e.g. 1.0.0 or 1.0.0-beta.1)', 'blockera-site-toolkit');
+		}
+
+		if (!empty($errors)) {
+			return new \WP_REST_Response([
+				'code' => 400,
+				'success' => false,
+				'errors' => $errors,
+			], 400);
+		}
+
+		$product = wc_get_product($productId);
+
+		if (!$product) {
+			return new \WP_REST_Response([
+				'code' => 404,
+				'success' => false,
+				'errors' => [
+					'product_id' => __('Product not found', 'blockera-site-toolkit'),
+				],
+			], 404);
+		}
+
+		$previousDownloadableFiles = get_post_meta($productId, 'product_downloadable_files', true);
+
+		$product->update_meta_data('product_version', $request->get_param('product_version'));
+		$product->update_meta_data('product_downloadable_files', blockera_get_array_deep_merge($previousDownloadableFiles, [
+			$metaKey => compact('file'),
+		]));
+		$product->save();
+
+		$this->save($productId, get_post($productId), true);
+
+		return new \WP_REST_Response([
+			'code' => 200,
+			'success' => true,
+		], 200);
+	}
+
     /**
      * Save the product.
      *
