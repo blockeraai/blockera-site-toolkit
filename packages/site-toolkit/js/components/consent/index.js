@@ -296,6 +296,7 @@ export const ConsentForm = ({
 						</Flex>
 
 						<Button
+							data-test="connect-button"
 							className="connect-button"
 							variant="primary"
 							isBusy={
