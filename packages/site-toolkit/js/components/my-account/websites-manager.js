@@ -112,6 +112,7 @@ const Row = ({
 				<span className="number">{num}</span>
 
 				<a
+					data-test="website-url"
 					href={website.website}
 					target="_blank"
 					rel="noopener noreferrer"
@@ -131,6 +132,7 @@ const Row = ({
 			{'function' === typeof setWebsites && (
 				<div className="action-buttons">
 					<Button
+						data-test="delete-website"
 						className="delete-row"
 						variant="secondary"
 						size="small"
@@ -151,6 +153,7 @@ const Row = ({
 						'Are you sure, you want to deactivate this website?',
 						'blockera'
 					)}
+					data-test="modal-body"
 					onRequestClose={() => setIsDeleteModalOpen(false)}
 					focusOnMount={'firstContentElement'}
 					style={{
@@ -197,6 +200,7 @@ const Row = ({
 
 						<Flex alignItems="center" direction="row" gap={20}>
 							<Button
+								data-test="cancel"
 								variant="primary"
 								onClick={() => setIsDeleteModalOpen(false)}
 							>
@@ -204,6 +208,7 @@ const Row = ({
 							</Button>
 
 							<Button
+								data-test="confirm"
 								className="delete-row"
 								variant="secondary"
 								onClick={handleDelete}
