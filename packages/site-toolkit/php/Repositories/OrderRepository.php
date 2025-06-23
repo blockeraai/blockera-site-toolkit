@@ -144,6 +144,16 @@ class OrderRepository
                 ->where('order_item_id', $item->get_id())
                 ->get('api')
         );
+
+		if (empty($licenses)) {
+			$licenses = bsaFilterActiveLicenses(
+				$licenseRepository
+					->where('license_id', $variationId)
+					->where('order_item_id', $item->get_id())
+					->get('api')
+			);
+		}
+
 		$developmentWebsites = $this->getNormalizedWebsites($licenses, 'development');
 		$productionWebsites = $this->getNormalizedWebsites($licenses, 'production');
 
