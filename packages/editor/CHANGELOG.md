@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 2.0.0 (2025-07-20)
+
 ### Bug Fixes
 - Fixed an issue where styles weren't being applied in the correct order across different screen sizes, ensuring your responsive designs now work as expected.
 
