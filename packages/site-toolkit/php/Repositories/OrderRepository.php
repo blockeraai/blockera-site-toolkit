@@ -341,7 +341,7 @@ class OrderRepository
 			'startDate' => '<span class="empty-date">-</span>',
 			'endDate' => '<span class="empty-date">-</span>',
 			'productName' => $product->get_name(),
-			'productId' => $license['product_id'],
+			'productId' => get_post_meta($license['product_id'], 'product_id', true),
 			'productVersion' => get_post_meta($license['product_id'], 'product_version', true),
 		];
 	}
