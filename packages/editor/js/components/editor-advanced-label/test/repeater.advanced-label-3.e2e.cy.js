@@ -1,7 +1,6 @@
 import {
 	createPost,
 	setBlockState,
-	addBlockState,
 	setDeviceType,
 	getWPDataObject,
 	getSelectedBlock,
@@ -12,7 +11,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	const openBackgroundItem = (index = 0) => {
@@ -342,7 +341,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 			// Alias
 			cy.getByAriaLabel('Type').as('type');
 			cy.getByAriaLabel('Angle').as('angle');
-			cy.getByAriaLabel('Effect').as('effect');
+			cy.getByAriaLabel('Scroll Attachment').as('effect');
 
 			// Assert label in normal state
 			cy.get('@type').should('have.class', 'changed-in-normal-state');
@@ -403,7 +402,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 		cy.get('@angle').should('have.class', 'changed-in-other-state');
 
 		// Assert Effect label
-		cy.getByAriaLabel('Effect').should(
+		cy.getByAriaLabel('Scroll Attachment').should(
 			'have.class',
 			'changed-in-normal-state'
 		);
@@ -415,7 +414,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 		openBackgroundItem();
 
 		// Assert Effect label
-		cy.getByAriaLabel('Effect').should(
+		cy.getByAriaLabel('Scroll Attachment').should(
 			'have.class',
 			'changed-in-normal-state'
 		);
@@ -448,12 +447,12 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 				'changed-in-normal-state'
 			);
 
+			openBackgroundItem();
+
 			cy.getByAriaLabel('Size').should(
 				'not.have.class',
 				'changed-in-secondary-state'
 			);
-
-			openBackgroundItem();
 
 			// Assert control
 			cy.getByAriaLabel('Cover').should(

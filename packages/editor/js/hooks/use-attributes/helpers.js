@@ -21,9 +21,18 @@ import type {
 	TStates,
 	TBreakpoint,
 } from '../../extensions/libs/block-card/block-states/types';
-import { getBaseBreakpoint } from '../../canvas-editor';
-import { isInnerBlock, isNormalState } from '../../extensions/components';
-import { blockStatesValueCleanup } from '../../extensions/libs/block-card/block-states/helpers';
+import { getBaseBreakpoint, isBaseBreakpoint } from '../../editor/header-ui';
+import {
+	isInnerBlock,
+	isNormalState,
+	prepareBlockeraDefaultAttributesValues,
+	prepareWordPressDefaultAttributesValues,
+} from '../../extensions/components';
+import { applyBlockeraSetAttributesCompatibility } from '../../extensions/components/get-compatible-attributes';
+import {
+	blockStatesValueCleanup,
+	isNormalStateOnBaseBreakpoint,
+} from '../../extensions/libs/block-card/block-states/helpers';
 
 // Check required to update.
 export const isChanged = (
@@ -49,20 +58,24 @@ export const isChanged = (
 export const memoizedRootBreakpoints: (
 	breakpoint: BreakpointTypes,
 	action: Object,
-	insideInnerBlock: boolean
+	insideInnerBlock: boolean,
+	ref: Object
 ) => BreakpointTypes = memoize(
 	(
 		breakpoint,
 		{
 			newValue,
 			attributeId,
+			currentState,
 			currentBlock,
 			effectiveItems,
 			currentBreakpoint,
 			defaultAttributes,
+			currentBlockAttributes,
 			currentInnerBlockState,
 		},
-		insideInnerBlock: boolean = false
+		insideInnerBlock: boolean = false,
+		ref: Object
 	) => {
 		let _effectiveItems = { ...effectiveItems };
 
@@ -88,7 +101,18 @@ export const memoizedRootBreakpoints: (
 									[currentBlock]: {
 										attributes: {
 											...effectiveItems,
-											[attributeId]: newValue,
+											[attributeId]:
+												isEquals(
+													newValue,
+													defaultAttributes[
+														attributeId
+													]?.default?.value ||
+														defaultAttributes[
+															attributeId
+														]?.default
+												) || ref?.reset
+													? undefined
+													: newValue,
 										},
 									},
 								},
@@ -101,7 +125,8 @@ export const memoizedRootBreakpoints: (
 				}
 
 				const isEqualsWithDefault = isEquals(
-					defaultAttributes[attributeId]?.default,
+					defaultAttributes[attributeId]?.default?.value ||
+						defaultAttributes[attributeId]?.default,
 					newValue
 				);
 
@@ -115,14 +140,24 @@ export const memoizedRootBreakpoints: (
 				let content = '';
 				const stateItem = ((
 					(
-						(breakpoint?.attributes?.blockeraInnerBlocks || {})[
-							currentBlock
-						] || {}
+						(currentBlockAttributes?.blockeraBlockStates?.value?.[
+							currentState
+						]?.breakpoints?.[currentBreakpoint]?.attributes
+							?.blockeraInnerBlocks || {})[currentBlock] || {}
 					)?.attributes || {}
 				)?.blockeraBlockStates || {})[currentInnerBlockState];
+				const stateItemInBaseBreakpoint =
+					currentBlockAttributes?.blockeraInnerBlocks?.value?.[
+						currentBlock
+					]?.attributes?.blockeraBlockStates?.[
+						currentInnerBlockState
+					];
 
-				if (hasContent && !stateItem?.hasOwnProperty('content')) {
-					content = stateItem?.content || '';
+				if (hasContent && stateItem?.hasOwnProperty('content')) {
+					content =
+						stateItem?.content ||
+						stateItemInBaseBreakpoint?.content ||
+						'';
 				}
 
 				return mergeObject(
@@ -139,7 +174,11 @@ export const memoizedRootBreakpoints: (
 														attributes: {
 															..._effectiveItems,
 															[attributeId]:
-																isEqualsWithDefault
+																isEqualsWithDefault &&
+																isNormalStateOnBaseBreakpoint(
+																	currentInnerBlockState,
+																	currentBreakpoint
+																)
 																	? undefined
 																	: newValue,
 														},
@@ -192,7 +231,15 @@ export const memoizedRootBreakpoints: (
 			{
 				attributes: {
 					...effectiveItems,
-					[attributeId]: isEqualsWithDefault ? undefined : newValue,
+					[attributeId]:
+						(isEqualsWithDefault &&
+							isNormalStateOnBaseBreakpoint(
+								currentState,
+								currentBreakpoint
+							)) ||
+						ref?.reset
+							? undefined
+							: newValue,
 				},
 			},
 			{
@@ -219,17 +266,26 @@ export const memoizedBlockStates: (
 			currentState: 'normal',
 			insideInnerBlock: false,
 			currentBlock: 'master',
+			clientId: '',
+			name: '',
 		}
 	): Object => {
 		const {
+			ref,
 			currentState: receivedState,
 			insideInnerBlock,
 			currentBlock,
+			clientId: _clientId,
+			name: _name,
 		} = args;
 		const { currentState, currentBreakpoint } = action;
 		const { getBlockStates } = select('blockera/extensions');
-		const { clientId, name } =
-			select('core/block-editor')?.getSelectedBlock();
+		const { clientId, name } = select(
+			'core/block-editor'
+		)?.getSelectedBlock() || {
+			name: _name,
+			clientId: _clientId,
+		};
 		const blockStates = blockStatesValueCleanup(
 			getBlockStates(
 				clientId,
@@ -239,15 +295,31 @@ export const memoizedBlockStates: (
 			)
 		);
 
-		const breakpoints =
-			blockStates[receivedState || currentState]?.breakpoints;
+		const stateKey = receivedState || currentState;
+
+		// getBlockStates() returns only `{ normal }` when `blockExtensions[clientId]` is
+		// missing (e.g. global styles / style variation). Stored attributes can still
+		// include other states (hover, marker, …); read breakpoints from there.
+		let breakpoints = blockStates[stateKey]?.breakpoints;
+		if (!breakpoints) {
+			breakpoints =
+				currentBlockAttributes?.blockeraBlockStates?.value?.[stateKey]
+					?.breakpoints ?? {};
+		}
+
+		const currentBreakpointState: BreakpointTypes = breakpoints[
+			currentBreakpoint
+		] ?? { attributes: {} };
 
 		const moreProps: Object =
 			(receivedState || currentState) === 'custom-class'
 				? {
 						'css-class': blockStates['custom-class']['css-class'],
-				  }
+					}
 				: {};
+
+		// pass currentBlockAttributes to the memoizedRootBreakpoints function.
+		action.currentBlockAttributes = currentBlockAttributes;
 
 		if (isInnerBlock(currentBlock) && !insideInnerBlock) {
 			return mergeObject(
@@ -256,9 +328,10 @@ export const memoizedBlockStates: (
 					[receivedState || currentState]: {
 						breakpoints: {
 							[currentBreakpoint]: memoizedRootBreakpoints(
-								breakpoints[currentBreakpoint],
+								currentBreakpointState,
 								action,
-								insideInnerBlock
+								insideInnerBlock,
+								args
 							),
 						},
 						// FIXME: The "isVisible" is retrieved from the getBlockStates() store API of extensions
@@ -283,9 +356,10 @@ export const memoizedBlockStates: (
 					[receivedState || currentState]: {
 						breakpoints: {
 							[currentBreakpoint]: memoizedRootBreakpoints(
-								breakpoints[currentBreakpoint],
+								currentBreakpointState,
 								action,
-								insideInnerBlock
+								insideInnerBlock,
+								ref
 							),
 						},
 						// FIXME: The "isVisible" is retrieved from the getBlockStates() store API of extensions
@@ -395,7 +469,7 @@ export const resetAllStates = (state: Object, action: Object): Object => {
 
 	// $FlowFixMe
 	for (const stateType: TStates in blockStates) {
-		const breakpoints = blockStates[stateType].breakpoints;
+		const breakpoints = blockStates[stateType]?.breakpoints || {};
 		const stateBreakpoints: { [key: string]: Object } = {};
 
 		// $FlowFixMe
@@ -524,7 +598,7 @@ export const resetAllStates = (state: Object, action: Object): Object => {
 						? prepare(
 								ref.path.replace(absolutePathPattern, ''),
 								ref.defaultValue
-						  ) || ref.defaultValue
+							) || ref.defaultValue
 						: ref.defaultValue
 				);
 
@@ -574,7 +648,7 @@ export const resetAllStates = (state: Object, action: Object): Object => {
 		...(isInnerBlock(currentBlock)
 			? {
 					blockeraInnerBlocks,
-			  }
+				}
 			: {}),
 	};
 };
@@ -820,4 +894,277 @@ export const resetCurrentState = (_state: Object, action: Object): Object => {
 		},
 		args
 	);
+};
+
+const BLOCKERA_STATE_RESET_SKIP_KEYS = new Set([
+	'blockeraPropsId',
+	'blockeraCompatId',
+	'blockeraBlockStates',
+	'blockeraInnerBlocks',
+]);
+
+const applyStateResetDefaults = (
+	attributes: Object,
+	defaults: Object
+): void => {
+	for (const key in defaults) {
+		if (BLOCKERA_STATE_RESET_SKIP_KEYS.has(key)) {
+			continue;
+		}
+
+		attributes[key] = defaults[key];
+	}
+};
+
+// Blockera + WordPress-compat defaults; computed once per reset (not per inner-block target).
+const getSharedStateResetDefaults = ({
+	defaultAttributes,
+	insideBlockInspector,
+	getAttributes,
+	blockDetail,
+}: Object): Object => {
+	const blockeraDefaults = prepareBlockeraDefaultAttributesValues(
+		defaultAttributes || {},
+		{
+			context: insideBlockInspector
+				? 'block-inspector'
+				: 'global-styles-panel',
+		}
+	);
+
+	const wordpressCompatibilityAttributes =
+		applyBlockeraSetAttributesCompatibility({
+			blockeraKeys: blockeraDefaults,
+			getBlockeraValueForKey: (featureId: string) =>
+				blockeraDefaults[featureId]?.value ??
+				blockeraDefaults[featureId],
+			getAttributes,
+			blockDetail,
+			controlRef: {
+				action: 'reset',
+				reset: true,
+			},
+		});
+
+	return mergeObject(blockeraDefaults, wordpressCompatibilityAttributes);
+};
+
+const getStateResetDefaultsForTarget = (
+	targetAttributes: Object,
+	{ defaultAttributes, sharedDefaults }: Object
+): Object => {
+	const wordpressDefaults = prepareWordPressDefaultAttributesValues(
+		defaultAttributes || {},
+		targetAttributes || {}
+	);
+
+	return mergeObject(sharedDefaults, wordpressDefaults);
+};
+
+export const stateResettingValues = (
+	state: Object,
+	{
+		blockId,
+		clientId,
+		innerBlocks,
+		currentBlock,
+		currentState,
+		isNormalState,
+		getAttributes,
+		blockVariations,
+		currentBreakpoint,
+		stateReadyToReset,
+		resetStateAllValues,
+		defaultAttributes,
+		insideBlockInspector,
+		activeBlockVariation,
+		currentInnerBlockState,
+		getActiveBlockVariation,
+	}: Object
+): Object => {
+	if (!resetStateAllValues) {
+		return state;
+	}
+
+	const blockDetail = {
+		blockId,
+		clientId,
+		innerBlocks,
+		currentBlock,
+		blockVariations,
+		defaultAttributes,
+		currentState: isInnerBlock(currentBlock)
+			? currentInnerBlockState
+			: currentState,
+		currentBreakpoint,
+		activeBlockVariation,
+		currentInnerBlockState,
+		getActiveBlockVariation,
+		isNormalState: isNormalState(),
+		isMasterBlock: !isInnerBlock(currentBlock),
+		isBaseBreakpoint: isBaseBreakpoint(currentBreakpoint),
+		isMasterNormalState: isNormalStateOnBaseBreakpoint(
+			currentState,
+			currentBreakpoint
+		),
+		insideBlockInspector,
+	};
+	const resetContext = {
+		defaultAttributes,
+		sharedDefaults: getSharedStateResetDefaults({
+			defaultAttributes,
+			insideBlockInspector,
+			getAttributes,
+			blockDetail,
+		}),
+	};
+
+	// Normal state styles live on root/inner-block attributes, not only in blockeraBlockStates.
+	if (stateReadyToReset === 'normal') {
+		if (isInnerBlock(currentBlock)) {
+			const innerBlockAttributes =
+				state.blockeraInnerBlocks?.value?.[currentBlock]?.attributes;
+
+			if (innerBlockAttributes) {
+				applyStateResetDefaults(
+					innerBlockAttributes,
+					getStateResetDefaultsForTarget(
+						innerBlockAttributes,
+						resetContext
+					)
+				);
+			}
+		} else {
+			applyStateResetDefaults(
+				state,
+				getStateResetDefaultsForTarget(state, resetContext)
+			);
+
+			const innerBlocks = state.blockeraInnerBlocks?.value || {};
+
+			for (const innerBlock in innerBlocks) {
+				if (!innerBlocks[innerBlock]?.attributes) {
+					continue;
+				}
+
+				applyStateResetDefaults(
+					innerBlocks[innerBlock].attributes,
+					getStateResetDefaultsForTarget(
+						innerBlocks[innerBlock].attributes,
+						resetContext
+					)
+				);
+			}
+
+			const normalBreakpoints =
+				state.blockeraBlockStates?.value?.normal?.breakpoints;
+
+			if (normalBreakpoints) {
+				for (const breakpoint in normalBreakpoints) {
+					if (normalBreakpoints[breakpoint]?.attributes) {
+						normalBreakpoints[breakpoint].attributes = {};
+					}
+				}
+			}
+		}
+	}
+
+	for (const key in state.blockeraBlockStates?.value || {}) {
+		const blockState = state.blockeraBlockStates?.value[key];
+
+		for (const breakpoint in blockState?.breakpoints || {}) {
+			const inners =
+				blockState.breakpoints[breakpoint]?.attributes
+					?.blockeraInnerBlocks || {};
+
+			for (const innerBlock in inners) {
+				// Skip resetting for other inner blocks.
+				if (currentBlock !== innerBlock) {
+					continue;
+				}
+
+				if (
+					stateReadyToReset === 'normal' &&
+					inners[innerBlock]?.attributes
+				) {
+					applyStateResetDefaults(
+						inners[innerBlock].attributes,
+						getStateResetDefaultsForTarget(
+							inners[innerBlock].attributes,
+							resetContext
+						)
+					);
+				}
+
+				const innerStates =
+					inners[innerBlock]?.attributes?.blockeraBlockStates || {};
+
+				for (const innerState in innerStates) {
+					if (stateReadyToReset !== innerState) {
+						continue;
+					}
+
+					if (innerStates[innerState]?.hasOwnProperty('content')) {
+						state.blockeraBlockStates.value[key].breakpoints[
+							breakpoint
+						].attributes.blockeraInnerBlocks[
+							innerBlock
+						].attributes.blockeraBlockStates[innerState].content =
+							'';
+					}
+
+					const innerBreakpoints =
+						innerStates[innerState]?.breakpoints || {};
+
+					for (const innerBreakpoint in innerBreakpoints) {
+						state.blockeraBlockStates.value[key].breakpoints[
+							breakpoint
+						].attributes.blockeraInnerBlocks[
+							innerBlock
+						].attributes.blockeraBlockStates[
+							innerState
+						].breakpoints[innerBreakpoint].attributes = {};
+					}
+				}
+			}
+		}
+	}
+
+	return state;
+};
+
+export const stateResettingInnerBlockValues = (
+	state: Object,
+	{ innerBlockReadyToReset }: Object
+): Object => {
+	for (const key in state.blockeraBlockStates?.value || {}) {
+		const blockState = state.blockeraBlockStates?.value[key];
+
+		for (const breakpoint in blockState?.breakpoints || {}) {
+			const inners =
+				blockState.breakpoints[breakpoint]?.attributes
+					?.blockeraInnerBlocks || {};
+
+			for (const innerBlock in inners) {
+				// Skip resetting for other inner blocks.
+				if (innerBlockReadyToReset !== innerBlock) {
+					continue;
+				}
+
+				if (!inners[innerBlock]?.hasOwnProperty('attributes')) {
+					continue;
+				}
+
+				state.blockeraBlockStates.value[key].breakpoints[
+					breakpoint
+				].attributes.blockeraInnerBlocks[innerBlock].attributes = {};
+			}
+		}
+	}
+
+	if (state.blockeraInnerBlocks.value?.[innerBlockReadyToReset]?.attributes) {
+		state.blockeraInnerBlocks.value[innerBlockReadyToReset].attributes = {};
+	}
+
+	return state;
 };

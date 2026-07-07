@@ -80,8 +80,17 @@ export default function ({
 				break;
 
 			default:
-				// $FlowFixMe
-				itemValue = data.value;
+				if (
+					data.value !== null &&
+					data.value !== undefined &&
+					typeof data.value === 'object' &&
+					!Array.isArray(data.value)
+				) {
+					itemValue = '';
+				} else {
+					// $FlowFixMe
+					itemValue = data.value;
+				}
 				break;
 		}
 	}
@@ -96,6 +105,7 @@ export default function ({
 							? __('Coming soon…', 'blockera')
 							: __('Pro Feature', 'blockera')
 					}
+					delay={400}
 					{...props}
 				>
 					{children}
@@ -111,9 +121,13 @@ export default function ({
 					isCurrent && 'is-active-item'
 				)}
 				onClick={() => {
-					if (status === 'active') onClick(data);
+					if (status === 'active') {
+						onClick(data);
+					}
 				}}
 				data-cy={'va-item-' + data.id}
+				data-test={'value-addon-picker-item-' + String(data.id)}
+				data-variable-slug={String(data.id)}
 				{...props}
 			>
 				{icon && (

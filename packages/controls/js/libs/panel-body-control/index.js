@@ -3,6 +3,7 @@
  * External dependencies
  */
 import { Icon, Button } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 import type { MixedElement, ComponentType } from 'react';
 import { chevronUp, chevronDown } from '@wordpress/icons';
 import { useRef, forwardRef, useState, useEffect } from '@wordpress/element';
@@ -21,14 +22,15 @@ import {
  * Internal Dependencies
  */
 import { useUpdateEffect } from './utils';
-import { ChangeIndicator } from '../../index';
-import { PoweredBy } from './components/powered-by';
+import { ChangeIndicator, ConditionalWrapper } from '../../index';
+import { PoweredBy } from '../powered-by';
 import type { PanelBodyControlProps } from './types';
 
 const PanelBodyControl: ComponentType<PanelBodyControlProps> = forwardRef(
 	(
 		{
 			title,
+			noWrapper = false,
 			initialOpen = true,
 			isChanged = false,
 			isChangedOnStates = false,
@@ -38,10 +40,23 @@ const PanelBodyControl: ComponentType<PanelBodyControlProps> = forwardRef(
 			onToggle,
 			scrollAfterOpen = false,
 			showPoweredBy = false,
+			accordion = true,
 			...props
 		}: PanelBodyControlProps,
 		ref: Object
 	): MixedElement => {
+		if (noWrapper) {
+			return (
+				<div
+					className={controlClassNames('panel-body', {
+						className: true,
+						'is-opened': true,
+					})}
+				>
+					{children}
+				</div>
+			);
+		}
 		return (
 			<PanelBody
 				title={
@@ -58,12 +73,25 @@ const PanelBodyControl: ComponentType<PanelBodyControlProps> = forwardRef(
 				icon={icon ? <span>{icon}</span> : ''} // by wrapping icon inside a tag the WPPanelBody wraps it inside a tag with components-panel__icon class
 				onToggle={onToggle}
 				scrollAfterOpen={scrollAfterOpen}
+				accordion={accordion}
 				{...props}
 				ref={ref}
 			>
 				{children}
 
-				{showPoweredBy && <PoweredBy />}
+				{showPoweredBy && (
+					<PoweredBy
+						preText={__('Powered by', 'blockera')}
+						style={{
+							display: 'flex',
+							flexDirection: 'row',
+							alignItems: 'center',
+							justifyContent: 'right',
+							paddingTop: '14px',
+							marginBottom: '-5px',
+						}}
+					/>
+				)}
 			</PanelBody>
 		);
 	}
@@ -82,6 +110,7 @@ export const UnforwardedPanelBody = (
 		onToggle = noop,
 		title,
 		scrollAfterOpen = true,
+		accordion = true,
 	} = props;
 	const [isOpened, setIsOpened] = useState(
 		initialOpen === undefined ? true : initialOpen
@@ -131,6 +160,7 @@ export const UnforwardedPanelBody = (
 	return (
 		<div className={classes} ref={useMergeRefs([nodeRef, ref])}>
 			<PanelBodyTitle
+				accordion={accordion}
 				icon={icon}
 				isOpened={Boolean(isOpened)}
 				onClick={handleOnToggle}
@@ -145,28 +175,54 @@ export const UnforwardedPanelBody = (
 };
 
 const PanelBodyTitle: ComponentType<any> = forwardRef(
-	({ isOpened, icon, title, ...props }: Object, ref: Object) => {
-		if (!title) return null;
+	({ isOpened, icon, title, accordion, ...props }: Object, ref: Object) => {
+		if (!title) {
+			return null;
+		}
 
 		return (
-			<h2 className="components-panel__body-title">
-				<Button
-					className="components-panel__body-toggle"
-					aria-expanded={isOpened}
-					ref={ref}
-					{...props}
+			<h2
+				className={
+					'components-panel__body-title' +
+					(accordion ? ' is-accordion' : '')
+				}
+			>
+				<ConditionalWrapper
+					condition={accordion}
+					wrapper={(children) => (
+						<Button
+							className="components-panel__body-toggle"
+							aria-expanded={isOpened}
+							ref={ref}
+							{...props}
+						>
+							{children}
+
+							{/*
+								Firefox + NVDA don't announce aria-expanded because the browser
+								repaints the whole element, so this wrapping span hides that.
+							*/}
+							<span aria-hidden="true">
+								<Icon
+									className="components-panel__arrow"
+									icon={isOpened ? chevronUp : chevronDown}
+								/>
+							</span>
+						</Button>
+					)}
+					elseWrapper={(children) => (
+						<div
+							className="components-panel__body-toggle"
+							ref={ref}
+							{...props}
+							onClick={() => {
+								// do nothing
+							}}
+						>
+							{children}
+						</div>
+					)}
 				>
-					{/*
-					Firefox + NVDA don't announce aria-expanded because the browser
-					repaints the whole element, so this wrapping span hides that.
-				*/}
-					<span aria-hidden="true">
-						<Icon
-							className="components-panel__arrow"
-							icon={isOpened ? chevronUp : chevronDown}
-						/>
-					</span>
-					{title}
 					{icon && (
 						<Icon
 							icon={icon}
@@ -174,7 +230,9 @@ const PanelBodyTitle: ComponentType<any> = forwardRef(
 							size={20}
 						/>
 					)}
-				</Button>
+
+					{title}
+				</ConditionalWrapper>
 			</h2>
 		);
 	}

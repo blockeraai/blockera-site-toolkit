@@ -7,6 +7,8 @@ import {
 	useState,
 	useTransition,
 	useContext,
+	useEffect,
+	useCallback,
 } from '@wordpress/element';
 
 /**
@@ -20,6 +22,7 @@ import { useIsVisible } from '@blockera/utils';
  */
 import { IconContext } from '../../context';
 import { getLibraryIcons } from '../../utils';
+import { useDraftIconHighlight } from '../../hooks/use-draft-icon-highlight';
 import { default as IconLibraryLoading } from './icon-library-loading';
 
 const IconLibrary = ({
@@ -29,52 +32,56 @@ const IconLibrary = ({
 	title = '',
 }) => {
 	const ref = useRef(null);
+	const libraryBodyRef = useRef(null);
+
 	const isVisible = useIsVisible(ref);
 
-	const [iconsStack] = useState([]);
-
+	const [iconsStack, setIconsStack] = useState([]);
 	const [isPending, startTransition] = useTransition();
-
 	const [isRendered, setRendered] = useState(false);
 
-	const { handleIconSelect, isCurrentIcon } = useContext(IconContext);
+	const { handleIconSelect, handleLibraryIconQuickSelect, draftLibraryIcon } =
+		useContext(IconContext);
 
-	if (!lazyLoad && !isRendered) {
-		fetchLibraryIcons();
-		setRendered(true);
-	}
-
-	function fetchLibraryIcons() {
-		if (isRendered) {
-			return true;
-		}
-
-		iconsStack.push(
+	const buildLibraryIcons = useCallback(
+		() =>
 			getLibraryIcons({
 				library,
 				query: searchQuery,
 				onClick: handleIconSelect,
-				isCurrentIcon,
-			})
-		);
-	}
+				onDoubleClick: handleLibraryIconQuickSelect,
+			}),
+		[library, searchQuery, handleIconSelect, handleLibraryIconQuickSelect]
+	);
 
-	function loadIcons() {
+	// Highlight draft selection via DOM class toggling (see useDraftIconHighlight).
+	useDraftIconHighlight(libraryBodyRef, draftLibraryIcon, isRendered);
+
+	// Handle non-lazy loading
+	useEffect(() => {
+		if (!lazyLoad && !isRendered) {
+			setIconsStack([buildLibraryIcons()]);
+			setRendered(true);
+		}
+	}, [lazyLoad, isRendered, buildLibraryIcons]);
+
+	const loadIcons = useCallback(() => {
 		if (isRendered) {
-			return true;
+			return;
 		}
 
 		startTransition(() => {
-			fetchLibraryIcons();
+			setIconsStack([buildLibraryIcons()]);
 			setRendered(true);
 		});
-	}
+	}, [isRendered, buildLibraryIcons, startTransition]);
 
-	function getIcons() {
-		loadIcons();
-
-		return <>{iconsStack}</>;
-	}
+	// Handle lazy loading when component becomes visible
+	useEffect(() => {
+		if (lazyLoad && isVisible && !isRendered) {
+			loadIcons();
+		}
+	}, [lazyLoad, isVisible, isRendered, loadIcons]);
 
 	function isEmpty() {
 		if (!isRendered) {
@@ -86,6 +93,7 @@ const IconLibrary = ({
 
 	return (
 		<div
+			id={`icon-library-section-${library}`}
 			className={controlInnerClassNames(
 				'icon-library',
 				'library-' + library,
@@ -99,15 +107,17 @@ const IconLibrary = ({
 				</div>
 			)}
 
-			<div className={controlInnerClassNames('library-body')} ref={ref}>
-				{(isRendered || isVisible) && (!lazyLoad || !isPending) ? (
-					<>{getIcons()}</>
-				) : (
-					<>
+			<div
+				className={controlInnerClassNames('library-body')}
+				ref={libraryBodyRef}
+			>
+				<div ref={ref}>
+					{isRendered && !isPending ? (
+						<>{iconsStack}</>
+					) : (
 						<IconLibraryLoading />
-						<div ref={ref} />
-					</>
-				)}
+					)}
+				</div>
 			</div>
 		</div>
 	);

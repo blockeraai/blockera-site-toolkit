@@ -29,7 +29,7 @@ export type TStatesProps = {
 	values: { [key: TStates]: { ...StateTypes, content?: string } },
 	extensionProps: Object,
 	currentState: TStates,
-	currentBlock: 'master' | InnerBlockType,
+	currentBlock: 'master' | InnerBlockType | string,
 };
 
 export type BlockDetail = {
@@ -38,6 +38,8 @@ export type BlockDetail = {
 	isNormalState: boolean,
 	isMasterBlock: boolean,
 	isBaseBreakpoint: boolean,
+	insideBlockInspector: boolean,
+	editorSelectedBlockEvent?: 'save-customizations' | 'detach-style',
 	currentBlock: 'master' | string,
 	currentState: TStates,
 	blockAttributes: Object,
@@ -70,13 +72,13 @@ export type StatesManagerHookProps = {
 			},
 		},
 	},
-	deleteCacheData: Object,
 	onChange: THandleOnChangeAttributes,
 	currentBlock: 'master' | InnerBlockType,
 	currentState: TStates,
 	availableStates: { [key: TStates | string]: StateTypes },
 	currentBreakpoint: TBreakpoint,
 	currentInnerBlockState: TStates,
+	setCurrentBlock: (blockType: 'master' | InnerBlockType | string) => void,
 };
 
 export type StatesManagerProps = {
@@ -84,9 +86,9 @@ export type StatesManagerProps = {
 	children: any,
 	maxItems: number,
 	contextValue: Object,
-	deleteCacheData: Object,
 	defaultRepeaterItemValue: Object,
 	onDelete: (index: number) => void,
+	onReset: (index: number) => void,
 	InserterComponent: ComponentType<any>,
 	overrideItem: (index: number) => void,
 	// currentBlock: 'master' | InnerBlockType,

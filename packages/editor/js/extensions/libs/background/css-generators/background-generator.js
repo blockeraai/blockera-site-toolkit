@@ -4,6 +4,7 @@
 import {
 	getValueAddonRealValue,
 	getBackgroundItemBGProperty,
+	getSortedRepeater,
 } from '@blockera/controls';
 
 /**
@@ -29,7 +30,7 @@ export function backgroundGenerator(id, props, options) {
 	let hasProps = true;
 
 	// Collect all properties
-	Object.entries(attributes?.blockeraBackground)?.map(([, item]) => {
+	getSortedRepeater(attributes?.blockeraBackground)?.map(([, item]) => {
 		if (!item.isVisible) {
 			return undefined;
 		}
@@ -177,6 +178,14 @@ export function backgroundGenerator(id, props, options) {
 				properties.attachment.push(item['mesh-gradient-attachment']);
 
 				break;
+
+			case 'none':
+				properties.image.push('none');
+				properties.size.push('auto');
+				properties.position.push('0 0');
+				properties.repeat.push('repeat');
+				properties.attachment.push('scroll');
+				break;
 		}
 
 		return undefined;
@@ -197,10 +206,11 @@ export function backgroundGenerator(id, props, options) {
 		'background-attachment': attachment.join(', ') + ' !important',
 	};
 
-	if (properties['background-color'])
+	if (properties['background-color']) {
 		toReturnProperties['background-color'] =
 			getValueAddonRealValue(properties['background-color']) +
 			' !important';
+	}
 
 	return createCssDeclarations({
 		options,
