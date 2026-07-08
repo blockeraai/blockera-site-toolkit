@@ -38,6 +38,7 @@ const BoxPositionControl = ({
 	label = __('Position', 'blockera'),
 	labelPopoverTitle,
 	labelDescription,
+	labelProps: propsForLabelControl = {},
 	repeaterItem,
 	singularId,
 	defaultValue = {
@@ -136,6 +137,7 @@ const BoxPositionControl = ({
 				</p>
 			</>
 		),
+		...propsForLabelControl,
 	};
 
 	const sideProps = {
@@ -156,21 +158,18 @@ const BoxPositionControl = ({
 		setOpenPopover,
 	};
 
-	const SideTop = SideItem({ ...sideProps, side: 'top', popoverOffset: 35 });
+	const SideTop = SideItem({ ...sideProps, side: 'top' });
 	const SideRight = SideItem({
 		...sideProps,
 		side: 'right',
-		popoverOffset: 255,
 	});
 	const SideBottom = SideItem({
 		...sideProps,
 		side: 'bottom',
-		popoverOffset: 35,
 	});
 	const SideLeft = SideItem({
 		...sideProps,
 		side: 'left',
-		popoverOffset: 37,
 	});
 
 	let labelText = '';
@@ -216,28 +215,33 @@ const BoxPositionControl = ({
 								<Icon
 									icon="none-circle"
 									className="icon-soft-color"
+									iconSize={18}
 								/>
 							),
 						},
 						{
 							label: __('Relative', 'blockera'),
 							value: 'relative',
-							icon: <Icon icon="position-relative" />,
+							icon: (
+								<Icon icon="position-relative" iconSize={18} />
+							),
 						},
 						{
 							label: __('Absolute', 'blockera'),
 							value: 'absolute',
-							icon: <Icon icon="position-absolute" />,
+							icon: (
+								<Icon icon="position-absolute" iconSize={18} />
+							),
 						},
 						{
 							label: __('Fixed', 'blockera'),
 							value: 'fixed',
-							icon: <Icon icon="position-fixed" />,
+							icon: <Icon icon="position-fixed" iconSize={18} />,
 						},
 						{
 							label: __('Sticky', 'blockera'),
 							value: 'sticky',
-							icon: <Icon icon="position-sticky" />,
+							icon: <Icon icon="position-sticky" iconSize={18} />,
 						},
 					]}
 					type="custom"
@@ -288,7 +292,6 @@ const BoxPositionControl = ({
 							singularId={'position'}
 							defaultValue={defaultValue.position}
 							path={getControlPath(attribute, 'position')}
-							offset={130}
 							labelDescription={
 								<>
 									{value.type === 'relative' && (

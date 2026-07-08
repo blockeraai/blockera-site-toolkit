@@ -5,49 +5,11 @@
 import { isEquals, isEmpty, cloneObject } from '@blockera/utils';
 
 /**
- * Internal Dependencies
+ * Internal dependencies
  */
-import { isValid } from '../../value-addons/utils';
-import { extractNumberAndUnit } from '../input-control/utils';
 import type { TDefaultValue } from './types';
 
-export function fixLabelText(value: Object | string): any {
-	if (value === '') {
-		return '-';
-	}
-
-	if (isValid(value)) {
-		//$FlowFixMe
-		return <b>{value?.settings?.name ?? 'VAR'}</b>;
-	}
-
-	const extracted = extractNumberAndUnit(value);
-
-	if (extracted.value === '' && extracted.unit === '') {
-		return '-';
-	}
-
-	switch (extracted.unit) {
-		case 'func':
-			return <b>CSS</b>;
-
-		case 'px':
-			return extracted.value !== '' ? extracted.value : '0';
-
-		case 'auto':
-			return <b>AUTO</b>;
-
-		default:
-			return (
-				<>
-					{extracted.value !== '' ? extracted.value : '0'}
-					<i>{extracted.unit}</i>
-				</>
-			);
-	}
-}
-
-export const boxPositionControlDefaultValue: TDefaultValue = {
+export const boxSpacingControlDefaultValue: TDefaultValue = {
 	margin: {
 		top: '',
 		right: '',
@@ -64,7 +26,7 @@ export const boxPositionControlDefaultValue: TDefaultValue = {
 
 // value clean up for removing extra values to prevent saving extra data!
 export function boxSpacingValueCleanup(value: Object): Object {
-	if (isEquals(value, boxPositionControlDefaultValue)) {
+	if (isEquals(value, boxSpacingControlDefaultValue)) {
 		return value;
 	}
 
@@ -87,8 +49,49 @@ export function boxSpacingValueCleanup(value: Object): Object {
 	});
 
 	if (isEmpty(updatedValue)) {
-		return boxPositionControlDefaultValue;
+		return boxSpacingControlDefaultValue;
 	}
 
 	return updatedValue;
+}
+
+// get smart lock for padding and margin
+export function getSmartLock(value: any, side: 'padding' | 'margin'): string {
+	let smartLock = 'none'; // default lock type is expanded
+	const sideValue = value[side];
+
+	// Check if all values are empty (null, undefined, or empty string)
+	const allEmpty = [
+		sideValue.top,
+		sideValue.right,
+		sideValue.bottom,
+		sideValue.left,
+	].every((v) => v === '');
+
+	if (allEmpty) {
+		return 'simple';
+	}
+
+	const isEqualsLeftRight = isEquals(sideValue.left, sideValue.right);
+	const isEqualsTopBottom = isEquals(sideValue.top, sideValue.bottom);
+
+	if (isEqualsLeftRight) {
+		if (sideValue.left !== '') {
+			smartLock = 'left-right';
+		} else {
+			smartLock = 'empty';
+		}
+	}
+
+	if (isEqualsTopBottom) {
+		if (smartLock === 'left-right' || smartLock === 'empty') {
+			smartLock = 'simple';
+		} else {
+			smartLock = 'expanded';
+		}
+	} else {
+		smartLock = 'expanded';
+	}
+
+	return smartLock;
 }

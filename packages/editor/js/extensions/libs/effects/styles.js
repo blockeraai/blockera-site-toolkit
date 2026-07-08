@@ -2,6 +2,7 @@
 /**
  * Blockera dependencies
  */
+import { isEmptyObject } from '@blockera/utils';
 import { getValueAddonRealValue, getSortedRepeater } from '@blockera/controls';
 import { experimental } from '@blockera/env';
 
@@ -18,10 +19,12 @@ import {
 	TransitionGenerator,
 	MaskGenerator,
 } from './css-generators';
+import { joinTransformCssFromRepeaterMap } from './transform-repeater-to-css';
 import {
 	getCompatibleBlockCssSelector,
 	computedCssDeclarations,
 } from '../../../style-engine';
+import { getVariableRepeaterItemsFromSettings } from '../value-addon-variable-payload';
 import {
 	AfterDividerGenerator,
 	BeforeDividerGenerator,
@@ -29,6 +32,21 @@ import {
 import { getBlockSupportCategory, getBlockSupportFallback } from '../../utils';
 
 const supports = getBlockSupportCategory('effects');
+
+function wrapCompoundCssVarIfVariable(
+	field: any,
+	cssValue: string | void
+): string | void {
+	if (
+		field?.valueType === 'variable' &&
+		field?.settings?.var &&
+		cssValue !== '' &&
+		cssValue !== undefined
+	) {
+		return `var(${field.settings.var}, ${cssValue})`;
+	}
+	return cssValue;
+}
 
 export const EffectsStyles = ({
 	state,
@@ -48,7 +66,6 @@ export const EffectsStyles = ({
 		blockeraFilter,
 		blockeraOpacity,
 		blockeraTransform,
-		blockeraBlendMode,
 		blockeraTransition,
 		blockeraBackdropFilter,
 		blockeraDivider,
@@ -129,55 +146,27 @@ export const EffectsStyles = ({
 				transformSelfPerspective: '',
 			};
 
-			getSortedRepeater(blockProps.attributes.blockeraTransform)?.map(
-				([, item]) => {
-					if (!item.isVisible) {
-						return null;
-					}
+			const transformAttr = blockProps.attributes.blockeraTransform;
+			let transformValue = transformAttr;
 
-					switch (item.type) {
-						case 'move':
-							properties.transform.push(
-								`translate3d(${getValueAddonRealValue(
-									item['move-x']
-								)}, ${getValueAddonRealValue(
-									item['move-y']
-								)}, ${getValueAddonRealValue(item['move-z'])})`
-							);
-							break;
+			if ('variable' === transformValue?.valueType) {
+				const rawItems = getVariableRepeaterItemsFromSettings(
+					transformValue?.settings
+				);
+				// $FlowFixMe[incompatible-type] repeater rows from variable settings (string only for shadow presets).
+				const items: Array<any> = Array.isArray(rawItems)
+					? rawItems
+					: [];
+				transformValue = items.map((t, i) => [`${t.type}-${i}`, t]);
+			} else {
+				transformValue = getSortedRepeater(transformValue);
+			}
 
-						case 'scale':
-							properties.transform.push(
-								`scale3d(${getValueAddonRealValue(
-									item.scale
-								)}, ${getValueAddonRealValue(item.scale)}, 50%)`
-							);
-							break;
-
-						case 'rotate':
-							properties.transform.push(
-								`rotateX(${getValueAddonRealValue(
-									item['rotate-x']
-								)}) rotateY(${getValueAddonRealValue(
-									item['rotate-y']
-								)}) rotateZ(${getValueAddonRealValue(
-									item['rotate-z']
-								)})`
-							);
-							break;
-
-						case 'skew':
-							properties.transform.push(
-								`skew(${getValueAddonRealValue(
-									item['skew-x']
-								)}, ${getValueAddonRealValue(item['skew-y'])})`
-							);
-							break;
-					}
-
-					return null;
-				}
-			);
+			const joinTransformCss =
+				joinTransformCssFromRepeaterMap(transformValue);
+			if (joinTransformCss) {
+				properties.transform.push(joinTransformCss);
+			}
 
 			if (blockProps.attributes.blockeraTransformSelfPerspective) {
 				properties.transformSelfPerspective = `perspective(${getValueAddonRealValue(
@@ -186,9 +175,11 @@ export const EffectsStyles = ({
 			}
 
 			if (properties.transform.length > 0) {
-				transformProperties.transform =
+				transformProperties.transform = wrapCompoundCssVarIfVariable(
+					transformAttr,
 					properties.transformSelfPerspective +
-					properties.transform.join(' ');
+						properties.transform.join(' ')
+				);
 			}
 		}
 
@@ -230,16 +221,15 @@ export const EffectsStyles = ({
 				blockProps.attributes.blockeraTransformChildOrigin
 			)
 		) {
-			transformProperties[
-				'perspective-origin'
-			] = `${getValueAddonRealValue(
-				blockProps.attributes.blockeraTransformChildOrigin?.top
-			)} ${getValueAddonRealValue(
-				blockProps.attributes.blockeraTransformChildOrigin?.left
-			)}`;
+			transformProperties['perspective-origin'] =
+				`${getValueAddonRealValue(
+					blockProps.attributes.blockeraTransformChildOrigin?.top
+				)} ${getValueAddonRealValue(
+					blockProps.attributes.blockeraTransformChildOrigin?.left
+				)}`;
 		}
 
-		if (transformProperties) {
+		if (!isEmptyObject(transformProperties)) {
 			const pickedSelector = getCompatibleBlockCssSelector({
 				...sharedParams,
 				query: 'blockeraTransform',
@@ -361,41 +351,6 @@ export const EffectsStyles = ({
 						{
 							type: 'function',
 							function: FilterGenerator,
-						},
-					],
-				},
-				blockProps,
-				pickedSelector
-			),
-		});
-	}
-
-	if (
-		isActiveField(blockeraBlendMode) &&
-		blockProps.attributes.blockeraBlendMode !==
-			attributes.blockeraBlendMode.default
-	) {
-		const pickedSelector = getCompatibleBlockCssSelector({
-			...sharedParams,
-			query: 'blockeraBlendMode',
-			support: 'blockeraBlendMode',
-			fallbackSupportId: getBlockSupportFallback(
-				supports,
-				'blockeraBlendMode'
-			),
-		});
-
-		styleGroup.push({
-			selector: pickedSelector,
-			declarations: computedCssDeclarations(
-				{
-					blockeraBlendMode: [
-						{
-							type: 'static',
-							properties: {
-								'mix-blend-mode':
-									blockProps.attributes.blockeraBlendMode,
-							},
 						},
 					],
 				},

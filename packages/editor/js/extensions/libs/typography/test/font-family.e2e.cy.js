@@ -12,11 +12,11 @@ describe('Font Family → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('simple font family', () => {
-		cy.getParentContainer('Family').as('container');
+		cy.getParentContainer('Font Family').as('container');
 
 		cy.get('@container').within(() => {
 			cy.get('select').select('fira-code');

@@ -4,7 +4,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { memo } from '@wordpress/element';
 import type { Element, ComponentType, MixedElement } from 'react';
 
 /**
@@ -14,7 +13,7 @@ import type { Element, ComponentType, MixedElement } from 'react';
 import { controlInnerClassNames } from '@blockera/classnames';
 import {
 	RepeaterControl,
-	PromotionPopover,
+	UpgradePrompt,
 	ControlContextProvider,
 	getRepeaterActiveItemsCount,
 } from '@blockera/controls';
@@ -28,110 +27,107 @@ import ItemOpener from './item-opener';
 import type { StatesManagerProps } from '../types';
 import { PopoverTitleButtons } from './popover-title-buttons';
 
-const StatesManager: ComponentType<StatesManagerProps> = memo(
-	({
-		states,
-		children,
-		onDelete,
-		maxItems,
-		contextValue,
-		overrideItem,
-		defaultStates,
-		handleOnChange,
-		InserterComponent,
-		defaultRepeaterItemValue,
-		getDynamicDefaultRepeaterItem,
-	}: StatesManagerProps): Element<any> => {
-		return (
-			<ControlContextProvider
-				value={contextValue}
-				storeName={'blockera/controls/repeater'}
-			>
-				<div
-					className={'blockera-block-state-container'}
-					data-test={'blockera-block-state-container'}
-					aria-label={__(
-						'Blockera Block State Container',
-						'blockera'
-					)}
-				>
-					<RepeaterControl
-						{...{
-							onDelete,
-							maxItems,
-							mode: 'nothing',
-							id: 'block-states',
-							isSupportInserter: true,
-							valueCleanup: (value) => value,
-							selectable: true,
-							getDynamicDefaultRepeaterItem,
-							defaultRepeaterItemValue,
-							onChange: handleOnChange,
-							overrideItem,
-							repeaterItemHeader: ItemHeader,
-							repeaterItemOpener: ItemOpener,
-							repeaterItemChildren: (
-								props: Object
-							): MixedElement => {
-								return (
-									<ItemBody
-										{...{ ...props, states: defaultStates }}
-									/>
-								);
-							},
-							InserterComponent,
-						}}
-						defaultValue={states}
-						popoverTitle={__('Block State', 'blockera')}
-						offset={8}
-						popoverProps={{
-							placement: 'bottom-end',
-						}}
-						className={controlInnerClassNames(
-							'block-states-repeater'
-						)}
-						headerOpenButton={false}
-						actionButtonDelete={true}
-						actionButtonClone={false}
-						actionButtonVisibility={false}
-						popoverTitleButtonsRight={PopoverTitleButtons}
-						addNewButtonDataTest={'add-new-block-state'}
-						PromoComponent={({
-							items,
-							onClose = () => {},
-							isOpen = false,
-						}): MixedElement | null => {
-							if (getRepeaterActiveItemsCount(items) < 2) {
-								return null;
-							}
+const StatesManager: ComponentType<StatesManagerProps> = ({
+	states,
+	children,
+	onDelete,
+	onReset,
+	maxItems,
+	contextValue,
+	overrideItem,
+	defaultStates,
+	handleOnChange,
+	InserterComponent,
+	defaultRepeaterItemValue,
+	getDynamicDefaultRepeaterItem,
+}: StatesManagerProps): Element<any> => {
+	if (Object.keys(states)?.length < 1) {
+		return <></>;
+	}
 
+	return (
+		<ControlContextProvider
+			value={contextValue}
+			storeName={'blockera/controls/repeater'}
+		>
+			<div
+				className={'blockera-block-state-container'}
+				data-test={'blockera-block-state-container'}
+				aria-label={__('Blockera Block State Container', 'blockera')}
+			>
+				<RepeaterControl
+					{...{
+						onDelete,
+						onReset,
+						maxItems,
+						mode: 'nothing',
+						id: 'block-states',
+						isSupportInserter: true,
+						valueCleanup: (value) => value,
+						selectable: true,
+						getDynamicDefaultRepeaterItem,
+						defaultRepeaterItemValue,
+						onChange: handleOnChange,
+						overrideItem,
+						repeaterItemHeader: ItemHeader,
+						repeaterItemOpener: ItemOpener,
+						repeaterItemChildren: (props: Object): MixedElement => {
 							return (
-								<PromotionPopover
-									heading={__(
-										'Advanced Block States',
-										'blockera'
-									)}
-									featuresList={[
-										__('Multiple states', 'blockera'),
-										__('All block states', 'blockera'),
-										__('Advanced features', 'blockera'),
-										__('Premium blocks', 'blockera'),
-									]}
-									isOpen={isOpen}
-									onClose={onClose}
+								<ItemBody
+									{...{ ...props, states: defaultStates }}
 								/>
 							);
-						}}
-					>
-						{children}
-					</RepeaterControl>
-				</div>
-			</ControlContextProvider>
-		);
-	}
-	// (prev, next) => {
-	// 	return isEquals(omit(prev, ['onChange']), omit(next, ['onChange']));
-	// }
-);
+						},
+						InserterComponent,
+					}}
+					defaultValue={states}
+					popoverTitle={__('Block State', 'blockera')}
+					popoverProps={{
+						placement: 'bottom-end',
+					}}
+					className={controlInnerClassNames('block-states-repeater')}
+					headerOpenButton={false}
+					actionButtonDelete={true}
+					actionButtonClone={false}
+					actionButtonVisibility={false}
+					actionButtonReset={true}
+					actionButtonsType="menu"
+					popoverTitleButtonsRight={PopoverTitleButtons}
+					addNewButtonDataTest={'add-new-block-state'}
+					addNewButtonLabel={__('Add New State', 'blockera')}
+					PromoComponent={({
+						items,
+						onClose = () => {},
+						isOpen = false,
+					}): MixedElement | null => {
+						if (getRepeaterActiveItemsCount(items) < 2) {
+							return null;
+						}
+
+						return (
+							<UpgradePrompt
+								lockedFeature={{
+									title: __(
+										'Advanced Block States',
+										'blockera'
+									),
+									description: __(
+										'Style hover, focus, and custom states beyond the Free cap.',
+										'blockera'
+									),
+								}}
+								isOpen={isOpen}
+								onClose={onClose}
+							/>
+						);
+					}}
+					enablePromoCountOnRepeaterItemHeader={false}
+				>
+					{children}
+				</RepeaterControl>
+			</div>
+		</ControlContextProvider>
+	);
+};
 
 export default StatesManager;

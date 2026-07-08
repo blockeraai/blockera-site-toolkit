@@ -9,7 +9,6 @@ import { addFilter } from '@wordpress/hooks';
  * Blockera dependencies
  */
 import type { ControlContextRefCurrent } from '@blockera/controls';
-import { mergeObject } from '@blockera/utils';
 
 /**
  * Internal dependencies
@@ -22,27 +21,44 @@ import {
 	borderRadiusFromWPCompatibility,
 	borderRadiusToWPCompatibility,
 } from './compatibilities/border-radius';
+import {
+	shadowFromWPCompatibility,
+	shadowToWPCompatibility,
+} from './compatibilities/shadow';
 import type { BlockDetail } from '../block-card/block-states/types';
-import { isBlockNotOriginalState, isInvalidCompatibilityRun } from '../utils';
+import {
+	isInvalidCompatibilityRun,
+	mergeWPCompatibility,
+	sanitizeWPCompatibilityAttributes,
+} from '../utils';
 
 export const bootstrap = (): void => {
 	addFilter(
 		'blockera.blockEdit.attributes',
 		'blockera.blockEdit.typographyExtension.bootstrap',
 		(attributes: Object, blockDetail: BlockDetail) => {
-			if (isBlockNotOriginalState(blockDetail)) {
-				return attributes;
-			}
+			const { insideBlockInspector, editorSelectedBlockEvent } =
+				blockDetail;
 
 			attributes = borderFromWPCompatibility({
 				attributes,
+				insideBlockInspector,
+				editorSelectedBlockEvent,
 			});
 
 			attributes = borderRadiusFromWPCompatibility({
 				attributes,
+				insideBlockInspector,
+				editorSelectedBlockEvent,
 			});
 
-			return attributes;
+			attributes = shadowFromWPCompatibility({
+				attributes,
+				insideBlockInspector,
+				editorSelectedBlockEvent,
+			});
+
+			return sanitizeWPCompatibilityAttributes(attributes, blockDetail);
 		}
 	);
 
@@ -75,23 +91,44 @@ export const bootstrap = (): void => {
 				return nextState;
 			}
 
+			const { insideBlockInspector, editorSelectedBlockEvent } =
+				blockDetail;
+
 			switch (featureId) {
 				case 'blockeraBorder':
-					return mergeObject(
+					return mergeWPCompatibility(
 						nextState,
 						borderToWPCompatibility({
 							newValue,
 							ref,
-						})
+							insideBlockInspector,
+							editorSelectedBlockEvent,
+						}),
+						blockDetail
 					);
 
 				case 'blockeraBorderRadius':
-					return mergeObject(
+					return mergeWPCompatibility(
 						nextState,
 						borderRadiusToWPCompatibility({
 							newValue,
 							ref,
-						})
+							insideBlockInspector,
+							editorSelectedBlockEvent,
+						}),
+						blockDetail
+					);
+
+				case 'blockeraBoxShadow':
+					return mergeWPCompatibility(
+						nextState,
+						shadowToWPCompatibility({
+							newValue,
+							ref,
+							insideBlockInspector,
+							editorSelectedBlockEvent,
+						}),
+						blockDetail
 					);
 			}
 
