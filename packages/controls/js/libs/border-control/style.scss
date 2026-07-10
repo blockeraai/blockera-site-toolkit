@@ -6,6 +6,7 @@
 	border-radius: var(--blockera-controls-border-radius);
 	gap: 0;
 	width: 100%;
+	position: relative;
 
 	&:first-child:last-child {
 		margin-left: auto;
@@ -46,7 +47,7 @@
 	.blockera-control-border-color-wrapper {
 		position: relative;
 		margin-right: -1px !important;
-   		margin-left: -1px !important;
+		margin-left: -1px !important;
 
 		.blockera-control-value-addon-pointers {
 			z-index: 5;
@@ -70,8 +71,9 @@
 		}
 
 		&:hover {
-
-			& > .blockera-control.blockera-control-value-addon-pointers .blockera-control-value-addon-pointer {
+			&
+				> .blockera-control.blockera-control-value-addon-pointers
+				.blockera-control-value-addon-pointer {
 				transform: scale(1);
 
 				&:nth-child(1) {
@@ -85,11 +87,11 @@
 			}
 		}
 
-		& > .blockera-control.blockera-control-value-addon-pointers .blockera-control-value-addon-pointer {
-
+		&
+			> .blockera-control.blockera-control-value-addon-pointers
+			.blockera-control-value-addon-pointer {
 			&.open-value-addon,
 			&.active-value-addon {
-
 				svg {
 					outline: 2px solid #ffffff;
 				}
@@ -115,7 +117,7 @@
 		}
 
 		&.empty-color-error {
-			    box-shadow: inset 0 0 0 1px #ff3f3e;
+			box-shadow: inset 0 0 0 1px #ff3f3e;
 		}
 
 		.color-label {
@@ -124,7 +126,7 @@
 
 		.blockera-component-color-indicator {
 			margin-left: auto;
-   			margin-right: auto;
+			margin-right: auto;
 		}
 	}
 
@@ -146,7 +148,6 @@
 		}
 
 		[role="listbox"] {
-
 			.item-icon + span:not(.item-label) {
 				display: none;
 			}
@@ -157,7 +158,7 @@
 		}
 
 		&:focus-within {
-			z-index: 10;
+			z-index: 12;
 		}
 	}
 }

@@ -5,19 +5,14 @@ import {
 	redirectToFrontPage,
 	createPost,
 } from '@blockera/dev-cypress/js/helpers';
-import { experimental } from '@blockera/env';
 
 describe('Font Color → Functionality', () => {
 	beforeEach(() => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
-
-	const enabledOptimizeStyleGeneration = experimental().get(
-		'earlyAccessLab.optimizeStyleGeneration'
-	);
 
 	it('simple value', () => {
 		cy.getParentContainer('Text Color').within(() => {
@@ -25,8 +20,10 @@ describe('Font Color → Functionality', () => {
 		});
 
 		cy.getByDataTest('popover-body').within(() => {
-			cy.get('input[maxlength="9"]').clear({ force: true });
-			cy.get('input[maxlength="9"]').type('70ca9e ');
+			cy.get('[data-cy="color-picker-css-value"]').clear({ force: true });
+			cy.get('[data-cy="color-picker-css-value"]').type('70ca9e', {
+				delay: 0,
+			});
 		});
 
 		//Check block
@@ -66,7 +63,10 @@ describe('Font Color → Functionality', () => {
 		cy.getIframeBody().within(() => {
 			cy.get('#blockera-styles-wrapper')
 				.invoke('text')
-				.should('include', 'color: var(--wp--preset--color--contrast)');
+				.should(
+					'include',
+					'color: var(--wp--preset--color--contrast, #111111)'
+				);
 		});
 
 		//Check store
@@ -98,9 +98,7 @@ describe('Font Color → Functionality', () => {
 			.invoke('text')
 			.should(
 				'include',
-				!enabledOptimizeStyleGeneration
-					? 'color: var(--wp--preset--color--contrast) !important'
-					: 'color: var(--wp--preset--color--contrast)'
+				'color: var(--wp--preset--color--contrast, #111111)'
 			);
 	});
 });

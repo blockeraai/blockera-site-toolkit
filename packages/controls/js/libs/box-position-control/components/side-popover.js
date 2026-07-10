@@ -32,7 +32,6 @@ export function SidePopover({
 	unit,
 	title = '',
 	icon = '',
-	offset = 35,
 	isOpen,
 	onClose = () => {},
 	defaultValue,
@@ -56,7 +55,6 @@ export function SidePopover({
 							{icon} <span>{title}</span>
 						</>
 					}
-					offset={offset}
 					placement="left-start"
 					className="position-edit-popover"
 					onClose={onClose}
@@ -75,7 +73,7 @@ export function SidePopover({
 								aria-label={__('Remove value', 'blockera')}
 								disabled={!hasValue}
 							>
-								<Icon icon="trash" size="20" />
+								<Icon icon="trash" iconSize="20" />
 							</Button>
 						</>
 					}

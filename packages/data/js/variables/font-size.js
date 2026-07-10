@@ -2,56 +2,109 @@
 /**
  * External dependencies
  */
-import { default as memoize } from 'fast-memoize';
 import { select } from '@wordpress/data';
-import { sprintf, __ } from '@wordpress/i18n';
 
 /**
  * Blockera dependencies
  */
-import { isBlockTheme, isUndefined } from '@blockera/utils';
+import type { ValueAddon } from '@blockera/controls/js/value-addons/types';
+import { isBlockTheme, isUndefined, isString, isObject } from '@blockera/utils';
 
 /**
  * Internal dependencies
  */
+import type { ValueAddonReference } from '../types';
 import { STORE_NAME } from '../store';
-import { getBlockEditorSettings } from './index';
+import { getCustomGlobalStylePresetVariables } from './custom-global-style-presets';
+import {
+	CUSTOM_ORIGIN_REFERENCE,
+	PRESET_ORIGIN_REFERENCE,
+	getThemeVariableReference,
+	mergeVariableItemsBySlug,
+} from './merge-global-style-simple-presets';
+import { generateVariableString, getBlockEditorSettings } from './index';
+import {
+	normalizeFontSizeFluid,
+	normalizePresetSize,
+} from './normalize-preset-sizes';
+import { parseVarString } from './utils';
 import type { VariableItem } from './types';
 
-export const getFontSizes: () => Array<VariableItem> = memoize(
-	function (): Array<VariableItem> {
-		let reference = {
-			type: 'preset',
-		};
+export const getFontSizes = (): Array<VariableItem> => {
+	if (isBlockTheme()) {
+		const fontSizesRoot =
+			getBlockEditorSettings()?.__experimentalFeatures?.typography
+				?.fontSizes;
 
-		if (isBlockTheme()) {
-			const { getCurrentTheme } = select('blockera/data');
+		if (!isUndefined(fontSizesRoot)) {
+			const themeRef = getThemeVariableReference();
 
-			const {
-				name: { rendered: themeName },
-			} = getCurrentTheme();
+			return mergeVariableItemsBySlug(
+				[
+					{
+						items: fontSizesRoot?.default,
+						reference: PRESET_ORIGIN_REFERENCE,
+					},
+					{ items: fontSizesRoot?.theme, reference: themeRef },
+					{
+						items: fontSizesRoot?.custom,
+						reference: CUSTOM_ORIGIN_REFERENCE,
+					},
+				],
+				(item, reference) => {
+					if (
+						!item ||
+						item.slug === undefined ||
+						item.slug === null
+					) {
+						return null;
+					}
 
-			reference = {
-				type: 'theme',
-				theme: themeName,
-			};
+					const id = String(item.slug);
+
+					if (!id) {
+						return null;
+					}
+
+					const row: VariableItem = {
+						name: item?.name || id,
+						id,
+						value: normalizePresetSize(item.size),
+						reference,
+					};
+
+					if (item?.fluid) {
+						row.fluid = normalizeFontSizeFluid(item.fluid);
+					}
+
+					return row;
+				}
+			);
 		}
-
-		return getBlockEditorSettings().fontSizes.map((item) => {
-			return {
-				name: item?.name || item.slug,
-				id: item.slug,
-				value: item.size,
-				fluid: item?.fluid || null,
-				reference,
-			};
-		});
 	}
-);
 
-export const getFontSize: (id: string) => ?VariableItem = memoize(function (
-	id: string
-): ?VariableItem {
+	let reference: ValueAddonReference = PRESET_ORIGIN_REFERENCE;
+
+	if (isBlockTheme()) {
+		reference = getThemeVariableReference();
+	}
+
+	const list = getBlockEditorSettings()?.fontSizes;
+
+	if (!Array.isArray(list)) {
+		return [];
+	}
+
+	return list.map((item) => ({
+		name: item?.name || item.slug,
+		id: item.slug,
+		value: normalizePresetSize(item.size),
+		fluid: item?.fluid ? normalizeFontSizeFluid(item.fluid) : null,
+		reference,
+	}));
+};
+
+export const getFontSize = (id: string): ?VariableItem => {
 	let fontSize = getFontSizes().find((item) => item.id === id);
 
 	// If not, check if the font size is in the custom font sizes
@@ -63,57 +116,86 @@ export const getFontSize: (id: string) => ?VariableItem = memoize(function (
 		);
 	}
 
+	if (isUndefined(fontSize?.value)) {
+		fontSize = getCustomGlobalStylePresetVariables('font-size').find(
+			(item) => item.id === id
+		);
+	}
+
 	return fontSize;
-});
+};
 
-export const getFontSizeBy: (field: string, value: any) => ?VariableItem =
-	memoize(function (field: string, value: any): ?VariableItem {
-		return getFontSizes().find((item) => item[field] === value);
-	});
+export const getFontSizeBy = (field: string, value: any): ?VariableItem =>
+	getFontSizes().find((item) => item[field] === value);
 
-export const getFontSizesTitle: () => string = memoize(function (): string {
-	const defaultFontSizes = [
-		{
-			slug: 'small',
-			size: '13px',
-		},
-		{
-			slug: 'medium',
-			size: '20px',
-		},
-		{
-			slug: 'large',
-			size: '36px',
-		},
-		{
-			slug: 'x-large',
-			size: '42px',
-		},
-	];
+export const getFontSizeVAFromIdString = (
+	value: string
+): ValueAddon | string => {
+	const fontSizeVar = getFontSize(value);
 
-	const currentFontSizes = getBlockEditorSettings().fontSizes;
+	if (fontSizeVar) {
+		return {
+			settings: {
+				...fontSizeVar,
+				type: 'font-size',
+				var: generateVariableString({
+					reference: fontSizeVar?.reference || {
+						type: '',
+					},
+					type: 'font-size',
+					id: fontSizeVar?.id || '',
+				}),
+			},
+			name: fontSizeVar?.name || '',
+			isValueAddon: true,
+			valueType: 'variable',
+		};
+	}
 
-	// Check if current sizes match default sizes (ignoring the name property)
-	const isDefaultSizes = defaultFontSizes.every((defaultSize) =>
-		currentFontSizes.some(
-			(currentSize) =>
-				defaultSize.slug === currentSize.slug &&
-				defaultSize.size === currentSize.size
-		)
-	);
+	return value;
+};
 
-	if (!isDefaultSizes) {
-		const { getCurrentTheme } = select('blockera/data');
-		const theme = getCurrentTheme();
+export const getFontSizeVAFromVarString = (
+	value: string
+): ValueAddon | string => {
+	if (isString(value)) {
+		const { id, varString } = parseVarString(value, 'font-size');
 
-		if (theme?.name?.rendered) {
-			return sprintf(
-				// translators: it's the product name (a theme or plugin name)
-				__('%s Font Sizes', 'blockera'),
-				theme.name.rendered
-			);
+		if (id) {
+			const fontSizeVA = getFontSizeVAFromIdString(id);
+
+			if (isObject(fontSizeVA)) {
+				return fontSizeVA;
+			}
+
+			// same value means the variable not found but should be returned as not found
+			if (fontSizeVA === id && varString) {
+				return {
+					settings: {
+						name: id,
+						id: value,
+						value: `var(${varString})`,
+						type: 'font-size',
+						var: varString,
+						fluid: null,
+					},
+					name: id,
+					isValueAddon: true,
+					valueType: 'variable',
+				};
+			}
 		}
 	}
 
-	return __('Editor Font Sizes', 'blockera');
-});
+	return value;
+};
+
+export const getFontSizeVAStringFromId = (id: string): ?string => {
+	const variableObject = getFontSize(id);
+
+	if (!variableObject) {
+		return undefined;
+	}
+
+	return `var:preset|font-size|${id}`;
+};

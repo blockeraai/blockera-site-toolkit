@@ -11,7 +11,7 @@ describe('Box Shadow → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 
 		cy.getParentContainer('Box Shadows').as('container');
 	});
@@ -44,8 +44,12 @@ describe('Box Shadow → Functionality', () => {
 		cy.getByDataTest('popover-body')
 			.last()
 			.within(() => {
-				cy.get('input[maxlength="9"]').clear({ force: true });
-				cy.get('input[maxlength="9"]').type('c5eef0ab ');
+				cy.get('[data-cy="color-picker-css-value"]').clear({
+					force: true,
+				});
+				cy.get('[data-cy="color-picker-css-value"]').type('c5eef0ab', {
+					delay: 0,
+				});
 			});
 
 		//Check block
@@ -79,7 +83,11 @@ describe('Box Shadow → Functionality', () => {
 		});
 
 		// promotion popover should appear
-		cy.get('.blockera-component-promotion-popover').should('exist');
+		cy.get('.blockera-component-upgrade-prompt')
+			.should('exist')
+			.within(() => {
+				cy.getByAriaLabel('Close').should('be.visible').click();
+			});
 
 		//Check frontend
 		savePage();
