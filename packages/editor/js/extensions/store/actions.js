@@ -32,6 +32,28 @@ export function addBlockExtensions(
 }
 
 /**
+ * Returns an action object used in signalling that block types have been updated.
+ * Ignored from documentation as the recommended usage for this action through registerBlockType from @wordpress/blocks.
+ *
+ * @ignore
+ *
+ * @param {blockeraBlockExtensionType|blockeraBlockExtensionType[]} blockExtension Object or array of objects representing blocks to added.
+ *
+ *
+ * @return {Object} Action object.
+ */
+export function updateBlockExtensions(
+	blockExtension: Array<Object> | Object
+): Object {
+	return {
+		type: 'UPDATE_BLOCK_EXTENSIONS',
+		blockExtensions: Array.isArray(blockExtension)
+			? blockExtension
+			: [blockExtension],
+	};
+}
+
+/**
  * Signals that the passed block extension's settings should be stored in the state.
  *
  * @param {blockeraBlockExtensionType} blockExtension Unprocessed block extension settings.
@@ -70,10 +92,12 @@ export function removeBlockExtensions(names: string | Array<string>): Object {
 }
 
 export function changeExtensionCurrentBlock(
-	currentBlock: 'master' | InnerBlockType
+	currentBlock: 'master' | InnerBlockType,
+	uiContext?: string
 ): Object {
 	return {
 		currentBlock,
+		uiContext,
 		type: 'CHANGE_CURRENT_BLOCK',
 	};
 }
@@ -156,6 +180,32 @@ export function setBlockClientInners({ inners, clientId }: Object): Object {
 		inners,
 		clientId,
 		type: 'SET_BLOCK_CLIENT_INNERS',
+	};
+}
+
+export function syncBlockStatesAfterDelete({
+	clientId,
+	blockName,
+	innerBlockType,
+	blockStates,
+	blockType,
+	currentState = 'normal',
+}: {
+	clientId: string,
+	blockName: string,
+	innerBlockType?: string,
+	blockStates: Object,
+	blockType: string,
+	currentState?: TStates,
+}): Object {
+	return {
+		type: 'SYNC_BLOCK_STATES_AFTER_DELETE',
+		clientId,
+		blockName,
+		innerBlockType,
+		blockStates,
+		blockType,
+		currentState,
 	};
 }
 

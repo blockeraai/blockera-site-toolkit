@@ -6,7 +6,7 @@ import {
 	appendBlocks,
 	setInnerBlock,
 	setParentBlock,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 } from '@blockera/dev-cypress/js/helpers';
 
@@ -27,12 +27,14 @@ describe('Font Color → WP Compatibility', () => {
 				// Select target block
 				cy.getBlock('core/paragraph').click();
 
+				cy.addNewTransition();
+
 				//
 				// Test 1: WP data to Blockera
 				//
 
 				// WP data should come to Blockera
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect('#98cc08').to.be.equal(
 						getSelectedBlock(data, 'blockeraFontColor')
 					);
@@ -53,24 +55,12 @@ describe('Font Color → WP Compatibility', () => {
 				//
 				// Test 2: Blockera value to WP data
 				//
+				cy.setColorControlValue('Text Color', '666666');
 
-				// open color popover
-				cy.getParentContainer('Text Color').within(() => {
-					cy.get('button').as('colorBtn');
-					cy.get('@colorBtn').click();
-				});
-
-				// change color to #666 (#666666)
-				cy.get('.components-popover')
-					.last()
-					.within(() => {
-						cy.get('input').as('hexColorInput');
-						cy.get('@hexColorInput').clear();
-						cy.get('@hexColorInput').type('666');
-					});
+				cy.wait(100);
 
 				// Blockera value should be moved to WP data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect('#666666').to.be.equal(
 						getSelectedBlock(data, 'style')?.color?.text
 					);
@@ -97,7 +87,7 @@ describe('Font Color → WP Compatibility', () => {
 
 				cy.setColorControlValue('Text Color', '555555');
 
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect('#666666').to.be.equal(
 						getSelectedBlock(data, 'style')?.color?.text
 					);
@@ -120,21 +110,10 @@ describe('Font Color → WP Compatibility', () => {
 				//
 				setParentBlock();
 
-				// open color popover
-				cy.getParentContainer('Text Color').within(() => {
-					cy.get('button').as('colorBtn');
-					cy.get('@colorBtn').click();
-				});
-
-				// clear value
-				cy.get('.components-popover')
-					.last()
-					.within(() => {
-						cy.getByAriaLabel('Reset Color (Clear)').click();
-					});
+				cy.clearColorControlValue('Text Color');
 
 				// Blockera value should be moved to WP data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect(undefined).to.be.equal(
 						getSelectedBlock(data, 'style')?.color?.text
 					);
@@ -165,12 +144,14 @@ describe('Font Color → WP Compatibility', () => {
 				// add alias to the feature container
 				cy.getParentContainer('Text Color').as('container');
 
+				cy.addNewTransition();
+
 				//
 				// Test 1: WP data to Blockera
 				//
 
 				// WP data should come to Blockera
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect('#98cc08').to.be.equal(
 						getSelectedBlock(data, 'blockeraFontColor')
 					);
@@ -191,24 +172,12 @@ describe('Font Color → WP Compatibility', () => {
 				//
 				// Test 2: Blockera value to WP data
 				//
+				cy.setColorControlValue('Text Color', '666666');
 
-				// open color popover
-				cy.get('@container').within(() => {
-					cy.get('button').as('colorBtn');
-					cy.get('@colorBtn').click();
-				});
-
-				// change color to #666 (#666666)
-				cy.get('.components-popover')
-					.last()
-					.within(() => {
-						cy.get('input').as('hexColorInput');
-						cy.get('@hexColorInput').clear();
-						cy.get('@hexColorInput').type('666');
-					});
+				cy.wait(100);
 
 				// Blockera value should be moved to WP data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect('#666666').to.be.equal(
 						getSelectedBlock(data, 'style')?.color?.text
 					);
@@ -229,16 +198,12 @@ describe('Font Color → WP Compatibility', () => {
 				//
 				// Test 3: Clear Blockera value and check WP data
 				//
+				cy.clearColorControlValue('Text Color');
 
-				// clear value
-				cy.get('.components-popover')
-					.last()
-					.within(() => {
-						cy.getByAriaLabel('Reset Color (Clear)').click();
-					});
+				cy.wait(100);
 
 				// Blockera value should be moved to WP data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect(undefined).to.be.equal(
 						getSelectedBlock(data, 'style')?.color?.text
 					);
@@ -270,12 +235,14 @@ describe('Font Color → WP Compatibility', () => {
 				// add alias to the feature container
 				cy.getParentContainer('Text Color').as('container');
 
+				cy.addNewTransition();
+
 				//
 				// Test 1: WP data to Blockera
 				//
 
 				// WP data should come to Blockera
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect('#df4414').to.be.equal(
 						getSelectedBlock(data, 'blockeraFontColor')
 					);
@@ -292,23 +259,12 @@ describe('Font Color → WP Compatibility', () => {
 				// Test 2: Blockera value to WP data
 				//
 
-				// open color popover
-				cy.get('@container').within(() => {
-					cy.get('button').as('colorBtn');
-					cy.get('@colorBtn').click();
-				});
+				cy.setColorControlValue('Text Color', '666666');
 
-				// change color to #666 (#666666)
-				cy.get('.components-popover')
-					.last()
-					.within(() => {
-						cy.get('input').as('hexColorInput');
-						cy.get('@hexColorInput').clear();
-						cy.get('@hexColorInput').type('666');
-					});
+				cy.wait(100);
 
 				// Blockera value should be moved to WP data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect('#666666').to.be.equal(
 						getSelectedBlock(data, 'style')?.color?.text
 					);
@@ -323,15 +279,12 @@ describe('Font Color → WP Compatibility', () => {
 				//
 				// Test 3: Clear Blockera value and check WP data
 				//
-				// clear value
-				cy.get('.components-popover')
-					.last()
-					.within(() => {
-						cy.getByAriaLabel('Reset Color (Clear)').click();
-					});
+				cy.clearColorControlValue('Text Color');
+
+				cy.wait(100);
 
 				// Blockera value should be moved to WP data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect(undefined).to.be.equal(
 						getSelectedBlock(data, 'style')?.color?.text
 					);
@@ -359,12 +312,14 @@ describe('Font Color → WP Compatibility', () => {
 				// add alias to the feature container
 				cy.getParentContainer('Text Color').as('container');
 
+				cy.addNewTransition();
+
 				//
 				// Test 1: WP data to Blockera
 				//
 
 				// WP data should come to Blockera
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect({
 						settings: {
 							name: 'Accent 3',
@@ -407,8 +362,10 @@ describe('Font Color → WP Compatibility', () => {
 				// change variable
 				cy.selectValueAddonItem('contrast');
 
+				cy.wait(100);
+
 				// Check WP data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect({
 						settings: {
 							name: 'Contrast',
@@ -448,8 +405,10 @@ describe('Font Color → WP Compatibility', () => {
 					cy.removeValueAddon();
 				});
 
+				cy.wait(100);
+
 				// Check WP data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					// default value is empty
 					expect('').to.be.equal(
 						getSelectedBlock(data, 'blockeraFontColor')
@@ -480,12 +439,14 @@ describe('Font Color → WP Compatibility', () => {
 				// add alias to the feature container
 				cy.getParentContainer('Text Color').as('container');
 
+				cy.addNewTransition();
+
 				//
 				// Test 1: WP data to Blockera
 				//
 
 				// WP data should come to Blockera
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect({
 						settings: {
 							name: 'Accent 3',
@@ -532,8 +493,10 @@ describe('Font Color → WP Compatibility', () => {
 						cy.selectValueAddonItem('contrast');
 					});
 
+				cy.wait(100);
+
 				// Check WP data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect({
 						settings: {
 							name: 'Contrast',
@@ -573,8 +536,10 @@ describe('Font Color → WP Compatibility', () => {
 					cy.removeValueAddon();
 				});
 
+				cy.wait(100);
+
 				// Check WP data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					// default value is empty
 					expect('').to.be.equal(
 						getSelectedBlock(data, 'blockeraFontColor')
@@ -588,6 +553,89 @@ describe('Font Color → WP Compatibility', () => {
 
 					// link color should be still there
 					expect('var:preset|color|accent-4').to.be.equal(
+						getSelectedBlock(data, 'style')?.elements?.link?.color
+							?.text
+					);
+				});
+			});
+
+			it('Not found variable', () => {
+				appendBlocks(`<!-- wp:paragraph {"style":{"elements":{"link":{"color":{"text":"var:preset|color|unknown"}}}},"textColor":"unknown"} -->
+<p class="has-unknown-color has-text-color has-link-color">Test paragraph</p>
+<!-- /wp:paragraph -->`);
+
+				// Select target block
+				cy.getBlock('core/paragraph').click();
+
+				// add alias to the feature container
+				cy.getParentContainer('Text Color').as('container');
+
+				cy.addNewTransition();
+
+				//
+				// Test 1: WP data to Blockera
+				//
+
+				// WP data should come to Blockera
+				assertBlockData((data) => {
+					expect({
+						settings: {
+							name: 'unknown',
+							id: 'var:preset|color|unknown',
+							value: 'var(--wp--preset--color--unknown)',
+							type: 'color',
+							var: '--wp--preset--color--unknown',
+						},
+						name: 'unknown',
+						isValueAddon: true,
+						valueType: 'variable',
+					}).to.be.deep.equal(
+						getSelectedBlock(data, 'blockeraFontColor')
+					);
+					expect('unknown').to.be.equal(
+						getSelectedBlock(data, 'textColor')
+					);
+					expect(undefined).to.be.equal(
+						getSelectedBlock(data, 'style')?.color?.text
+					);
+					expect('var:preset|color|unknown').to.be.equal(
+						getSelectedBlock(data, 'style')?.elements?.link?.color
+							?.text
+					);
+				});
+
+				//
+				// Test 2: Check interface for showing deleted value addon
+				//
+
+				cy.get('@container').within(() => {
+					cy.get('[data-test="value-addon-deleted"]').should('exist');
+				});
+
+				//
+				// Test 3: Clear Blockera value and check WP data
+				//
+
+				// open color popover
+				cy.get('@container').within(() => {
+					cy.removeValueAddon();
+				});
+
+				cy.wait(100);
+
+				// Check WP data
+				assertBlockData((data) => {
+					// default value is empty
+					expect('').to.be.equal(
+						getSelectedBlock(data, 'blockeraFontColor')
+					);
+					expect(undefined).to.be.equal(
+						getSelectedBlock(data, 'textColor')
+					);
+					expect(undefined).to.be.equal(
+						getSelectedBlock(data, 'style')?.color?.text
+					);
+					expect(undefined).to.be.equal(
 						getSelectedBlock(data, 'style')?.elements?.link?.color
 							?.text
 					);

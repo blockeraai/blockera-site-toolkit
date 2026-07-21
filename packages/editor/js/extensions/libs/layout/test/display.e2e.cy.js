@@ -1,6 +1,6 @@
 import {
 	savePage,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 	createPost,
@@ -10,7 +10,7 @@ describe('Display → Functionality', () => {
 	beforeEach(() => {
 		createPost();
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('should update display correctly, when click on buttons', () => {
@@ -26,7 +26,7 @@ describe('Display → Functionality', () => {
 					item.toLowerCase().replace(' ', '-')
 				);
 
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect(item.toLowerCase().replace(' ', '-')).to.be.equal(
 						getSelectedBlock(data, 'blockeraDisplay')
 					);

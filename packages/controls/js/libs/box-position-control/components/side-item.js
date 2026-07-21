@@ -16,17 +16,13 @@ import { Icon } from '@blockera/icons';
 /**
  * Internal dependencies
  */
-import {
-	isValid,
-	LabelControl,
-	useValueAddon,
-	extractNumberAndUnit,
-} from '../../../index';
+import { fixLabelText } from '../utils';
 import { SideShape } from './side-shape';
 import { SidePopover } from './side-popover';
-import type { ValueAddon } from '../../../value-addons';
+import { LabelControl } from '../../label-control';
 import type { Side, SideProps, SideReturn } from '../types';
-import { fixLabelText } from '../../box-spacing-control/utils';
+import { extractNumberAndUnit } from '../../input-control/utils';
+import { isValid, useValueAddon, type ValueAddon } from '../../../value-addons';
 
 export function SideItem({
 	side,
@@ -45,7 +41,6 @@ export function SideItem({
 	setFocusSide,
 	openPopover,
 	setOpenPopover,
-	popoverOffset,
 }: SideProps): SideReturn {
 	const sideId: Side = side;
 
@@ -128,7 +123,6 @@ export function SideItem({
 				onShown: () => {
 					setOpenPopover('variable-picker');
 				},
-				popoverOffset,
 			},
 		});
 
@@ -147,7 +141,9 @@ export function SideItem({
 		},
 		movement: 'vertical',
 		onEnd: () => {
-			if (!openPopover) setFocusSide('');
+			if (!openPopover) {
+				setFocusSide('');
+			}
 			setLabelClassName('');
 		},
 		threshold: 0,
@@ -181,6 +177,13 @@ export function SideItem({
 		}
 
 		return '';
+	}
+
+	let dataTest = 'norma-value';
+	if (_isSetValueAddon) {
+		dataTest = valueAddonControlProps.isDeletedVar
+			? 'value-addon-deleted'
+			: 'value-addon-normal';
 	}
 
 	return {
@@ -226,7 +229,7 @@ export function SideItem({
 								onDragStart(event);
 								setFocusSide(sideId);
 							},
-					  }
+						}
 					: {})}
 				onMouseEnter={() => {
 					if (!openPopover && !valueAddonControlProps.isOpen) {
@@ -279,6 +282,7 @@ export function SideItem({
 						'side-' + side,
 						labelClassName
 					)}
+					data-test={dataTest}
 					data-cy={'box-position-label-' + side}
 				>
 					<LabelControl

@@ -3,7 +3,7 @@
  */
 import {
 	savePage,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 	createPost,
@@ -14,7 +14,7 @@ describe('Height → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('should update height when adding value', () => {
@@ -26,7 +26,7 @@ describe('Height → Functionality', () => {
 		cy.getBlock('core/paragraph').should('have.css', 'height', '80px');
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('80px').to.be.equal(
 				getSelectedBlock(data, 'blockeraHeight')
 			);
@@ -35,7 +35,7 @@ describe('Height → Functionality', () => {
 		//Check frontend
 		savePage();
 		redirectToFrontPage();
-		cy.get('.blockera-block').should('have.css', 'height', '80px');
+		cy.get('p.blockera-block').should('have.css', 'height', '80px');
 	});
 
 	it('variable value', () => {
@@ -53,12 +53,12 @@ describe('Height → Functionality', () => {
 				.invoke('text')
 				.should(
 					'include',
-					'height: var(--wp--style--global--content-size)'
+					'height: var(--wp--style--global--content-size, 645px)'
 				);
 		});
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect({
 				settings: {
 					name: 'Content Width',
@@ -85,7 +85,7 @@ describe('Height → Functionality', () => {
 			.invoke('text')
 			.should(
 				'include',
-				'height: var(--wp--style--global--content-size)'
+				'height: var(--wp--style--global--content-size, 645px)'
 			);
 	});
 });

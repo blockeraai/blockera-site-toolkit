@@ -8,12 +8,16 @@ import type { MixedElement } from 'react';
 /**
  * Blockera dependencies
  */
-import { controlClassNames } from '@blockera/classnames';
+import {
+	controlClassNames,
+	componentInnerClassNames,
+} from '@blockera/classnames';
+import { Icon } from '@blockera/icons';
 
 /**
  * Internal dependencies
  */
-import { PromotionPopover } from '../';
+import { UpgradePrompt, Flex } from '../';
 import Fields from './components/fields';
 import RepeaterControl from '../repeater-control';
 import RepeaterItemHeader from './components/header';
@@ -34,19 +38,29 @@ export default function TransitionControl({
 	label,
 	labelDescription,
 	className,
+	withoutValueAddons = false,
 	...props
 }: TTransitionControlProps): MixedElement {
 	return (
 		<RepeaterControl
 			className={controlClassNames('transition', className)}
 			popoverTitle={popoverTitle || __('Transitions', 'blockera')}
-			label={label || __('Transitions', 'blockera')}
+			popoverClassName={componentInnerClassNames(
+				'popover-transition-control'
+			)}
+			label={label || __('Transitions Timing', 'blockera')}
 			labelDescription={labelDescription || <LabelDescription />}
 			addNewButtonLabel={__('Add New Transition', 'blockera')}
 			repeaterItemHeader={RepeaterItemHeader}
 			repeaterItemChildren={Fields}
 			defaultRepeaterItemValue={defaultRepeaterItemValue}
 			id={'transition'}
+			{...(!withoutValueAddons
+				? {
+						controlAddonTypes: ['variable'],
+						variableTypes: ['transition'],
+					}
+				: {})}
 			getTransitionTypeOptions={getTransitionTypeOptions}
 			getTransitionTimingOptions={getTransitionTimingOptions}
 			PromoComponent={({
@@ -59,16 +73,33 @@ export default function TransitionControl({
 				}
 
 				return (
-					<PromotionPopover
-						heading={__('Multiple Transitions', 'blockera')}
-						featuresList={[
-							__('Multiple transitions', 'blockera'),
-							__('Advanced transition effects', 'blockera'),
-							__('Advanced features', 'blockera'),
-							__('Premium blocks', 'blockera'),
-						]}
+					<UpgradePrompt
+						lockedFeature={{
+							icon: <Icon icon="layers" iconSize={26} />,
+							title: __('Multiple Transition Layers', 'blockera'),
+							description: (
+								<Flex direction="column" gap="6px">
+									{__(
+										'Stack unlimited timing transition layers',
+										'blockera'
+									)}
+									<Flex direction="row" gap="6px">
+										<span className="blockera-free-plan-hint">
+											{__('Free: 1 layer', 'blockera')}
+										</span>
+										<span className="blockera-pro-plan-hint">
+											{__(
+												'Pro: Unlimited layers',
+												'blockera'
+											)}
+										</span>
+									</Flex>
+								</Flex>
+							),
+						}}
 						isOpen={isOpen}
 						onClose={onClose}
+						type="modal"
 					/>
 				);
 			}}

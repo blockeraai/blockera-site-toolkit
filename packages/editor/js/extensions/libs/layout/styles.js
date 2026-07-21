@@ -18,8 +18,43 @@ import {
 	computedCssDeclarations,
 } from '../../../style-engine';
 import { getBlockSupportCategory, getBlockSupportFallback } from '../../utils';
+import {
+	getHorizontalGapForGrid,
+	getGridLayoutCssProperties,
+} from './grid-css';
 
 const supports = getBlockSupportCategory('layout');
+
+/**
+ * Block attributes are usually `{ value: T }` (see blocks-core attributes.php) but some
+ * code paths pass the raw scalar. Match dev-cypress `getSelectedBlock` unwrap logic so
+ * grid math sees the real min width / column count.
+ */
+function unwrapBlockeraAttr(mixed: mixed): mixed {
+	if (mixed && typeof mixed === 'object' && 'value' in mixed) {
+		return mixed.value;
+	}
+
+	return mixed;
+}
+
+function getLayoutDisplayValue(display: mixed): string {
+	if (display === undefined || display === null) {
+		return '';
+	}
+	if (typeof display === 'string') {
+		return display;
+	}
+	if (
+		typeof display === 'object' &&
+		display !== null &&
+		typeof display.value === 'string'
+	) {
+		return display.value;
+	}
+
+	return '';
+}
 
 export const LayoutStyles = ({
 	state,
@@ -41,6 +76,8 @@ export const LayoutStyles = ({
 		blockeraGap,
 		blockeraFlexWrap,
 		blockeraAlignContent,
+		blockeraGridMinimumColumnWidth,
+		blockeraGridColumnCount,
 	} = config.layoutConfig;
 
 	const blockProps = {
@@ -104,11 +141,108 @@ export const LayoutStyles = ({
 		});
 	}
 
+	// Prefer current-breakpoint display; fall back to inherited base display for
+	// flex/grid gates (mirrors PHP WithDisplayValueTrait). Do not use inherited
+	// display for emitting the `display` property itself.
+	const layoutDisplay =
+		getLayoutDisplayValue(_attributes.blockeraDisplay) ||
+		getLayoutDisplayValue(props?.inheritedDisplay);
+
+	const gridMinFieldActive = isActiveField(blockeraGridMinimumColumnWidth);
+	const gridCountFieldActive = isActiveField(blockeraGridColumnCount);
+
+	// Mirror PHP GridLayout: derive template from both attrs; emit when either control is
+	// enabled for the block (min-only, count-only, or both). Requiring both `isActiveField`
+	// calls prevented any grid-template output when only one sidebar control existed.
 	if (
-		_attributes.blockeraDisplay === 'flex' &&
+		layoutDisplay === 'grid' &&
+		(gridMinFieldActive || gridCountFieldActive)
+	) {
+		const minRaw = unwrapBlockeraAttr(
+			_attributes.blockeraGridMinimumColumnWidth
+		);
+		const minW = typeof minRaw === 'string' ? minRaw.trim() : '';
+
+		const rawC = unwrapBlockeraAttr(_attributes.blockeraGridColumnCount);
+		let colCount = 0;
+		if (typeof rawC === 'number' && rawC > 0) {
+			colCount = rawC;
+		} else if (rawC !== '' && rawC !== undefined && rawC !== null) {
+			const p = parseInt(String(rawC), 10);
+			if (Number.isFinite(p) && p > 0) {
+				colCount = p;
+			}
+		}
+
+		const hGap = getHorizontalGapForGrid(_attributes.blockeraGap);
+		const gridProps = getGridLayoutCssProperties(minW, colCount, hGap);
+
+		if (gridMinFieldActive) {
+			const pickedSelector = getCompatibleBlockCssSelector({
+				...sharedParams,
+				query: 'blockeraGridMinimumColumnWidth',
+				support: 'blockeraGridMinimumColumnWidth',
+				fallbackSupportId: getBlockSupportFallback(
+					supports,
+					'blockeraGridMinimumColumnWidth'
+				),
+			});
+
+			styleGroup.push({
+				selector: pickedSelector,
+				declarations: computedCssDeclarations(
+					{
+						blockeraGridMinimumColumnWidth: [
+							{
+								...staticDefinitionParams,
+								properties: gridProps,
+							},
+						],
+					},
+					blockProps,
+					pickedSelector
+				),
+			});
+		} else {
+			const pickedSelector = getCompatibleBlockCssSelector({
+				...sharedParams,
+				query: 'blockeraGridColumnCount',
+				support: 'blockeraGridColumnCount',
+				fallbackSupportId: getBlockSupportFallback(
+					supports,
+					'blockeraGridColumnCount'
+				),
+			});
+
+			styleGroup.push({
+				selector: pickedSelector,
+				declarations: computedCssDeclarations(
+					{
+						blockeraGridColumnCount: [
+							{
+								...staticDefinitionParams,
+								properties: gridProps,
+							},
+						],
+					},
+					blockProps,
+					pickedSelector
+				),
+			});
+		}
+	}
+
+	if (
+		layoutDisplay === 'flex' &&
 		_attributes?.blockeraFlexLayout !== undefined
 	) {
-		if (_attributes?.blockeraFlexLayout?.direction) {
+		const flexLayout = unwrapBlockeraAttr(_attributes?.blockeraFlexLayout);
+
+		if (
+			flexLayout &&
+			typeof flexLayout === 'object' &&
+			flexLayout?.direction
+		) {
 			const pickedSelector = getCompatibleBlockCssSelector({
 				...sharedParams,
 				query: 'blockeraFlexLayout.direction',
@@ -126,9 +260,7 @@ export const LayoutStyles = ({
 							{
 								...staticDefinitionParams,
 								properties: {
-									'flex-direction':
-										_attributes.blockeraFlexLayout
-											.direction,
+									'flex-direction': flexLayout.direction,
 								},
 							},
 						],
@@ -145,23 +277,11 @@ export const LayoutStyles = ({
 			}
 		}
 
-		let changeFlexInside = false;
-
 		if (
-			_attributes?.blockeraFlexLayout?.direction === 'column' &&
-			_attributes?.blockeraFlexLayout?.alignItems &&
-			_attributes?.blockeraFlexLayout?.justifyContent &&
-			['flex-start', 'center', 'flex-end'].includes(
-				_attributes?.blockeraFlexLayout?.alignItems
-			) &&
-			['flex-start', 'center', 'flex-end'].includes(
-				_attributes?.blockeraFlexLayout?.justifyContent
-			)
+			flexLayout &&
+			typeof flexLayout === 'object' &&
+			flexLayout?.alignItems
 		) {
-			changeFlexInside = true;
-		}
-
-		if (_attributes?.blockeraFlexLayout?.alignItems) {
 			const pickedSelector = getCompatibleBlockCssSelector({
 				...sharedParams,
 				query: 'blockeraFlexLayout.alignItems',
@@ -171,10 +291,6 @@ export const LayoutStyles = ({
 				),
 			});
 
-			const alignProp: string = changeFlexInside
-				? 'justify-content'
-				: 'align-items';
-
 			styleGroup.push({
 				selector: pickedSelector,
 				declarations: computedCssDeclarations(
@@ -183,9 +299,7 @@ export const LayoutStyles = ({
 							{
 								...staticDefinitionParams,
 								properties: {
-									[alignProp]:
-										_attributes.blockeraFlexLayout
-											.alignItems,
+									'align-items': flexLayout.alignItems,
 								},
 							},
 						],
@@ -196,7 +310,11 @@ export const LayoutStyles = ({
 			});
 		}
 
-		if (_attributes?.blockeraFlexLayout?.justifyContent) {
+		if (
+			flexLayout &&
+			typeof flexLayout === 'object' &&
+			flexLayout?.justifyContent
+		) {
 			const pickedSelector = getCompatibleBlockCssSelector({
 				...sharedParams,
 				query: 'blockeraFlexLayout.justifyContent',
@@ -206,10 +324,6 @@ export const LayoutStyles = ({
 				),
 			});
 
-			const justifyProp: string = changeFlexInside
-				? 'align-items'
-				: 'justify-content';
-
 			styleGroup.push({
 				selector: pickedSelector,
 				declarations: computedCssDeclarations(
@@ -218,9 +332,8 @@ export const LayoutStyles = ({
 							{
 								...staticDefinitionParams,
 								properties: {
-									[justifyProp]:
-										_attributes.blockeraFlexLayout
-											.justifyContent,
+									'justify-content':
+										flexLayout.justifyContent,
 								},
 							},
 						],
@@ -233,7 +346,7 @@ export const LayoutStyles = ({
 	}
 
 	if (
-		_attributes.blockeraDisplay === 'flex' &&
+		layoutDisplay === 'flex' &&
 		isActiveField(blockeraFlexWrap) &&
 		!isEquals(
 			_attributes.blockeraFlexWrap,
@@ -279,7 +392,7 @@ export const LayoutStyles = ({
 	}
 
 	if (
-		_attributes.blockeraDisplay === 'flex' &&
+		layoutDisplay === 'flex' &&
 		isActiveField(blockeraAlignContent) &&
 		_attributes.blockeraAlignContent !==
 			attributes.blockeraAlignContent.default
@@ -328,12 +441,12 @@ export const LayoutStyles = ({
 
 		switch (gapType) {
 			case 'margin':
-				gapSuffixClass = '> * + *';
+				gapSuffixClass = '.is-layout-constrained > * + *';
 				break;
 
 			case 'gap-and-margin':
-				if (!['flex', 'grid'].includes(_attributes.blockeraDisplay)) {
-					gapSuffixClass = '> * + *';
+				if (!['flex', 'grid'].includes(layoutDisplay)) {
+					gapSuffixClass = '.is-layout-constrained > * + *';
 				}
 				break;
 		}
@@ -382,7 +495,7 @@ export const LayoutStyles = ({
 				 */
 				if (
 					gapType === 'gap-and-margin' &&
-					['flex', 'grid'].includes(_attributes.blockeraDisplay)
+					['flex', 'grid'].includes(layoutDisplay)
 				) {
 					removeMarginBlockStart = true;
 				}
@@ -432,7 +545,7 @@ export const LayoutStyles = ({
 				 */
 				if (
 					gapType === 'gap-and-margin' &&
-					['flex', 'grid'].includes(_attributes.blockeraDisplay)
+					['flex', 'grid'].includes(layoutDisplay)
 				) {
 					removeMarginBlockStart = true;
 				}
@@ -492,7 +605,10 @@ export const LayoutStyles = ({
 			query: 'blockeraGap',
 			support: 'blockeraGap',
 			fallbackSupportId: getBlockSupportFallback(supports, 'blockeraGap'),
-			suffixClass: blockName === 'core/columns' ? ' > *' : ' > * + *',
+			suffixClass:
+				blockName === 'core/columns'
+					? '.is-layout-constrained > *'
+					: '.is-layout-constrained > * + *',
 		});
 
 		styleGroup.push({

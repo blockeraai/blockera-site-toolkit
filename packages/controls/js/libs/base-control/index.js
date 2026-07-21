@@ -22,6 +22,7 @@ export default function BaseControl({
 	className,
 	controlName = 'general',
 	style = {},
+	controlProps = {},
 	...props
 }: BaseControlProps): MixedElement {
 	let cssColumns = '';
@@ -32,7 +33,10 @@ export default function BaseControl({
 	}
 
 	if (label === '' && columns === '') {
-		if (controlName === 'empty') {
+		const shouldWrapControl =
+			controlName === 'empty' || (style && Object.keys(style).length > 0);
+
+		if (shouldWrapControl) {
 			return (
 				<div
 					className={fieldsClassNames(
@@ -42,8 +46,12 @@ export default function BaseControl({
 					)}
 					style={{ ...style, gridTemplateColumns: cssColumns || '' }}
 					data-cy="base-control"
+					{...props}
 				>
-					<div className={fieldsInnerClassNames('control')}>
+					<div
+						className={fieldsInnerClassNames('control')}
+						{...controlProps}
+					>
 						{children}
 					</div>
 				</div>
@@ -65,7 +73,9 @@ export default function BaseControl({
 				</div>
 			)}
 
-			<div className={fieldsClassNames('control')}>{children}</div>
+			<div className={fieldsClassNames('control')} {...controlProps}>
+				{children}
+			</div>
 		</div>
 	);
 }

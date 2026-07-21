@@ -1,16 +1,16 @@
 import {
 	savePage,
 	createPost,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 } from '@blockera/dev-cypress/js/helpers';
 
-describe('Children Wrap → Functionality', () => {
+describe('Flex Wrap → Functionality', () => {
 	beforeEach(() => {
 		createPost();
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 
 		cy.getParentContainer('Display').within(() => {
 			cy.getByAriaLabel('Flex').click();
@@ -18,13 +18,15 @@ describe('Children Wrap → Functionality', () => {
 	});
 
 	it('functionality of flex-wrap', () => {
-		cy.getParentContainer('Children Wrap').within(() => {
+		cy.openFeatureMoreSettings('more-layout-settings');
+		cy.selectFeature('Flex Children Wrap');
+		cy.getParentContainer('Flex Wrap').within(() => {
 			cy.getByAriaLabel('Wrap').click();
 		});
 
 		cy.getBlock('core/paragraph').should('have.css', 'flex-wrap', 'wrap');
 
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect({
 				val: 'wrap',
 				reverse: false,
@@ -32,7 +34,7 @@ describe('Children Wrap → Functionality', () => {
 		});
 
 		// reverse
-		cy.getByAriaLabel('Reverse Children Wrapping').click();
+		cy.getByAriaLabel('Reverse Flex Children Wrapping').click();
 
 		cy.getBlock('core/paragraph').should(
 			'have.css',
@@ -40,7 +42,7 @@ describe('Children Wrap → Functionality', () => {
 			'wrap-reverse'
 		);
 
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect({
 				val: 'wrap',
 				reverse: true,

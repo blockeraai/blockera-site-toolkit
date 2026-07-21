@@ -13,26 +13,22 @@ import { useMedia } from '../hooks';
 /**
  * Internal dependencies
  */
+import { Style } from './style';
 import type { MediaQueryProps } from './types';
-import { isBaseBreakpoint } from '../../canvas-editor/components/breakpoints/helpers';
+import { isBaseBreakpoint } from '../../editor/header-ui';
 
 export const MediaQuery = ({
 	breakpoint,
-	children,
+	declarations,
 }: MediaQueryProps): Element<any> => {
 	const { [breakpoint]: media } = useMedia();
 
 	return (
 		<>
-			{isBaseBreakpoint(breakpoint) && children}
-			{media && (
-				<>
-					{media}
-					{'{'}
-					{children}
-					{'}'}
-				</>
+			{isBaseBreakpoint(breakpoint) && (
+				<Style declarations={declarations} />
 			)}
+			{media && <Style declarations={`${media}{${declarations}}`} />}
 		</>
 	);
 };
