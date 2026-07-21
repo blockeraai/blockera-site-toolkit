@@ -1,17 +1,20 @@
-
 .blockera-control-border-radius {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
 
 	.blockera-control-border-header {
-		display: flex;
+		display: grid;
 		gap: 8px;
 		align-items: center;
 		justify-content: flex-end;
+		grid-template-columns: 1fr 2fr;
 
 		.blockera-control-input {
-			width: 122px;
+			width: 100% !important;
+			width: -moz-available !important;
+			width: -webkit-fill-available !important;
+			width: stretch !important;
 		}
 	}
 
@@ -69,6 +72,7 @@
 			left: 50%;
 			bottom: 25px;
 			border-right: 1px dashed #e2e2e2;
+			margin-left: -0.5px;
 		}
 
 		&::after {

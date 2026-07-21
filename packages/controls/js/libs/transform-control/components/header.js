@@ -1,15 +1,15 @@
 // @flow
 /**
- * WordPress dependencies
+ * External dependencies
  */
-import { memo } from '@wordpress/element';
+import type { MixedElement } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Blockera dependencies
  */
-import { controlInnerClassNames } from '@blockera/classnames';
 import { Icon } from '@blockera/icons';
+import { controlInnerClassNames } from '@blockera/classnames';
 
 /**
  * Internal dependencies
@@ -31,7 +31,7 @@ const RepeaterItemHeader = ({
 	setOpen: (state: boolean) => void,
 	children: any,
 	isOpenPopoverEvent: (event: MouseEvent) => boolean,
-}) => {
+}): MixedElement => {
 	let label, icon, value;
 
 	switch (item.type) {
@@ -82,7 +82,7 @@ const RepeaterItemHeader = ({
 			className={controlInnerClassNames('repeater-group-header')}
 			onClick={(event) => isOpenPopoverEvent(event) && setOpen(!isOpen)}
 			aria-label={sprintf(
-				// translators: it's the aria label for repeater item
+				// translators: %d: The item number (1-based index)
 				__('Item %d', 'blockera'),
 				itemId + 1
 			)}
@@ -105,4 +105,4 @@ const RepeaterItemHeader = ({
 };
 
 // $FlowFixMe
-export default memo(RepeaterItemHeader);
+export default RepeaterItemHeader;

@@ -9,12 +9,16 @@ import type { MixedElement } from 'react';
 /**
  * Blockera dependencies
  */
-import { controlClassNames } from '@blockera/classnames';
+import {
+	controlClassNames,
+	componentInnerClassNames,
+} from '@blockera/classnames';
+import { Icon } from '@blockera/icons';
 
 /**
  * Internal dependencies
  */
-import { PromotionPopover } from '../';
+import { UpgradePrompt, Flex } from '../';
 import Fields from './components/fields';
 import RepeaterControl from '../repeater-control';
 import type { FilterControlProps } from './types';
@@ -57,19 +61,31 @@ export default function FilterControl({
 		}
 
 		return (
-			<PromotionPopover
-				heading={__('Multiple Filters', 'blockera')}
-				featuresList={[
-					__('Multiple filters', 'blockera'),
-					__('Advanced filter effects', 'blockera'),
-					__('Advanced features', 'blockera'),
-					__('Premium blocks', 'blockera'),
-				]}
+			<UpgradePrompt
+				lockedFeature={{
+					icon: <Icon icon="layers" iconSize={26} />,
+					title: __('Multiple Filter Layers', 'blockera'),
+					description: (
+						<Flex direction="column" gap="6px">
+							{__('Stack unlimited filter layers', 'blockera')}
+							<Flex direction="row" gap="6px">
+								<span className="blockera-free-plan-hint">
+									{__('Free: 1 layer', 'blockera')}
+								</span>
+								<span className="blockera-pro-plan-hint">
+									{__('Pro: Unlimited layers', 'blockera')}
+								</span>
+							</Flex>
+						</Flex>
+					),
+				}}
 				isOpen={isOpen}
 				onClose={onClose}
+				type="modal"
 			/>
 		);
 	},
+	withoutValueAddons = false,
 	...props
 }: FilterControlProps): MixedElement {
 	function valueCleanup(item: Object) {
@@ -123,6 +139,9 @@ export default function FilterControl({
 			id={id}
 			className={controlClassNames('filter', className)}
 			popoverTitle={popoverTitle || __('Filter Effects', 'blockera')}
+			popoverClassName={componentInnerClassNames(
+				'popover-filter-control'
+			)}
 			label={label || __('Filters', 'blockera')}
 			labelPopoverTitle={
 				labelPopoverTitle || __('Filter Effects', 'blockera')
@@ -149,6 +168,9 @@ export default function FilterControl({
 					/>
 				)
 			}
+			{...(!withoutValueAddons
+				? { controlAddonTypes: ['variable'], variableTypes: ['filter'] }
+				: {})}
 			repeaterItemHeader={RepeaterItemHeader}
 			repeaterItemChildren={Fields}
 			defaultRepeaterItemValue={defaultRepeaterItemValue}

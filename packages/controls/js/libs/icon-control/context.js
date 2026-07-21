@@ -16,6 +16,9 @@ const IconContext = createContext({
 	isCurrentIcon: () => {
 		return false;
 	},
+	recentIcons: [],
+	removeRecentIcon: () => {},
+	clearRecentIcons: () => {},
 });
 
 const IconContextProvider = ({ children, ...props }) => {

@@ -8,16 +8,17 @@ import type { MixedElement } from 'react';
 /**
  * Blockera dependencies
  */
-import { controlClassNames } from '@blockera/classnames';
 import { Icon } from '@blockera/icons';
+import { controlClassNames, classNames } from '@blockera/classnames';
 
 /**
  * Internal dependencies
  */
 import BaseControl from '../base-control';
 import { useControlContext } from '../../context';
-import { InputControl, SelectControl, ColorControl } from '../index';
 import type { BorderControlProps } from './types';
+import { setValueAddon, useValueAddon } from '../../';
+import { InputControl, ColorControl, SelectControl } from '../index';
 
 export default function BorderControl({
 	linesDirection = 'horizontal',
@@ -27,6 +28,7 @@ export default function BorderControl({
 	label,
 	labelPopoverTitle,
 	labelDescription,
+	labelProps: propsForLabelControl = {},
 	columns,
 	defaultValue = {
 		width: '0px',
@@ -41,6 +43,8 @@ export default function BorderControl({
 	__isWidthFocused,
 	__isColorFocused,
 	__isStyleFocused,
+	controlAddonTypes,
+	variableTypes,
 }: BorderControlProps): MixedElement {
 	const {
 		value,
@@ -56,6 +60,30 @@ export default function BorderControl({
 		defaultValue,
 	});
 
+	const resolvedControlAddonTypes = controlAddonTypes ?? ['variable'];
+	const resolvedVariableTypes = variableTypes ?? ['border'];
+
+	const {
+		valueAddonClassNames,
+		isSetValueAddon,
+		ValueAddonControl,
+		ValueAddonPointer,
+	} = useValueAddon({
+		types: resolvedControlAddonTypes,
+		value,
+		setValue: (newValue: any): void =>
+			setValueAddon(newValue, setValue, defaultValue),
+		variableTypes: resolvedVariableTypes,
+		onChange: setValue,
+		size: 'extra-small',
+		presetInterface: resolvedVariableTypes.includes('border')
+			? {
+					variableTypes: resolvedVariableTypes,
+					id,
+				}
+			: undefined,
+	});
+
 	const labelProps = {
 		value,
 		singularId,
@@ -69,14 +97,41 @@ export default function BorderControl({
 		resetToDefault,
 		mode: 'advanced',
 		path: getControlPath(attribute, id),
+		...propsForLabelControl,
 	};
+
+	if (isSetValueAddon()) {
+		return (
+			<BaseControl
+				label=""
+				columns={columns}
+				controlName={field}
+				className={className}
+			>
+				<div
+					className={controlClassNames(
+						'border',
+						className,
+						valueAddonClassNames
+					)}
+					style={{
+						...style,
+						display: 'block',
+					}}
+					data-test="border-control-component"
+				>
+					<ValueAddonControl />
+				</div>
+			</BaseControl>
+		);
+	}
 
 	return (
 		<BaseControl
 			label={label}
 			columns={columns}
 			controlName={field}
-			className={className}
+			className={classNames(className, valueAddonClassNames)}
 			{...labelProps}
 		>
 			<div
@@ -107,7 +162,6 @@ export default function BorderControl({
 					data-test="border-control-width"
 					placeholder="0"
 				/>
-
 				<div className={controlClassNames('border-color-wrapper')}>
 					<ColorControl
 						id={getId(id, 'color')}
@@ -126,7 +180,6 @@ export default function BorderControl({
 						variableTypes={['color']}
 					/>
 				</div>
-
 				<SelectControl
 					id={getId(id, 'style')}
 					className={__isStyleFocused ? 'is-focused' : ''}
@@ -186,6 +239,7 @@ export default function BorderControl({
 					}}
 					defaultValue={defaultValue && defaultValue.style}
 				/>
+				<ValueAddonPointer />
 			</div>
 		</BaseControl>
 	);

@@ -3,6 +3,7 @@
  * External dependencies
  */
 import type { Element } from 'react';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Blockera dependencies
@@ -25,10 +26,11 @@ import {
 	VarDeleted,
 	DVSettingsAdvanced,
 } from '../index';
-import { isValid } from '../../utils';
+import { hasThemeJsonPlainPresetSlug, isValid } from '../../utils';
 import RemoveIcon from '../../icons/remove';
 import type { ValueAddonControlProps } from './types';
 import DynamicValueIcon from '../../icons/dynamic-value';
+import { Tooltip } from '../../../';
 
 export default function ({
 	controlProps,
@@ -40,8 +42,9 @@ export default function ({
 	pickerProps: Object,
 }): Element<any> {
 	const isVarActive =
-		isValid(controlProps.value) &&
-		controlProps.value?.valueType === 'variable';
+		(isValid(controlProps.value) &&
+			controlProps.value?.valueType === 'variable') ||
+		hasThemeJsonPlainPresetSlug(controlProps.themeJsonPlainPresetSlug);
 	const isDVActive =
 		isValid(controlProps.value) &&
 		controlProps.value?.valueType === 'dynamic-value';
@@ -50,7 +53,7 @@ export default function ({
 		handleVariableModal,
 		handleDynamicValueModal,
 	}: Object): Element<any> => {
-		const pointers = [];
+		const pointers: Array<Element<any>> = [];
 
 		if (
 			controlProps.types.includes('dynamic-value') &&
@@ -67,7 +70,9 @@ export default function ({
 							'open-value-addon',
 						controlProps.isDeletedDV && 'is-value-addon-deleted'
 					)}
-					onClick={handleDynamicValueModal}
+					onMouseDown={(e: SyntheticMouseEvent<EventTarget>) => {
+						handleDynamicValueModal(e);
+					}}
 					{...pointerProps}
 				>
 					<DynamicValueIcon
@@ -82,32 +87,53 @@ export default function ({
 
 		if (controlProps.types.includes('variable')) {
 			pointers.push(
-				<div
-					key={'variable-value-addon-pointer'}
-					className={controlInnerClassNames(
-						'value-addon-pointer',
-						'var-pointer',
-						isVarActive && 'active-value-addon',
-						controlProps.isOpen.startsWith('var-') &&
-							'open-value-addon',
-						controlProps.isDeletedVar && 'is-value-addon-deleted'
-					)}
-					onClick={handleVariableModal}
-					{...pointerProps}
+				<Tooltip
+					text={
+						!isVarActive
+							? __('Choose a variable', 'blockera')
+							: __('Remove variable', 'blockera')
+					}
+					style={{
+						'--tooltip-bg': !isVarActive
+							? 'var(--blockera-value-addon-var-color)'
+							: '#e20b0b',
+					}}
+					delay={400}
 				>
-					<Icon
-						icon="variable"
-						iconSize="16"
-						data-cy="value-addon-btn-open"
-						className={controlInnerClassNames('var-pointer-icon')}
-					/>
+					<div
+						key={'variable-value-addon-pointer'}
+						className={controlInnerClassNames(
+							'value-addon-pointer',
+							'var-pointer',
+							isVarActive && 'active-value-addon',
+							controlProps.isOpen.startsWith('var-') &&
+								'open-value-addon',
+							(controlProps.isDeletedVar ||
+								controlProps.isDeletedPlainThemeJsonPreset) &&
+								'is-value-addon-deleted'
+						)}
+						onMouseDown={(e: SyntheticMouseEvent<EventTarget>) => {
+							handleVariableModal(e);
+						}}
+						{...pointerProps}
+					>
+						<Icon
+							icon="variable"
+							iconSize="16"
+							data-cy="value-addon-btn-open"
+							data-test="value-addon-btn-open"
+							className={controlInnerClassNames(
+								'var-pointer-icon'
+							)}
+						/>
 
-					<Icon
-						icon="close-small"
-						data-cy="value-addon-btn-remove"
-						className={controlInnerClassNames('remove-icon')}
-					/>
-				</div>
+						<Icon
+							icon="close-small"
+							data-cy="value-addon-btn-remove"
+							className={controlInnerClassNames('remove-icon')}
+						/>
+					</div>
+				</Tooltip>
 			);
 		}
 
@@ -175,18 +201,22 @@ export default function ({
 						controlProps.handleOnClickRemove(e);
 					} else {
 						controlProps.setOpen('dv-picker');
-						if (pickerProps.onShown) pickerProps.onShown();
+						if (pickerProps.onShown) {
+							pickerProps.onShown();
+						}
 					}
 
 					e.stopPropagation();
 				}}
 				handleVariableModal={(e: SyntheticMouseEvent<EventTarget>) => {
-					if (isValid(controlProps.value)) {
+					if (isVarActive) {
 						controlProps.setOpen('');
 						controlProps.handleOnClickRemove(e);
 					} else {
 						controlProps.setOpen('var-picker');
-						if (pickerProps.onShown) pickerProps.onShown();
+						if (pickerProps.onShown) {
+							pickerProps.onShown();
+						}
 					}
 
 					e.stopPropagation();

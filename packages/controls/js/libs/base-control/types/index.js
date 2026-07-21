@@ -11,4 +11,6 @@ export type BaseControlProps = {
 	...LabelControlProps,
 	controlName?: 'empty' | 'general' | string,
 	style?: Object,
+	labelClassName?: string,
+	controlProps?: any,
 };

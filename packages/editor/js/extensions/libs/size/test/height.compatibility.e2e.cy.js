@@ -24,8 +24,12 @@ describe('Height → WP Compatibility', () => {
 			// Select target block
 			cy.getBlock('core/image').click();
 
+			cy.getByAriaControls('styles-view').click();
+
 			// add alias to the feature container
 			cy.getParentContainer('Height').as('container');
+
+			cy.addNewTransition();
 
 			//
 			// Test 1: WP data to Blockera
@@ -78,6 +82,8 @@ describe('Height → WP Compatibility', () => {
 
 			// Select target block
 			cy.getBlock('core/image').click();
+
+			cy.getByAriaControls('styles-view').click();
 
 			// add alias to the feature container
 			cy.getParentContainer('Height').as('container');
@@ -146,6 +152,8 @@ describe('Height → WP Compatibility', () => {
 			// add alias to the feature container
 			cy.getParentContainer('Height').as('container');
 
+			cy.addNewTransition();
+
 			//
 			// Test 1: WP data to Blockera
 			//
@@ -199,6 +207,8 @@ describe('Height → WP Compatibility', () => {
 			// add alias to the feature container
 			cy.getParentContainer('Height').as('container');
 
+			cy.addNewTransition();
+
 			//
 			// Test 1: Blockera dat to WP
 			//
@@ -239,6 +249,8 @@ describe('Height → WP Compatibility', () => {
 
 			// add alias to the feature container
 			cy.getParentContainer('Height').as('container');
+
+			cy.setInputFieldValue('Width', 'Size', 100);
 
 			//
 			// Test 1: WP data to Blockera
@@ -282,6 +294,40 @@ describe('Height → WP Compatibility', () => {
 			});
 		});
 
+		it('Spacing preset variable (WP → Blockera)', () => {
+			appendBlocks(
+				`<!-- wp:spacer {"height":"var(--wp--preset--spacing--30, 20px)"} -->
+<div style="height:var(--wp--preset--spacing--30, 20px)" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->`
+			);
+
+			cy.getBlock('core/spacer').click({ force: true });
+
+			cy.setInputFieldValue('Width', 'Size', 100);
+
+			getWPDataObject().then((data) => {
+				const heightVA = getSelectedBlock(data, 'blockeraHeight');
+
+				expect(heightVA).to.deep.include({
+					isValueAddon: true,
+					valueType: 'variable',
+				});
+				expect(heightVA.settings).to.deep.include({
+					id: '30',
+					type: 'spacing',
+					var: '--wp--preset--spacing--30',
+					value: '20px',
+				});
+			});
+
+			getWPDataObject().then((data) => {
+				const wpHeight = getSelectedBlock(data, 'height');
+
+				expect(wpHeight).to.be.a('string');
+				expect(wpHeight).to.include('--wp--preset--spacing--30');
+			});
+		});
+
 		it('Use WP not supported value', () => {
 			appendBlocks(
 				`<!-- wp:spacer {"height":"30%"} -->
@@ -294,6 +340,8 @@ describe('Height → WP Compatibility', () => {
 
 			// add alias to the feature container
 			cy.getParentContainer('Height').as('container');
+
+			cy.setInputFieldValue('Width', 'Size', 100);
 
 			//
 			// Test 1: Blockera dat to WP
