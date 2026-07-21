@@ -1,5 +1,5 @@
 import {
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	createPost,
 	setBlockState,
@@ -12,7 +12,7 @@ describe('Toggle Select Control label testing (Overflow)', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('should display changed value on Overflow -> Normal -> Desktop', () => {
@@ -353,7 +353,7 @@ describe('Toggle Select Control label testing (Overflow)', () => {
 					});
 
 					// Assert store data
-					getWPDataObject().then((data) => {
+					assertBlockData((data) => {
 						expect({}).to.be.deep.eq(
 							getSelectedBlock(data, 'blockeraBlockStates').normal
 								.breakpoints.tablet.attributes
@@ -389,7 +389,7 @@ describe('Toggle Select Control label testing (Overflow)', () => {
 					});
 
 					// Assert store data
-					getWPDataObject().then((data) => {
+					assertBlockData((data) => {
 						expect({}).to.be.deep.eq(
 							getSelectedBlock(data, 'blockeraBlockStates').hover
 								.breakpoints.tablet.attributes
@@ -425,7 +425,7 @@ describe('Toggle Select Control label testing (Overflow)', () => {
 					});
 
 					// Assert store data
-					getWPDataObject().then((data) => {
+					assertBlockData((data) => {
 						expect('').to.be.deep.eq(
 							getSelectedBlock(data, 'blockeraOverflow')
 						);
@@ -464,7 +464,7 @@ describe('Toggle Select Control label testing (Overflow)', () => {
 					cy.checkStateGraph('Size', 'Overflow', {});
 
 					// Assert store data
-					getWPDataObject().then((data) => {
+					assertBlockData((data) => {
 						expect({}).to.be.deep.eq(
 							getSelectedBlock(data, 'blockeraBlockStates').hover
 								.breakpoints.desktop.attributes
@@ -528,7 +528,7 @@ describe('Toggle Select Control label testing (Overflow)', () => {
 			});
 
 			// Assert store data
-			getWPDataObject().then((data) => {
+			assertBlockData((data) => {
 				expect('scroll').to.be.eq(
 					getSelectedBlock(data, 'blockeraOverflow')
 				);
@@ -637,7 +637,7 @@ describe('Toggle Select Control label testing (Overflow)', () => {
 			});
 
 			// Assert store data
-			getWPDataObject().then((data) => {
+			assertBlockData((data) => {
 				expect('').to.be.eq(getSelectedBlock(data, 'blockeraOverflow'));
 
 				expect(undefined).to.be.deep.eq(
@@ -801,7 +801,7 @@ describe('Toggle Select Control label testing (Overflow)', () => {
 					cy.checkStateGraph('Size', 'Overflow', {});
 
 					// Assert store data
-					getWPDataObject().then((data) => {
+					assertBlockData((data) => {
 						expect('').to.be.deep.eq(
 							getSelectedBlock(data, 'blockeraOverflow')
 						);
@@ -904,7 +904,7 @@ describe('Toggle Select Control label testing (Overflow)', () => {
 			cy.checkStateGraph('Size', 'Overflow', { desktop: ['Normal'] });
 
 			// Assert store data
-			getWPDataObject().then((data) => {
+			assertBlockData((data) => {
 				expect('scroll').to.be.equal(
 					getSelectedBlock(data, 'blockeraOverflow')
 				);
@@ -1044,7 +1044,7 @@ describe('Toggle Select Control label testing (Overflow)', () => {
 			});
 
 			// Assert store data
-			getWPDataObject().then((data) => {
+			assertBlockData((data) => {
 				expect('').to.be.equal(
 					getSelectedBlock(data, 'blockeraOverflow')
 				);

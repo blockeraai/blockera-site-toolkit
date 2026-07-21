@@ -3,7 +3,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { memo, useContext } from '@wordpress/element';
+import type { MixedElement } from 'react';
+import { useContext } from '@wordpress/element';
 
 /**
  * Blockera dependencies
@@ -25,7 +26,7 @@ const Fields = ({
 }: {
 	itemId: number,
 	item: TransformControlRepeaterItemValue,
-}) => {
+}): MixedElement => {
 	const {
 		controlInfo: { name: controlId },
 		dispatch: { changeRepeaterItem },
@@ -512,4 +513,4 @@ const Fields = ({
 };
 
 // $FlowFixMe
-export default memo(Fields);
+export default Fields;

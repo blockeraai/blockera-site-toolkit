@@ -69,7 +69,11 @@ export type TPopoverProps = {
 	 */
 	animate?: boolean,
 	/**
-	 * The distance (in px) between the anchor and the popover.
+	 * Horizontal gap (in px) between the popover and the InspectorControls
+	 * sidebar edge when opened inside the inspector. Also used as the base
+	 * offset for other placements and contexts.
+	 *
+	 * @default 25
 	 */
 	offset?: number,
 	closeButton?: boolean,
@@ -83,4 +87,9 @@ export type TPopoverProps = {
 	 * The element that the popover should be anchored to.
 	 */
 	anchor?: HTMLElement,
+	/**
+	 * Override default focus-outside dismiss behavior.
+	 */
+	onFocusOutside?: (event: FocusEvent) => void,
+	style?: Object,
 };

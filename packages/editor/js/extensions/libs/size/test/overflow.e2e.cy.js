@@ -3,7 +3,7 @@
  */
 import {
 	savePage,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 	createPost,
@@ -14,7 +14,7 @@ describe('Overflow → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('should update overflow to visible', () => {
@@ -29,7 +29,7 @@ describe('Overflow → Functionality', () => {
 		cy.getBlock('core/paragraph').should('have.css', 'overflow', 'visible');
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('visible').to.be.equal(
 				getSelectedBlock(data, 'blockeraOverflow')
 			);
@@ -46,7 +46,7 @@ describe('Overflow → Functionality', () => {
 		cy.getBlock('core/paragraph').should('have.css', 'overflow', 'hidden');
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('hidden').to.be.equal(
 				getSelectedBlock(data, 'blockeraOverflow')
 			);
@@ -63,7 +63,7 @@ describe('Overflow → Functionality', () => {
 		cy.getBlock('core/paragraph').should('have.css', 'overflow', 'scroll');
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('scroll').to.be.equal(
 				getSelectedBlock(data, 'blockeraOverflow')
 			);

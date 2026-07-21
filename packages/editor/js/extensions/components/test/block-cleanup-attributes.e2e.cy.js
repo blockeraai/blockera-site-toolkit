@@ -4,7 +4,7 @@
 import {
 	createPost,
 	appendBlocks,
-	getWPDataObject,
+	assertBlockData,
 	getEditorContent,
 	getSelectedBlock,
 } from '@blockera/dev-cypress/js/helpers';
@@ -23,7 +23,7 @@ describe('BlockBase testing ...', () => {
 	});
 
 	it('should not exists any value of blockera attributes on selected block when not changed anything', () => {
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect(
 				'<!-- wp:paragraph -->\n' +
 					'<p>test</p>\n' +
@@ -33,10 +33,12 @@ describe('BlockBase testing ...', () => {
 	});
 
 	it('should exists blockeraPropsId, blockeraCompatId, blockeraFontColor, and blockera classnames values on selected block when changed text-color control', () => {
-		// Set value.
-		cy.setColorControlValue('Text Color', 'aaa');
+		cy.getByAriaControls('styles-view').click();
 
-		getWPDataObject().then((data) => {
+		// Set value.
+		cy.setColorControlValue('Text Color', 'aaaaaa');
+
+		assertBlockData((data) => {
 			const blockAttributes = getSelectedBlock(data)?.attributes;
 
 			expect(true).to.be.equal(

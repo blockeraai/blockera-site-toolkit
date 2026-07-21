@@ -17,6 +17,22 @@ class Setup {
 	static $instance = null;
 
 	/**
+	 * Store plugin path.
+	 *
+	 * @var string $plugin_path the plugin path.
+	 */
+	protected string $plugin_path;
+
+	/**
+	 * Request-level cache of block.php customization overlays keyed by block type.
+	 *
+	 * Null means no block.php; array means selectors/supports/attributes to merge.
+	 *
+	 * @var array<string, array<string, array>|null>
+	 */
+	private array $block_overlays = [];
+
+	/**
 	 * Get instance.
 	 *
 	 * @return self the instance.
@@ -35,6 +51,18 @@ class Setup {
 	 */
 	protected function __construct() {
 		
+	}
+
+	/**
+	 * Set plugin path.
+	 *
+	 * @param string $plugin_path the plugin path.
+	 *
+	 * @return void
+	 */
+	public function setPluginPath( string $plugin_path): void {
+
+		$this->plugin_path = $plugin_path;
 	}
 
     /**
@@ -63,6 +91,30 @@ class Setup {
 		$this->available_blocks = $blocks;
 	}
 
+	/**
+	 * Whether all block.php overlays were preloaded for this request.
+	 *
+	 * @var bool
+	 */
+	private bool $overlays_warmed = false;
+
+	/**
+	 * Preload every Blockera block.php overlay once before register_block_type_args runs.
+	 *
+	 * @return void
+	 */
+	public function warmBlockCustomizationOverlays(): void {
+		if ( $this->overlays_warmed || empty( $this->available_blocks ) ) {
+			return;
+		}
+
+		$this->overlays_warmed = true;
+
+		foreach ( array_keys( $this->available_blocks ) as $block_type ) {
+			$this->getBlockCustomizationOverlay( (string) $block_type );
+		}
+	}
+
     /**
      * Register block extra arguments for third party block types.
      *
@@ -72,22 +124,15 @@ class Setup {
      * @return array the registered block arguments.
      */
     public function registerBlock( array $args, string $block_type): array {
-
-        if (! in_array($block_type, $this->available_blocks, true)) {
-
+        if (! isset($this->available_blocks[ $block_type ])) {
             return $args;
         }
 
-        // Merging blockera shared block attributes.
-        $args = array_merge(
-            $args,
-            [
-                'attributes' => array_merge(
-                    $args['attributes'] ?? [],
-                    blockera_get_shared_block_attributes()
-                ),
-            ]
-        );
+		$this->warmBlockCustomizationOverlays();
+
+        if ( ! isset( $args['attributes']['blockeraPropsId'] ) ) {
+			$args['attributes'] = array_merge( $args['attributes'] ?? [], blockera_get_shared_block_attributes() );
+		}
 
         return $this->getCustomizedBlock($block_type, $args);
     }
@@ -95,28 +140,79 @@ class Setup {
     /**
      * Get customized block type arguments.
      *
+     * Loads each block.php once, caches the Blockera overlay (selectors/supports/attributes),
+     * then merges into the live $args. Avoids re-executing block.php / shared inners on
+     * repeated register_block_type_args / editor attribute registration calls.
+     *
      * @param string $block_type the block type name.
      * @param array  $args       the block type previous arguments.
      *
      * @return array the customized block type arguments.
      */
     public function getCustomizedBlock( string $block_type, array $args): array {
+		$overlay = $this->getBlockCustomizationOverlay( $block_type );
 
-        $this->setBlockDirectoryPath($block_type);
+		if ( null === $overlay || [] === $overlay ) {
+			return $args;
+		}
 
-        $blockFile = sprintf(
-            '%1$sblockera/blocks-core/php/%2$s/block.php',
-            blockera_core_config('app.vendor_path'),
-            $this->getBlockDirectoryPath()
-        );
+		foreach ( $overlay as $key => $values ) {
+			$args[ $key ] = array_merge( $args[ $key ] ?? [], $values );
+		}
 
-        if (! file_exists($blockFile)) {
-
-            return $args;
-        }
-
-        return require $blockFile;
+		return $args;
     }
+
+	/**
+	 * Load and memoize the Blockera-only arg overlay for a block type.
+	 *
+	 * @param string $block_type Block name (e.g. core/paragraph).
+	 * @return array<string, array>|null Overlay keys, or null when block.php is missing.
+	 */
+	private function getBlockCustomizationOverlay( string $block_type ): ?array {
+		if ( array_key_exists( $block_type, $this->block_overlays ) ) {
+			return $this->block_overlays[ $block_type ];
+		}
+
+		$this->setBlockDirectoryPath( $block_type );
+		$block_file = $this->plugin_path . 'blockera/blocks-core/php/' . $this->block_dir_path . '/block.php';
+
+		if ( ! is_file( $block_file ) ) {
+			$this->block_overlays[ $block_type ] = null;
+			return null;
+		}
+
+		/*
+		 * Require in an isolated scope with empty base args so block.php returns only
+		 * Blockera additions (all current block.php files merge attributes/selectors/supports).
+		 */
+		$overlay = ( static function ( string $block_file ): array {
+			$args = [
+				'attributes' => [],
+				'selectors'  => [],
+				'supports'   => [],
+			];
+
+			$result = require $block_file;
+
+			if ( ! is_array( $result ) ) {
+				return [];
+			}
+
+			$overlay = [];
+			foreach ( [ 'attributes', 'selectors', 'supports' ] as $key ) {
+				if ( ! empty( $result[ $key ] ) && is_array( $result[ $key ] ) ) {
+					$overlay[ $key ] = $result[ $key ];
+				}
+			}
+
+			return $overlay;
+		} )( $block_file );
+
+		$this->block_overlays[ $block_type ] = $overlay;
+
+		return $overlay;
+	}
 
     /**
      * Get block directory relative path.
@@ -136,30 +232,31 @@ class Setup {
      * @return void
      */
     public function setBlockDirectoryPath( string $blockType): void {
-
-        $parsedName = explode('/', $blockType);
-
-        if (count($parsedName) < 2) {
-
+        $parsedName = explode('/', $blockType, 3);
+        
+		if (! isset($parsedName[1])) {
             $this->block_dir_path = $blockType;
-
             return;
         }
 
-        switch ($parsedName[0]) {
-
-            // WordPress Core Blocks.
-            case 'core':
-                $this->block_dir_path = sprintf('wordpress/%s', $parsedName[1]);
-                break;
-            case 'woocommerce':
-                $this->block_dir_path = sprintf('woocommerce/%s', $parsedName[1]);
-                break;
-			case 'blocksy':
-				$this->block_dir_path = sprintf( 'third-party/%s', str_replace( '/', '-', $blockType ) );
-				break;
-                // TODO: Implements other blocks in this here ...
+        $prefix = $parsedName[0];
+        
+		// WordPress Core Blocks.
+        if ('core' === $prefix) {
+            $this->block_dir_path = 'libs/wordpress/' . $parsedName[1];
+            return;
         }
+
+        if ('woocommerce' === $prefix) {
+            $this->block_dir_path = 'libs/woocommerce/' . $parsedName[1];
+            return;
+        }
+
+        if ('blocksy' === $prefix) {
+            $this->block_dir_path = 'libs/third-party/' . str_replace('/', '-', $blockType);
+            return;
+        }
+        // TODO: Implements other blocks in this here ...
     }
 
 }

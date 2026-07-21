@@ -3,7 +3,7 @@
  */
 import {
 	savePage,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 	createPost,
@@ -14,14 +14,14 @@ describe('Max Height → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('simple value - should update max-height when adding value', () => {
 		// activate max height
 		cy.activateMoreSettingsItem('More Size Settings', 'Max Height');
 
-		cy.getParentContainer('Max').within(() => {
+		cy.getParentContainer('Max Height').within(() => {
 			cy.get('input').type(200);
 		});
 
@@ -29,7 +29,7 @@ describe('Max Height → Functionality', () => {
 		cy.getBlock('core/paragraph').should('have.css', 'max-height', '200px');
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('200px').to.be.equal(
 				getSelectedBlock(data, 'blockeraMaxHeight')
 			);
@@ -40,7 +40,7 @@ describe('Max Height → Functionality', () => {
 
 		redirectToFrontPage();
 
-		cy.get('.blockera-block').should('have.css', 'max-height', '200px');
+		cy.get('p.blockera-block').should('have.css', 'max-height', '200px');
 	});
 
 	it('variable value', () => {
@@ -48,7 +48,7 @@ describe('Max Height → Functionality', () => {
 		cy.activateMoreSettingsItem('More Size Settings', 'Max Height');
 
 		// open value addon
-		cy.getParentContainer('Max').within(() => {
+		cy.getParentContainer('Max Height').within(() => {
 			cy.openValueAddon();
 		});
 
@@ -61,12 +61,12 @@ describe('Max Height → Functionality', () => {
 				.invoke('text')
 				.should(
 					'include',
-					'max-height: var(--wp--style--global--content-size)'
+					'max-height: var(--wp--style--global--content-size, 645px)'
 				);
 		});
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect({
 				settings: {
 					name: 'Content Width',
@@ -93,7 +93,7 @@ describe('Max Height → Functionality', () => {
 			.invoke('text')
 			.should(
 				'include',
-				'max-height: var(--wp--style--global--content-size)'
+				'max-height: var(--wp--style--global--content-size, 645px)'
 			);
 	});
 });

@@ -6,31 +6,38 @@ use Blockera\Editor\StyleDefinitions\Contracts\StandardDefinition;
 
 trait SimpleDefinitionTrait {
 
-    protected function css( array $setting): array {
+	protected function css( array $setting ): array {
 
-        $declaration = [];
-        $cssProperty = $setting['type'];
-
-		if (! $this instanceof StandardDefinition) {
-
-			return $declaration;
+		if ( ! $this instanceof StandardDefinition ) {
+			return [];
 		}
 
-		// Validate the setting before generating css if the method validate exists.
-		if (method_exists($this, 'validate') && ! $this->validate($setting)) {
-			
-			return $declaration;
+		$cssProperty = $setting['type'] ?? '';
+		if ( '' === $cssProperty ) {
+			return [];
 		}
 
-        if (empty($cssProperty) || empty($setting[ $cssProperty ]) || $this->getCssProperty() !== $cssProperty) {
+		// Cache method_exists per concrete class (Group A never defines validate()).
+		static $has_validate = [];
+		$class               = static::class;
+		if ( ! isset( $has_validate[ $class ] ) ) {
+			$has_validate[ $class ] = method_exists( $this, 'validate' );
+		}
+		if ( $has_validate[ $class ] && ! $this->validate( $setting ) ) {
+			return [];
+		}
 
-            return $declaration;
-        }
+		if ( $this->getCssProperty() !== $cssProperty ) {
+			return [];
+		}
 
-        $this->setDeclaration($cssProperty, blockera_get_value_addon_real_value($setting[ $cssProperty ]));
+		if ( ! isset( $setting[ $cssProperty ] ) || '' === $setting[ $cssProperty ] ) {
+			return [];
+		}
 
-        $this->setCss($this->declarations);
+		$this->setDeclaration( $cssProperty, blockera_get_value_addon_real_value( $setting[ $cssProperty ] ) );
+		$this->setCss( $this->declarations );
 
-        return $this->css;
-    }
+		return $this->css;
+	}
 }
