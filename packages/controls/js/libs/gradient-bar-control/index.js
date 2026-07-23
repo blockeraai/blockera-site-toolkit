@@ -14,16 +14,17 @@ import { controlClassNames } from '@blockera/classnames';
 /**
  * Internal dependencies
  */
-import { BaseControl } from '../index';
+import BaseControl from '../base-control';
 import { useControlContext } from '../../context';
-import { setValueAddon, useValueAddon } from '../../';
 import type { GradientBarControlProps } from './types';
+import { setValueAddon, useValueAddon } from '../../value-addons';
 
 export default function GradientBarControl({
 	id,
 	label,
 	labelPopoverTitle,
 	labelDescription,
+	labelProps: propsForLabelControl = {},
 	repeaterItem,
 	singularId,
 	columns,
@@ -50,6 +51,11 @@ export default function GradientBarControl({
 		onChange,
 	});
 
+	const normalizedVariableTypes =
+		typeof variableTypes === 'string'
+			? [variableTypes]
+			: variableTypes || [];
+
 	const {
 		valueAddonClassNames,
 		isSetValueAddon,
@@ -62,6 +68,14 @@ export default function GradientBarControl({
 			setValueAddon(newValue, setValue, defaultValue),
 		variableTypes,
 		onChange: setValue,
+		presetInterface:
+			normalizedVariableTypes.includes('linear-gradient') ||
+			normalizedVariableTypes.includes('radial-gradient')
+				? {
+						variableTypes: normalizedVariableTypes,
+						attribute,
+					}
+				: undefined,
 	});
 
 	const labelProps = {
@@ -77,6 +91,7 @@ export default function GradientBarControl({
 		resetToDefault,
 		mode: 'advanced',
 		path: getControlPath(attribute, id),
+		...propsForLabelControl,
 	};
 
 	if (isSetValueAddon()) {

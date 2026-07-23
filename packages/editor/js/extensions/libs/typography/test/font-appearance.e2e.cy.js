@@ -1,6 +1,6 @@
 import {
 	savePage,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 	openMoreFeaturesControl,
@@ -12,7 +12,7 @@ describe('Font Appearance → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('simple value', () => {
@@ -22,10 +22,14 @@ describe('Font Appearance → Functionality', () => {
 
 		//Check block
 		cy.getBlock('core/paragraph').should('have.css', 'font-weight', '800');
-		cy.getBlock('core/paragraph').should('have.css', 'font-style', 'normal');
+		cy.getBlock('core/paragraph').should(
+			'have.css',
+			'font-style',
+			'normal'
+		);
 
 		//Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('800').to.be.equal(
 				getSelectedBlock(data, 'blockeraFontAppearance')?.weight
 			);

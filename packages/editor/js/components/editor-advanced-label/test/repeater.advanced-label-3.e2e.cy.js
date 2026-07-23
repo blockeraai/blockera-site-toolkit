@@ -1,9 +1,8 @@
 import {
 	createPost,
 	setBlockState,
-	addBlockState,
 	setDeviceType,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 } from '@blockera/dev-cypress/js/helpers';
 
@@ -12,7 +11,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	const openBackgroundItem = (index = 0) => {
@@ -342,7 +341,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 			// Alias
 			cy.getByAriaLabel('Type').as('type');
 			cy.getByAriaLabel('Angle').as('angle');
-			cy.getByAriaLabel('Effect').as('effect');
+			cy.getByAriaLabel('Scroll Attachment').as('effect');
 
 			// Assert label in normal state
 			cy.get('@type').should('have.class', 'changed-in-normal-state');
@@ -403,7 +402,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 		cy.get('@angle').should('have.class', 'changed-in-other-state');
 
 		// Assert Effect label
-		cy.getByAriaLabel('Effect').should(
+		cy.getByAriaLabel('Scroll Attachment').should(
 			'have.class',
 			'changed-in-normal-state'
 		);
@@ -415,7 +414,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 		openBackgroundItem();
 
 		// Assert Effect label
-		cy.getByAriaLabel('Effect').should(
+		cy.getByAriaLabel('Scroll Attachment').should(
 			'have.class',
 			'changed-in-normal-state'
 		);
@@ -448,12 +447,12 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 				'changed-in-normal-state'
 			);
 
+			openBackgroundItem();
+
 			cy.getByAriaLabel('Size').should(
 				'not.have.class',
 				'changed-in-secondary-state'
 			);
-
-			openBackgroundItem();
 
 			// Assert control
 			cy.getByAriaLabel('Cover').should(
@@ -468,7 +467,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 			});
 
 			// Assert store data
-			getWPDataObject().then((data) => {
+			assertBlockData((data) => {
 				expect('custom').to.be.deep.eq(
 					getSelectedBlock(data, 'blockeraBackground')['image-0'][
 						'image-size'
@@ -541,7 +540,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 			});
 
 			// Assert store data
-			getWPDataObject().then((data) => {
+			assertBlockData((data) => {
 				expect('contain').to.be.deep.eq(
 					getSelectedBlock(data, 'blockeraBackground')['image-0'][
 						'image-size'
@@ -610,7 +609,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 						);
 
 						// Assert store data
-						getWPDataObject().then((data) => {
+						assertBlockData((data) => {
 							expect('repeat-x').to.be.deep.eq(
 								getSelectedBlock(data, 'blockeraBlockStates')
 									.normal.breakpoints.tablet.attributes
@@ -654,7 +653,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 						);
 
 						// Assert store data
-						getWPDataObject().then((data) => {
+						assertBlockData((data) => {
 							expect('repeat-x').to.be.deep.eq(
 								getSelectedBlock(data, 'blockeraBlockStates')
 									.hover.breakpoints.tablet.attributes
@@ -701,7 +700,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 						);
 
 						// Assert store data
-						getWPDataObject().then((data) => {
+						assertBlockData((data) => {
 							expect('repeat').to.be.deep.eq(
 								getSelectedBlock(data, 'blockeraBackground')[
 									'image-0'
@@ -743,7 +742,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 						);
 
 						// Assert store data
-						getWPDataObject().then((data) => {
+						assertBlockData((data) => {
 							expect('repeat').to.be.deep.eq(
 								getSelectedBlock(data, 'blockeraBlockStates')
 									.hover.breakpoints.desktop.attributes
@@ -870,7 +869,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 				);
 
 				// Assert store data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect('repeat-y').to.be.eq(
 						getSelectedBlock(data, 'blockeraBackground')['image-0'][
 							'image-repeat'
@@ -1013,7 +1012,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 				);
 
 				// Assert store data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect('repeat').to.be.eq(
 						getSelectedBlock(data, 'blockeraBackground')['image-0'][
 							'image-repeat'
@@ -1102,7 +1101,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 			cy.checkStateGraph('Background', 'Image & Gradient', {});
 
 			// Assert store data
-			getWPDataObject().then((data) => {
+			assertBlockData((data) => {
 				expect({}).to.be.deep.eq(
 					getSelectedBlock(data, 'blockeraBackground')
 				);
@@ -1151,7 +1150,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 			});
 
 			// Assert store data
-			getWPDataObject().then((data) => {
+			assertBlockData((data) => {
 				expect(1).to.be.deep.eq(
 					Object.keys(getSelectedBlock(data, 'blockeraBackground'))
 						.length
@@ -1269,7 +1268,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 				cy.checkStateGraph('', 'Repeat', {}, true);
 
 				// Assert store data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect('repeat').to.be.deep.eq(
 						getSelectedBlock(data, 'blockeraBackground')['image-0'][
 							'image-repeat'
@@ -1377,7 +1376,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 				cy.checkStateGraph('', 'Repeat', { desktop: ['Normal'] }, true);
 
 				// Assert store data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect('repeat-y').to.be.deep.eq(
 						getSelectedBlock(data, 'blockeraBackground')['image-0'][
 							'image-repeat'
@@ -1487,7 +1486,7 @@ describe('Repeater Control label testing (Image & Gradient)', () => {
 				cy.checkStateGraph('', 'Repeat', { desktop: ['Hover'] }, true);
 
 				// Assert store data
-				getWPDataObject().then((data) => {
+				assertBlockData((data) => {
 					expect('repeat').to.be.deep.eq(
 						getSelectedBlock(data, 'blockeraBackground')['image-0'][
 							'image-repeat'

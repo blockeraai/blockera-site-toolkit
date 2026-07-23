@@ -5,22 +5,25 @@
  */
 import { select } from '@wordpress/data';
 import { applyFilters } from '@wordpress/hooks';
+import { getBlockType } from '@wordpress/blocks';
 
 /**
  * Blockera dependencies
  */
-import { isEquals, isObject, mergeObject } from '@blockera/utils';
+import { isEquals, isEmpty, isObject, mergeObject } from '@blockera/utils';
 
 /**
  * Internal dependencies
  */
 import {
 	resetAllStates,
+	resetCurrentState,
 	memoizedBlockStates,
 	prepCustomCssClasses,
-	resetCurrentState,
+	stateResettingValues,
+	stateResettingInnerBlockValues,
 } from './helpers';
-import { isBaseBreakpoint } from '../../canvas-editor';
+import { isBaseBreakpoint } from '../../editor/header-ui';
 import { isInnerBlock } from '../../extensions/components';
 import { isNormalStateOnBaseBreakpoint } from '../../extensions/libs/block-card/block-states/helpers';
 
@@ -29,6 +32,7 @@ const reducer = (state: Object = {}, action: Object): Object => {
 		type,
 		ref,
 		blockId,
+		clientId,
 		newValue,
 		attributeId,
 		innerBlocks,
@@ -40,9 +44,14 @@ const reducer = (state: Object = {}, action: Object): Object => {
 		blockVariations,
 		defaultAttributes,
 		currentBreakpoint,
+		stateReadyToReset,
+		resetStateAllValues,
+		insideBlockInspector,
 		activeBlockVariation,
 		currentInnerBlockState,
+		innerBlockReadyToReset,
 		getActiveBlockVariation,
+		resetInnerBlockAllValues,
 	} = action;
 
 	const hookParams = [
@@ -70,9 +79,44 @@ const reducer = (state: Object = {}, action: Object): Object => {
 				currentState,
 				currentBreakpoint
 			),
+			insideBlockInspector,
 		},
 	];
 	const { getState, getInnerState } = select('blockera/editor');
+
+	// resetting block state all values.
+	state = stateResettingValues(state, {
+		blockId,
+		clientId,
+		innerBlocks,
+		currentBlock,
+		currentState,
+		isNormalState,
+		getAttributes,
+		blockVariations,
+		currentBreakpoint,
+		stateReadyToReset,
+		resetStateAllValues,
+		defaultAttributes,
+		insideBlockInspector,
+		activeBlockVariation,
+		currentInnerBlockState,
+		getActiveBlockVariation,
+	});
+
+	// resetting inner block all values.
+	if (resetInnerBlockAllValues) {
+		state = stateResettingInnerBlockValues(state, {
+			currentBlock,
+			innerBlockReadyToReset,
+		});
+
+		return applyFilters(
+			'blockera.blockEdit.setAttributes',
+			mergeObject(state),
+			...hookParams
+		);
+	}
 
 	switch (type) {
 		case 'UPDATE_NORMAL_STATE':
@@ -100,38 +144,61 @@ const reducer = (state: Object = {}, action: Object): Object => {
 					);
 				}
 
-				return applyFilters(
-					'blockera.blockEdit.setAttributes',
-					mergeObject(
-						state,
-						{
-							blockeraInnerBlocks: {
-								value: {
-									[currentBlock]: {
-										attributes: {
-											...effectiveItems,
-											...(mergedCssClasses
-												? {
-														className:
-															mergedCssClasses,
-												  }
-												: {}),
-											[attributeId]: isEqualsWithDefault
-												? undefined
-												: newValue,
-										},
+				const attributesReadyToFilter = mergeObject(
+					state,
+					{
+						blockeraInnerBlocks: {
+							value: {
+								[currentBlock]: {
+									attributes: {
+										...effectiveItems,
+										...(mergedCssClasses
+											? {
+													className: mergedCssClasses,
+												}
+											: {}),
+										[attributeId]: isEqualsWithDefault
+											? undefined
+											: newValue,
 									},
 								},
 							},
 						},
-						{
-							deletedProps: [attributeId],
-							forceUpdated:
-								!isEqualsWithDefault && isObject(newValue)
-									? [attributeId]
-									: [],
-						}
-					),
+					},
+					{
+						deletedProps: [attributeId],
+						forceUpdated:
+							!isEqualsWithDefault && isObject(newValue)
+								? [attributeId]
+								: [],
+					}
+				);
+
+				// Run filtering when current block is global style for block type,
+				// and it is contains `blocks` property from theme or core settings.
+				// We should run all `to wp compatibilities` for each blocks provided by external sources.
+				if (
+					attributesReadyToFilter.hasOwnProperty('blocks') &&
+					Object.keys(attributesReadyToFilter.blocks).length &&
+					attributesReadyToFilter.blocks.hasOwnProperty(currentBlock)
+				) {
+					const blockTypeObj = getBlockType(currentBlock);
+					const _hookParams = hookParams;
+
+					_hookParams[4].isMasterBlock = true;
+					_hookParams[4].blockId = currentBlock;
+					_hookParams[4].defaultAttributes = blockTypeObj.attributes;
+
+					attributesReadyToFilter.blocks[currentBlock] = applyFilters(
+						'blockera.blockEdit.setAttributes',
+						attributesReadyToFilter.blocks[currentBlock],
+						..._hookParams
+					);
+				}
+
+				return applyFilters(
+					'blockera.blockEdit.setAttributes',
+					attributesReadyToFilter,
 					...hookParams
 				);
 			}
@@ -163,9 +230,12 @@ const reducer = (state: Object = {}, action: Object): Object => {
 					...(mergedCssClasses
 						? { className: mergedCssClasses }
 						: {}),
-					[attributeId]: {
-						value: newValue,
-					},
+					// if attributeId starts with 'blockera', set value to { value: newValue } schema
+					[attributeId]: attributeId.startsWith('blockera')
+						? {
+								value: newValue,
+							}
+						: newValue,
 				},
 				...hookParams
 			);
@@ -173,11 +243,15 @@ const reducer = (state: Object = {}, action: Object): Object => {
 		case 'UPDATE_BLOCK_STATES':
 		case 'UPDATE_INNER_BLOCK_INSIDE_PARENT_STATE':
 			const blockeraBlockStates = memoizedBlockStates(state, action, {
+				ref,
 				currentState,
 				insideInnerBlock:
 					'UPDATE_INNER_BLOCK_INSIDE_PARENT_STATE' === type,
 				currentBlock,
 				getState,
+				clientId,
+				name: blockId,
+				hookParams,
 				getInnerState,
 			});
 			const {
@@ -214,7 +288,11 @@ const reducer = (state: Object = {}, action: Object): Object => {
 					},
 					{
 						deletedProps: [attributeId],
-						forceUpdated: isObject(newValue) ? [attributeId] : [],
+						forceUpdated:
+							isObject(newValue) ||
+							(!isObject(newValue) && isEmpty(newValue))
+								? [attributeId]
+								: [],
 					}
 				),
 				...hookParams
@@ -229,6 +307,8 @@ const reducer = (state: Object = {}, action: Object): Object => {
 					currentState: currentInnerBlockState,
 					insideInnerBlock: false,
 					currentBlock,
+					clientId,
+					name: blockId,
 				}
 			);
 
@@ -281,7 +361,11 @@ const reducer = (state: Object = {}, action: Object): Object => {
 					},
 					{
 						deletedProps: [attributeId],
-						forceUpdated: isObject(newValue) ? [attributeId] : [],
+						forceUpdated:
+							isObject(newValue) ||
+							(!isObject(newValue) && isEmpty(newValue))
+								? [attributeId]
+								: [],
 					}
 				),
 				...hookParams

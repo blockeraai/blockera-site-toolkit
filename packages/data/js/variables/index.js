@@ -11,13 +11,21 @@ export const getBlockEditorSettings = (): Object => {
 };
 
 export {
-	getLinearGradientsTitle,
+	BLOCKERA_SETTINGS_PROPERTY,
+	BLOCKERA_NESTED_SETTINGS_PROPERTY,
+	BLOCKERA_SETTINGS_KEYS,
+	BLOCKERA_GLOBAL_SETTING_PATH,
+	BLOCKERA_CUSTOM_PRESET_SETTINGS_PATH,
+	BLOCKERA_PRESET_METADATA_PATHS,
+	getBlockeraExperimentalFeatures,
+} from '../blockera-settings-paths';
+
+export {
 	getLinearGradients,
 	getLinearGradientBy,
 	getLinearGradient,
 } from './linear-gradient';
 export {
-	getRadialGradientsTitle,
 	getRadialGradients,
 	getRadialGradientBy,
 	getRadialGradient,
@@ -33,10 +41,19 @@ export {
 	getFontSizes,
 	getFontSizeBy,
 	getFontSize,
-	getFontSizesTitle,
+	getFontSizeVAStringFromId,
+	getFontSizeVAFromIdString,
+	getFontSizeVAFromVarString,
 } from './font-size';
 export {
-	getSpacingsTitle,
+	getLineHeights,
+	getLineHeightBy,
+	getLineHeight,
+	getLineHeightVAStringFromId,
+	getLineHeightVAFromIdString,
+	getLineHeightVAFromVarString,
+} from './line-height';
+export {
 	getSpacings,
 	getSpacingBy,
 	getSpacing,
@@ -44,24 +61,89 @@ export {
 	getSpacingVAFromVarString,
 } from './spacing';
 export {
-	getWidthSizesTitle,
 	getWidthSizes,
 	getWidthSizeBy,
 	getWidthSize,
+	getWidthSizeVAFromIdString,
+	getWidthSizeVAFromVarString,
 } from './width-size';
 export {
-	getColorsTitle,
 	getColors,
 	getColorBy,
 	getColor,
 	getColorVAFromIdString,
 	getColorVAFromVarString,
 } from './color';
+export {
+	getBorderRadii,
+	getBorderRadiusBy,
+	getBorderRadius,
+	getBorderRadiusVAFromIdString,
+	getBorderRadiusVAFromVarString,
+	getBorderRadiusVAStringFromId,
+} from './border-radius';
+export {
+	getCustomGlobalStylePresetVariables,
+	getMergedGlobalStylePresetVariables,
+	getGlobalStylePresetVariableById,
+} from './custom-global-style-presets';
+export {
+	referenceFromPresetOrigin,
+	buildPresetVariablePickerPayload,
+	serializeGlobalStylePresetItemValue,
+} from './preset-variable-picker-payload';
+export {
+	isValueAddonShape,
+	resolveStoredScalarForCssDeclaration,
+} from './value-addon-shape';
+export { textShadowPresetItemsToCss } from './text-shadow-preset-css';
+export {
+	CSS_VAR_INFIX_TO_PRESET_VARIABLE_TYPE,
+	globalStylePresetSerializedValueToCss,
+	resolveThemeJsonPresetCssDeclarationValue,
+} from './theme-json-preset-css-declaration-value';
+export {
+	normalizePresetSize,
+	normalizeFontSizeFluid,
+	normalizeFontSizeThemeJsonPreset,
+	normalizeSizeThemeJsonPreset,
+} from './normalize-preset-sizes';
+export { tryParseLegacyJsonObject } from './legacy-json-settings';
 export { getVariable } from './get-variable';
 export {
 	generateVariableString,
 	generateAttributeVarStringFromVA,
+	generateVariableStringFromAttributeVarString,
+	matchesVarStringMiddleType,
+	getValueAddonFromVarString,
+	parseVarString,
 } from './utils';
+export type { GetValueAddonFromVarStringOptions } from './utils';
+
+export {
+	THEME_JSON_PRESET_METADATA_BASE,
+	getValueFromObjectPath,
+	findInPresetsBy,
+	getValueFromVariable,
+	wrapExperimentalFeaturesRaw,
+	getWpMergedExperimentalFeaturesWrapped,
+	parseThemeJsonVariableToken,
+	isThemeJsonVariableResolutionCandidateString,
+	isThemeJsonVariableDefinedInMergedFeatures,
+	isThemeJsonVariableDefinedInWpEditor,
+	inferPresetCssVarInfixForPaintVariablePickerType,
+	normalizeThemeJsonPresetLeafForScalarUi,
+	resolvePlainThemeJsonPresetSlugResolutionFromWpEditor,
+	resolvePlainThemeJsonPresetSlugValueFromWpEditor,
+	resolveThemeJsonPaintPresetStringFromWpEditor,
+	resolveThemeJsonVariableStringFromWpEditor,
+} from './theme-json-variable-resolution';
+export type {
+	ThemeJsonPresetResolutionRow,
+	ParsedThemeJsonVariableToken,
+	PlainThemeJsonPresetSlugResolution,
+	ResolveThemeJsonPaintPresetStringFromWpEditorOptions,
+} from './theme-json-variable-resolution';
 
 export * from './types';
 export * from './store/types';

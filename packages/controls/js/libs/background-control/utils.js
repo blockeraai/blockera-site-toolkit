@@ -3,13 +3,19 @@
 /**
  * Internal dependencies
  */
-import { getValueAddonRealValue, isValid as isValidVariable } from '../../';
+import {
+	getValueAddonRealValue,
+	isValid as isValidVariable,
+} from '../../value-addons';
 import type { TDefaultRepeaterItemValue } from './types';
 
 export function getBackgroundItemBGProperty(
 	item: TDefaultRepeaterItemValue
 ): string {
 	switch (item.type) {
+		case 'none':
+			return '';
+
 		case 'image':
 			if (!item.image) {
 				return '';

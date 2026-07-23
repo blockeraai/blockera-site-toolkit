@@ -9,51 +9,35 @@ namespace Blockera\Editor\StyleDefinitions;
  */
 class Position extends BaseStyleDefinition {
 
-    /**
-     * Collect all css selectors and declarations.
-     *
-     * @param array $setting the block setting.
-     *
-     * @return array
-     */
-    protected function css( array $setting): array {
+	/**
+	 * Collect all css selectors and declarations.
+	 *
+	 * @param array $setting the block setting.
+	 *
+	 * @return array
+	 */
+	protected function css( array $setting ): array {
 
-        $declaration = [];
-        $cssProperty = $setting['type'];
+		if ( ! isset( $setting['type'] ) || 'position' !== $setting['type'] || ! isset( $setting['position'] ) ) {
+			return [];
+		}
 
-        if (empty($cssProperty) || empty($setting[ $cssProperty ]) || 'position' !== $cssProperty) {
+		$positionData = $setting['position'];
 
-            return $declaration;
-        }
+		if ( ! isset( $positionData['type'], $positionData['position'] ) || ! is_array( $positionData['position'] ) ) {
+			return [];
+		}
 
-        [
-            'type'     => $position,
-            'position' => $value,
-        ] = $setting[ $cssProperty ];
+		$this->declarations['position'] = $positionData['type'];
 
-        $this->setDeclaration($cssProperty, $position);
+		foreach ( $positionData['position'] as $property => $item ) {
+			if ( $item ) {
+				$this->declarations[ $property ] = blockera_get_value_addon_real_value( $item );
+			}
+		}
 
-        $filteredValues = array_filter($value);
+		$this->setCss( $this->declarations );
 
-        if (! empty($filteredValues)) {
-            $this->declarations = array_merge(
-                $this->declarations,
-                array_merge(
-                    ...array_map(
-                        static function ( string $item, string $property): array {
-
-                            return [ $property => blockera_get_value_addon_real_value($item) ];
-                        },
-                        $filteredValues,
-                        array_keys($filteredValues)
-                    )
-                )
-            );
-        }
-
-        $this->setCss($this->declarations);
-
-        return $this->css;
-    }
-
+		return $this->css;
+	}
 }

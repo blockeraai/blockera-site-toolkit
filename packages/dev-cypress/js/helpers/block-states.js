@@ -22,13 +22,61 @@ export function openInserter() {
 	});
 }
 
-export function setBlockState(state) {
+export function setBlockState(state, blockType) {
 	cy.getByAriaLabel('Blockera Block State Container')
+		.should('exist')
+		.then(($containers) => {
+			const index =
+				blockType === 'master-block' ? 0 : $containers.length - 1;
+
+			cy.wrap($containers.eq(index)).within(() => {
+				cy.getByDataCy('group-control-header')
+					.contains(state)
+					.click({ force: true });
+			});
+		});
+
+	// Switching block state should dismiss any open inspector group popovers.
+	cy.get('.blockera-control-group-popover').should('not.exist');
+}
+
+export function resetBlockState(state, blockType) {
+	if (blockType === 'master-block') {
+		cy.getByAriaLabel('Blockera Block State Container')
+			.first()
+			.within(() => {
+				cy.getByDataCy('group-control-header')
+					.contains(state)
+					.parent()
+					.parent()
+					.parent()
+					.within(() => {
+						cy.getByAriaLabel('More Options').click({
+							force: true,
+						});
+					});
+			});
+	} else {
+		cy.getByAriaLabel('Blockera Block State Container')
+			.last()
+			.within(() => {
+				cy.getByDataCy('group-control-header')
+					.contains(state)
+					.parent()
+					.parent()
+					.parent()
+					.within(() => {
+						cy.getByAriaLabel('More Options').click({
+							force: true,
+						});
+					});
+			});
+	}
+
+	cy.get('.components-popover__content')
 		.last()
 		.within(() => {
-			cy.getByDataCy('group-control-header')
-				.contains(state)
-				.click({ force: true });
+			cy.getByDataTest('reset-button').click({ force: true });
 		});
 }
 

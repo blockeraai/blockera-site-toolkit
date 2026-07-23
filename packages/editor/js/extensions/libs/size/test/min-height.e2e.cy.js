@@ -3,7 +3,7 @@
  */
 import {
 	savePage,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 	createPost,
@@ -14,14 +14,14 @@ describe('Min Height → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('simple value - should update min-height when adding value', () => {
 		// activate min height
 		cy.activateMoreSettingsItem('More Size Settings', 'Min Height');
 
-		cy.getParentContainer('Min').within(() => {
+		cy.getParentContainer('Min Height').within(() => {
 			cy.get('input').type(10);
 		});
 
@@ -29,7 +29,7 @@ describe('Min Height → Functionality', () => {
 		cy.getBlock('core/paragraph').should('have.css', 'min-height', '10px');
 
 		//Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('10px').to.be.equal(
 				getSelectedBlock(data, 'blockeraMinHeight')
 			);
@@ -40,7 +40,7 @@ describe('Min Height → Functionality', () => {
 
 		redirectToFrontPage();
 
-		cy.get('.blockera-block').should('have.css', 'min-height', '10px');
+		cy.get('p.blockera-block').should('have.css', 'min-height', '10px');
 	});
 
 	it('variable value', () => {
@@ -48,7 +48,7 @@ describe('Min Height → Functionality', () => {
 		cy.activateMoreSettingsItem('More Size Settings', 'Min Height');
 
 		// open value addon
-		cy.getParentContainer('Min').within(() => {
+		cy.getParentContainer('Min Height').within(() => {
 			cy.openValueAddon();
 		});
 
@@ -61,12 +61,12 @@ describe('Min Height → Functionality', () => {
 				.invoke('text')
 				.should(
 					'include',
-					'min-height: var(--wp--style--global--content-size)'
+					'min-height: var(--wp--style--global--content-size, 645px)'
 				);
 		});
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect({
 				settings: {
 					name: 'Content Width',
@@ -93,7 +93,7 @@ describe('Min Height → Functionality', () => {
 			.invoke('text')
 			.should(
 				'include',
-				'min-height: var(--wp--style--global--content-size)'
+				'min-height: var(--wp--style--global--content-size, 645px)'
 			);
 	});
 });
