@@ -1,6 +1,6 @@
 import {
 	savePage,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 	openMoreFeaturesControl,
@@ -12,7 +12,7 @@ describe('Text Decoration → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('simple value', () => {
@@ -26,7 +26,7 @@ describe('Text Decoration → Functionality', () => {
 			.should('include', 'overline');
 
 		//Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('overline').to.be.equal(
 				getSelectedBlock(data, 'blockeraTextDecoration')
 			);

@@ -18,7 +18,6 @@ import { Icon } from '@blockera/icons';
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from '../repeater-control/store';
 import {
 	Button,
 	BaseControl,
@@ -28,6 +27,7 @@ import {
 } from '../index';
 import type { LinkControlProps } from './types';
 import { linkControlValueCleaner } from './utils';
+import { STORE_NAME } from '../repeater-control/store/constants';
 import { ControlContextProvider, useControlContext } from '../../context';
 
 export default function LinkControl({
@@ -35,6 +35,7 @@ export default function LinkControl({
 	label,
 	labelPopoverTitle,
 	labelDescription,
+	labelProps: propsForLabelControl = {},
 	singularId,
 	repeaterItem,
 	columns,
@@ -75,7 +76,7 @@ export default function LinkControl({
 					value.nofollow ||
 					value.label ||
 					value.attributes?.length
-			  )
+				)
 	);
 
 	const labelProps = {
@@ -91,6 +92,7 @@ export default function LinkControl({
 		resetToDefault,
 		mode: 'advanced',
 		path: getControlPath(attribute, id),
+		...propsForLabelControl,
 	};
 
 	return (

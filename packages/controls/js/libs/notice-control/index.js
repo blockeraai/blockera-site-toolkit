@@ -15,7 +15,7 @@ import { Icon } from '@blockera/icons';
 /**
  * Internal dependencies
  */
-import { Flex } from '../';
+import Flex from '../flex';
 import { NoticeIcon } from './utils';
 import BaseControl from '../base-control';
 import type { TNoticeControlProps } from './types';
@@ -47,7 +47,9 @@ export default function NoticeControl({
 	};
 
 	// $FlowFixMe
-	if (isShown && children && isFunction(onShown)) onShown();
+	if (isShown && children && isFunction(onShown)) {
+		onShown();
+	}
 
 	return (
 		isShown &&

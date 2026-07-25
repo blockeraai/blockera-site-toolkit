@@ -1,6 +1,6 @@
 import {
 	savePage,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 	openMoreFeaturesControl,
@@ -11,7 +11,7 @@ describe('Text Transform → Functionality', () => {
 	beforeEach(() => {
 		createPost();
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('Simple value', () => {
@@ -27,7 +27,7 @@ describe('Text Transform → Functionality', () => {
 		);
 
 		//Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('uppercase').to.be.equal(
 				getSelectedBlock(data, 'blockeraTextTransform')
 			);

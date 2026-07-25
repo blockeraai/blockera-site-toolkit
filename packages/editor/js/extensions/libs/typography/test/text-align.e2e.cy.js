@@ -1,10 +1,9 @@
 import {
 	savePage,
-	getWPDataObject,
+	createPost,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
-	openMoreFeaturesControl,
-	createPost,
 } from '@blockera/dev-cypress/js/helpers';
 
 describe('Text Align → Functionality', () => {
@@ -12,12 +11,10 @@ describe('Text Align → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('simple value', () => {
-		openMoreFeaturesControl('More typography settings');
-
 		// center align
 		cy.getByAriaLabel('Center').click();
 
@@ -29,7 +26,7 @@ describe('Text Align → Functionality', () => {
 		);
 
 		//Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('center').to.be.equal(
 				getSelectedBlock(data, 'blockeraTextAlign')
 			);

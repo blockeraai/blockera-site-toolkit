@@ -14,23 +14,22 @@ import { controlInnerClassNames } from '@blockera/classnames';
  * Internal dependencies
  */
 import TrashIcon from '../../icons/trash';
+import Flex from '../../../libs/flex';
+import Popover from '../../../libs/popover';
+import { Button } from '../../../libs/button';
 import { getDeletedItemInfo } from '../../helpers';
-import { Button, Flex, Popover } from '../../../libs';
 import type { ValueAddonControlProps } from '../control/types';
 
 export default function ({
 	controlProps,
-	popoverOffset = 125,
 }: {
 	controlProps: ValueAddonControlProps,
-	popoverOffset?: number,
 }): Element<any> {
 	const deletedItem = getDeletedItemInfo(controlProps.value);
 
 	return (
 		<Popover
 			title={__('Missing Dynamic Value Item', 'blockera')}
-			offset={popoverOffset}
 			placement="left-start"
 			onClose={() => controlProps.setOpen('')}
 			className={controlInnerClassNames('popover-value-addon-deleted')}

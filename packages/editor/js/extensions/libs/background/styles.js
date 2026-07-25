@@ -38,6 +38,7 @@ export const BackgroundStyles = ({
 		blockeraBackground,
 		blockeraBackgroundColor,
 		blockeraBackgroundClip,
+		blockeraBlendMode,
 	} = config.backgroundConfig;
 	const blockProps = {
 		state,
@@ -95,12 +96,12 @@ export const BackgroundStyles = ({
 	}
 
 	if (isActiveField(blockeraBackgroundColor)) {
-		const blockeraBackgroundColor = getValueAddonRealValue(
+		const blockeraBackgroundColorValue = getValueAddonRealValue(
 			blockProps.attributes.blockeraBackgroundColor
 		);
 
 		if (
-			blockeraBackgroundColor !==
+			blockeraBackgroundColorValue !==
 			attributes.blockeraBackgroundColor.default
 		) {
 			const pickedSelector = getCompatibleBlockCssSelector({
@@ -113,24 +114,34 @@ export const BackgroundStyles = ({
 				),
 			});
 
-			styleGroup.push({
-				selector: pickedSelector,
-				declarations: computedCssDeclarations(
-					{
-						blockeraBackgroundColor: [
-							{
-								type: 'static',
-								properties: {
-									'background-color':
-										blockeraBackgroundColor + ' !important',
+			if (typeof blockeraBackgroundColorValue === 'string') {
+				styleGroup.push({
+					selector: pickedSelector,
+					declarations: [
+						`background-color: ${blockeraBackgroundColorValue} !important;`,
+					],
+				});
+			} else {
+				styleGroup.push({
+					selector: pickedSelector,
+					declarations: computedCssDeclarations(
+						{
+							blockeraBackgroundColor: [
+								{
+									type: 'static',
+									properties: {
+										'background-color':
+											blockeraBackgroundColorValue +
+											' !important',
+									},
 								},
-							},
-						],
-					},
-					blockProps,
-					pickedSelector
-				),
-			});
+							],
+						},
+						blockProps,
+						pickedSelector
+					),
+				});
+			}
 		}
 	}
 
@@ -157,6 +168,41 @@ export const BackgroundStyles = ({
 						{
 							type: 'function',
 							function: backgroundClipGenerator,
+						},
+					],
+				},
+				blockProps,
+				pickedSelector
+			),
+		});
+	}
+
+	if (
+		isActiveField(blockeraBlendMode) &&
+		blockProps.attributes.blockeraBlendMode !==
+			attributes.blockeraBlendMode.default
+	) {
+		const pickedSelector = getCompatibleBlockCssSelector({
+			...sharedParams,
+			query: 'blockeraBlendMode',
+			support: 'blockeraBlendMode',
+			fallbackSupportId: getBlockSupportFallback(
+				supports,
+				'blockeraBlendMode'
+			),
+		});
+
+		styleGroup.push({
+			selector: pickedSelector,
+			declarations: computedCssDeclarations(
+				{
+					blockeraBlendMode: [
+						{
+							type: 'static',
+							properties: {
+								'mix-blend-mode':
+									blockProps.attributes.blockeraBlendMode,
+							},
 						},
 					],
 				},

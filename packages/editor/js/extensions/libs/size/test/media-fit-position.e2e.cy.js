@@ -3,7 +3,7 @@
  */
 import {
 	savePage,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 	createPost,
@@ -14,7 +14,7 @@ describe('Media Fit Position → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('should update object-position correctly, when add value', () => {
@@ -39,7 +39,7 @@ describe('Media Fit Position → Functionality', () => {
 		);
 
 		//Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect({ top: '0%', left: '50%' }).to.be.deep.equal(
 				getSelectedBlock(data, 'blockeraFitPosition')
 			);
@@ -61,7 +61,7 @@ describe('Media Fit Position → Functionality', () => {
 		);
 
 		//Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect({ top: '10%', left: '30%' }).to.be.deep.equal(
 				getSelectedBlock(data, 'blockeraFitPosition')
 			);

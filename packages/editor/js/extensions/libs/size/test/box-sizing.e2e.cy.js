@@ -3,7 +3,7 @@
  */
 import {
 	savePage,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 	createPost,
@@ -14,7 +14,7 @@ describe('Box Sizing → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('border-box', () => {
@@ -32,7 +32,7 @@ describe('Box Sizing → Functionality', () => {
 		);
 
 		//Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('border-box').to.be.equal(
 				getSelectedBlock(data, 'blockeraBoxSizing')
 			);

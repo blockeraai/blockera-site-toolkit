@@ -2,7 +2,6 @@
 /**
  * External dependencies
  */
-import memoize from 'fast-memoize';
 import { select } from '@wordpress/data';
 import { useContext, useCallback, useRef } from '@wordpress/element';
 
@@ -16,23 +15,20 @@ import {
 	isObject,
 	isBoolean,
 	isUndefined,
+	isEquals,
 	mergeObject,
 } from '@blockera/utils';
 
 /**
  * Internal dependencies
  */
-import {
-	store as controlStore,
-	STORE_NAME as CONTROL_STORE_NAME,
-} from '../../store';
-import { STORE_NAME as REPEATER_STORE_NAME } from '../../libs/repeater-control/store/constants';
 import useControlEffect from './use-control-effect';
 import { BaseControlContext, ControlContext } from '../index';
+import { STORE_NAME as CONTROL_STORE_NAME } from '../../store/constants';
 import type { ControlContextHookProps, ControlContextRef } from '../types';
-import { store as repeaterStore } from '../../libs/repeater-control/store';
 import { isInnerBlock } from '@blockera/editor/js/extensions/components/utils';
 import { repeaterOnChange } from '../../libs/repeater-control/store/reducers/utils';
+import { STORE_NAME as REPEATER_STORE_NAME } from '../../libs/repeater-control/store/constants';
 
 //eslint-disable-next-line
 /**
@@ -170,8 +166,7 @@ export const useControlContext = (args?: ControlContextHookProps): Object => {
 		// eslint-disable-next-line
 	}, []);
 
-	const _getCalculatedValue = memoize(() => getCalculatedInitValue());
-	const calculatedValue = _getCalculatedValue();
+	const calculatedValue = getCalculatedInitValue();
 
 	/**
 	 * @see ../../store/actions.js file to check available actions of dispatcher!
@@ -191,12 +186,14 @@ export const useControlContext = (args?: ControlContextHookProps): Object => {
 			const {
 				attributes: { blockeraBlockStates },
 			} = getSelectedBlock();
-			const states = Object.keys(blockeraBlockStates);
+			const states = Object.keys(
+				blockeraBlockStates?.value || blockeraBlockStates
+			);
 			const breakpoints = Object.keys(getBreakpoints());
 			//get `blockera/controls` store or details of that
 			const { getControl } = isRepeaterControl()
-				? select(repeaterStore)
-				: select(controlStore);
+				? select(REPEATER_STORE_NAME)
+				: select(CONTROL_STORE_NAME);
 
 			states.forEach((state) => {
 				const currentState = isInnerBlock(getExtensionCurrentBlock())
@@ -204,7 +201,7 @@ export const useControlContext = (args?: ControlContextHookProps): Object => {
 					: getActiveMasterState(
 							clientId,
 							getExtensionCurrentBlock()
-					  );
+						);
 				const controlName = controlInfo.name.replace(
 					currentState,
 					state
@@ -223,6 +220,11 @@ export const useControlContext = (args?: ControlContextHookProps): Object => {
 					modify(name);
 				});
 			});
+
+			// When no states are present or normal state is not present, modify the control value to the default value.
+			if (!states.length || !states.includes('normal')) {
+				modify(controlInfo.name);
+			}
 
 			resetRef();
 
@@ -248,6 +250,29 @@ export const useControlContext = (args?: ControlContextHookProps): Object => {
 	});
 
 	/**
+	 * Resolve the effective control value using the same rules as ControlContextProvider.
+	 * When skipSyncValue is true, the store value wins. Otherwise controlInfo.value
+	 * is preferred when it is defined and differs from the store.
+	 *
+	 * @return {any} resolved control value before id/defaultValue preparation.
+	 */
+	function getResolvedControlValue(): any {
+		const skipSyncValue =
+			controlInfo.hasOwnProperty('skipSyncValue') &&
+			true === controlInfo.skipSyncValue;
+
+		if (skipSyncValue) {
+			return savedValue;
+		}
+
+		if (!isEquals(savedValue, controlInfo.value)) {
+			return controlInfo.value;
+		}
+
+		return savedValue;
+	}
+
+	/**
 	 * Retrieved control value
 	 * to merge default and saved value for simple or repeater controls.
 	 *
@@ -257,7 +282,7 @@ export const useControlContext = (args?: ControlContextHookProps): Object => {
 	 */
 	function getCalculatedInitValue(currentValue: any = null): any {
 		if (isNull(currentValue)) {
-			currentValue = savedValue;
+			currentValue = getResolvedControlValue();
 		}
 
 		if (
@@ -265,6 +290,10 @@ export const useControlContext = (args?: ControlContextHookProps): Object => {
 			isNull(currentValue) ||
 			isEmpty(currentValue)
 		) {
+			if (isRepeaterControl()) {
+				return defaultValue ?? {};
+			}
+
 			return defaultValue;
 		}
 
@@ -313,6 +342,18 @@ export const useControlContext = (args?: ControlContextHookProps): Object => {
 
 		if (!isUndefined(prep)) {
 			return prep;
+		}
+
+		// `prepare` only traverses objects/arrays. When it cannot resolve `id`, a scalar
+		// saved value may still be the control's whole value (flat / legacy storage while
+		// the control still declares a nested `id`). Prefer that scalar over defaultValue.
+		const scalarType = typeof currentValue;
+		if (
+			scalarType === 'string' ||
+			scalarType === 'number' ||
+			scalarType === 'boolean'
+		) {
+			return currentValue;
 		}
 
 		return defaultValue;
@@ -454,7 +495,14 @@ export const useControlContext = (args?: ControlContextHookProps): Object => {
 		setValue: (value, _ref = undefined) => {
 			setValue(value, _ref || ref);
 
-			modifyValue(value);
+			// Keep store in sync with what onChange receives (valueCleanup output). Nested
+			// controls (e.g. ColorPicker inside ColorControl) otherwise overwrite a cleaned
+			// value with the raw input on the second modifyValue call.
+			const storeValue =
+				typeof valueCleanup === 'function'
+					? valueCleanup(value)
+					: value;
+			modifyValue(storeValue);
 
 			resetRef();
 		},

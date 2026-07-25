@@ -16,20 +16,21 @@ import { controlInnerClassNames } from '@blockera/classnames';
  * Internal dependencies
  */
 import { isValid } from '../../utils';
+import Flex from '../../../libs/flex';
+import Grid from '../../../libs/grid';
 import TrashIcon from '../../icons/trash';
+import Popover from '../../../libs/popover';
+import { Button } from '../../../libs/button';
 import { getDynamicValueIcon } from '../../helpers';
 import { PickerCategory, PickerValueItem } from '../picker';
-import { Button, Flex, Popover, Grid } from '../../../libs';
 import type { ValueAddonControlProps } from '../control/types';
 
 export default function ({
 	controlProps,
 	onClose,
-	popoverOffset = 125,
 }: {
 	controlProps: ValueAddonControlProps,
 	onClose?: () => void,
-	popoverOffset?: number,
 }): Element<any> {
 	const DynamicValues = (): Array<Element<any>> => {
 		const { getDynamicValueGroups } = select(STORE_NAME);
@@ -78,11 +79,12 @@ export default function ({
 	return (
 		<Popover
 			title={__('Choose Dynamic Value', 'blockera')}
-			offset={popoverOffset}
 			placement="left-start"
 			onClose={() => {
 				controlProps.setOpen('');
-				if (onClose) onClose();
+				if (onClose) {
+					onClose();
+				}
 			}}
 			className={controlInnerClassNames('popover-dynamic-values')}
 			titleButtonsRight={

@@ -3,7 +3,7 @@
  */
 import {
 	savePage,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 	createPost,
@@ -14,7 +14,7 @@ describe('Aspect Ratio → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('should update aspect-ratio correctly, when add value', () => {
@@ -34,7 +34,7 @@ describe('Aspect Ratio → Functionality', () => {
 		);
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect({
 				val: '1',
 				width: '',
@@ -48,7 +48,7 @@ describe('Aspect Ratio → Functionality', () => {
 		});
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect({
 				val: 'custom',
 				width: '1',
@@ -62,7 +62,7 @@ describe('Aspect Ratio → Functionality', () => {
 		});
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect({
 				val: '4/3',
 				width: '',
@@ -76,7 +76,7 @@ describe('Aspect Ratio → Functionality', () => {
 		});
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect({
 				val: 'custom',
 				width: '4',
@@ -104,7 +104,7 @@ describe('Aspect Ratio → Functionality', () => {
 		);
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect({
 				val: 'custom',
 				width: 2,

@@ -3,6 +3,11 @@
 import { isString, isUndefined } from '@blockera/utils';
 import { extractNumberAndUnit, isSpecialUnit } from '@blockera/controls';
 
+/**
+ * Internal dependencies
+ */
+import { resolveDimensionValueFromWP } from './dimension-variable-from-wp';
+
 export function widthFromWPCompatibility({
 	attributes,
 	blockId,
@@ -18,7 +23,9 @@ export function widthFromWPCompatibility({
 				attributes?.widthUnit !== undefined
 			) {
 				attributes.blockeraWidth = {
-					value: attributes?.width + attributes?.widthUnit,
+					value: resolveDimensionValueFromWP(
+						attributes.width + attributes.widthUnit
+					),
 				};
 			}
 
@@ -63,14 +70,39 @@ export function widthFromWPCompatibility({
 
 			return attributes;
 
+		// Blocks that support global styles dimensions.width
+		case 'core/column':
+		case 'core/image':
+			// Block inspector: attributes.width
+			if (attributes?.width !== undefined) {
+				attributes.blockeraWidth = {
+					value: resolveDimensionValueFromWP(attributes.width),
+				};
+			}
+
+			return attributes;
+
 		// the Icon Block by Nick Diego
 		case 'outermost/icon-block':
 		case 'core/post-featured-image':
-		case 'core/column':
-		case 'core/image':
 			if (attributes?.width !== undefined) {
 				attributes.blockeraWidth = {
-					value: attributes?.width,
+					value: resolveDimensionValueFromWP(attributes.width),
+				};
+			}
+
+			return attributes;
+
+		case 'core/icon':
+			if (attributes?.blockeraWidth?.value) {
+				return attributes;
+			}
+
+			if (attributes?.style?.dimensions?.width !== undefined) {
+				attributes.blockeraWidth = {
+					value: resolveDimensionValueFromWP(
+						attributes.style.dimensions.width
+					),
 				};
 			}
 
@@ -191,6 +223,29 @@ export function widthToWPCompatibility({
 				width: +newValue.replace('%', ''), // remove % and convert to number
 			};
 
+		// Blocks that support global styles dimensions.width
+		case 'core/column':
+			if ('reset' === ref?.current?.action) {
+				return {
+					width: undefined,
+				};
+			}
+
+			if (
+				newValue === '' ||
+				isUndefined(newValue) ||
+				isSpecialUnit(newValue) ||
+				!isString(newValue)
+			) {
+				return {
+					width: undefined,
+				};
+			}
+
+			return {
+				width: newValue,
+			};
+
 		// A number attribute for width without unit (px is unit)
 		case 'core/image':
 			if ('reset' === ref?.current?.action) {
@@ -222,7 +277,6 @@ export function widthToWPCompatibility({
 		// the Icon Block by Nick Diego
 		case 'outermost/icon-block':
 		case 'core/post-featured-image':
-		case 'core/column':
 			if ('reset' === ref?.current?.action) {
 				return {
 					width: undefined,
@@ -233,8 +287,7 @@ export function widthToWPCompatibility({
 				newValue === '' ||
 				isUndefined(newValue) ||
 				isSpecialUnit(newValue) ||
-				!isString(newValue) ||
-				newValue.endsWith('func')
+				!isString(newValue)
 			) {
 				return {
 					width: undefined,
@@ -243,6 +296,40 @@ export function widthToWPCompatibility({
 
 			return {
 				width: newValue,
+			};
+
+		case 'core/icon':
+			if ('reset' === ref?.current?.action) {
+				return {
+					style: {
+						dimensions: {
+							width: undefined,
+						},
+					},
+				};
+			}
+
+			if (
+				newValue === '' ||
+				isUndefined(newValue) ||
+				isSpecialUnit(newValue) ||
+				!isString(newValue)
+			) {
+				return {
+					style: {
+						dimensions: {
+							width: undefined,
+						},
+					},
+				};
+			}
+
+			return {
+				style: {
+					dimensions: {
+						width: newValue,
+					},
+				},
 			};
 	}
 

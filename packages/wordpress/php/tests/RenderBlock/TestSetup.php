@@ -36,7 +36,7 @@ class TestSetup extends \WP_UnitTestCase {
 
 		// Test core block type
 		$setup->setBlockDirectoryPath( 'core/paragraph' );
-		$this->assertEquals( 'wordpress/paragraph', $setup->getBlockDirectoryPath() );
+		$this->assertEquals( 'libs/wordpress/paragraph', $setup->getBlockDirectoryPath() );
 
 		// Test invalid block type
 		$setup->setBlockDirectoryPath( 'invalid-block' );
@@ -45,6 +45,27 @@ class TestSetup extends \WP_UnitTestCase {
 		// Test block type with single segment
 		$setup->setBlockDirectoryPath( 'core' );
 		$this->assertEquals( 'core', $setup->getBlockDirectoryPath() );
+	}
+
+	/**
+	 * Overlay cache must merge Blockera selectors into live args without dropping them.
+	 */
+	public function testGetCustomizedBlockMergesSelectorsAndIsStableAcrossCalls() {
+		$setup = Setup::getInstance();
+		$setup->setPluginPath( blockera_core_config( 'app.vendor_path' ) );
+
+		$args = [
+			'attributes' => [ 'content' => [ 'type' => 'string' ] ],
+			'selectors'  => [ 'root' => '.existing' ],
+		];
+
+		$first  = $setup->getCustomizedBlock( 'core/paragraph', $args );
+		$second = $setup->getCustomizedBlock( 'core/paragraph', $args );
+
+		$this->assertSame( $first, $second );
+		$this->assertSame( '.existing', $first['selectors']['root'] );
+		$this->assertArrayHasKey( 'blockera/elements/link', $first['selectors'] );
+		$this->assertSame( [ 'type' => 'string' ], $first['attributes']['content'] );
 	}
 
 }

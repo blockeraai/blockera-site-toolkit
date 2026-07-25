@@ -4,26 +4,26 @@ namespace Blockera\Editor\StyleDefinitions;
 
 class FontWeight extends BaseStyleDefinition {
 
-	protected function css( array $setting): array {
-
-        $declaration = [];
-        $cssProperty = $setting['type'];
-
-        if (empty($cssProperty) || empty($setting[ $cssProperty ]) || 'font-weight' !== $cssProperty) {
-
-            return $declaration;
+	protected function css( array $setting ): array {
+		if ( ! isset( $setting['type'], $setting['font-weight'] ) || 'font-weight' !== $setting['type'] ) {
+			return [];
 		}
 
-		if (! empty($setting[ $cssProperty ]['weight'])) {
-			$this->setDeclaration($cssProperty, $setting[ $cssProperty ]['weight']);
+		$fontWeightData = $setting['font-weight'];
+		$declarations   = [];
+
+		if ( isset( $fontWeightData['weight'] ) ) {
+			$declarations['font-weight'] = $fontWeightData['weight'];
 		}
 
-		if (! empty($setting[ $cssProperty ]['style'])) {
-			$this->setDeclaration('font-style', $setting[ $cssProperty ]['style']);
+		if ( isset( $fontWeightData['style'] ) ) {
+			$declarations['font-style'] = $fontWeightData['style'];
 		}
 
-		$this->setCss($this->declarations);
+		if ( [] !== $declarations ) {
+			$this->setCss( $declarations );
+		}
 
-        return $this->css;
-    }
+		return $this->css;
+	}
 }

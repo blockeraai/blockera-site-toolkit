@@ -3,7 +3,7 @@
  */
 import {
 	savePage,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 	createPost,
@@ -14,7 +14,7 @@ describe('Width → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('simple value - should update width when adding value', () => {
@@ -26,7 +26,7 @@ describe('Width → Functionality', () => {
 		cy.getBlock('core/paragraph').should('have.css', 'width', '100px');
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('100px').to.be.equal(
 				getSelectedBlock(data, 'blockeraWidth')
 			);
@@ -37,7 +37,7 @@ describe('Width → Functionality', () => {
 
 		redirectToFrontPage();
 
-		cy.get('.blockera-block').should('have.css', 'width', '100px');
+		cy.get('p.blockera-block').should('have.css', 'width', '100px');
 	});
 
 	it('variable value', () => {
@@ -55,12 +55,12 @@ describe('Width → Functionality', () => {
 				.invoke('text')
 				.should(
 					'include',
-					'width: var(--wp--style--global--content-size)'
+					'width: var(--wp--style--global--content-size, 645px)'
 				);
 		});
 
 		// Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect({
 				settings: {
 					name: 'Content Width',
@@ -85,6 +85,9 @@ describe('Width → Functionality', () => {
 
 		cy.get('style#blockera-inline-css')
 			.invoke('text')
-			.should('include', 'width: var(--wp--style--global--content-size)');
+			.should(
+				'include',
+				'width: var(--wp--style--global--content-size, 645px)'
+			);
 	});
 });

@@ -5,71 +5,69 @@ namespace Blockera\Editor\StyleDefinitions\Traits;
 trait WithDisplayValueTrait {
 
 	/**
+	 * Resolve a display setting payload to a string when possible.
+	 *
+	 * @param mixed $val Raw setting value.
+	 * @return string|null Resolved string, empty string for string payloads, or null when not resolved.
+	 */
+	private function resolveDisplaySettingValue( $val ): ?string {
+		if ( is_string( $val ) ) {
+			return $val;
+		}
+
+		if ( isset( $val['value'] ) && '' !== $val['value'] ) {
+			return $val['value'];
+		}
+
+		return null;
+	}
+
+	/**
 	 * Get display value from settings or default settings
 	 *
 	 * @param string $property Property name to check in settings.
 	 * @return string Display value
 	 */
-	private function getDisplayValue( string $property = 'blockeraDisplay'): string {
-
-		//
-		// Get display value from current states and breakpoint.
-		//
-		if (isset($this->settings[ $property ]) ) {
-
-			if (is_string($this->settings[ $property ]) ) {
-				return $this->settings[ $property ];
-			}
-
-			if (! empty($this->settings[ $property ]['value'])) {
-				return $this->settings[ $property ]['value'];
-			} 
-		}
-
-		//
-		// Get display value from main attributes.
-		//
-		if (isset($this->block['attrs'][ $property ]) ) {
-
-			if (is_string(
-				$this->block['attrs'][ $property ]
-			) ) {
-				return $this->block['attrs'][ $property ];
-			}
-
-			if (! empty(
-				$this->block['attrs'][ $property ]
-				['value']
-			)) {
-				return $this->block['attrs'][ $property ]['value'];
+	private function getDisplayValue( string $property = 'blockeraDisplay' ): string {
+		if ( isset( $this->settings[ $property ] ) ) {
+			$resolved = $this->resolveDisplaySettingValue( $this->settings[ $property ] );
+			if ( null !== $resolved ) {
+				return $resolved;
 			}
 		}
 
-		$current_settings = $this->getCurrentBreakpointSettings();
-
-		//
-		// Get display value from current breakpoint settings.
-		//
-		if (isset($current_settings[ $property ])) {
-
-			if (is_string(
-				$current_settings[ $property ]
-			) ) {
-				return $current_settings[ $property ];
-			}
-
-			if (! empty(
-				$current_settings[ $property ]
-				['value']
-			)) {
-				return $current_settings[ $property ]['value'];
+		if ( isset( $this->block['attrs'][ $property ] ) ) {
+			$resolved = $this->resolveDisplaySettingValue( $this->block['attrs'][ $property ] );
+			if ( null !== $resolved ) {
+				return $resolved;
 			}
 		}
 
-		//
-		// Get display value from default settings.
-		//
-		if (! empty($this->default_settings[ $property ]['default']['value'])) {
+		$breakpointSettings = $this->getCurrentBreakpointSettings();
+		if ( isset( $breakpointSettings[ $property ] ) ) {
+			$resolved = $this->resolveDisplaySettingValue( $breakpointSettings[ $property ] );
+			if ( null !== $resolved ) {
+				return $resolved;
+			}
+		}
+
+		$innerSettings = $this->getCurrentInnerBlockSettings();
+		if ( isset( $innerSettings[ $property ] ) ) {
+			$resolved = $this->resolveDisplaySettingValue( $innerSettings[ $property ] );
+			if ( null !== $resolved ) {
+				return $resolved;
+			}
+		}
+
+		$breakpointSettings = $this->getCurrentBreakpointSettings( true );
+		if ( isset( $breakpointSettings[ $property ] ) ) {
+			$resolved = $this->resolveDisplaySettingValue( $breakpointSettings[ $property ] );
+			if ( null !== $resolved ) {
+				return $resolved;
+			}
+		}
+
+		if ( isset( $this->default_settings[ $property ]['default']['value'] ) && '' !== $this->default_settings[ $property ]['default']['value'] ) {
 			return $this->default_settings[ $property ]['default']['value'];
 		}
 

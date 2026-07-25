@@ -1,6 +1,6 @@
 import {
 	savePage,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 	openMoreFeaturesControl,
@@ -12,7 +12,7 @@ describe('Direction → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('Simple value', () => {
@@ -24,7 +24,7 @@ describe('Direction → Functionality', () => {
 		cy.getBlock('core/paragraph').should('have.css', 'direction', 'rtl');
 
 		//Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('rtl').to.be.equal(
 				getSelectedBlock(data, 'blockeraDirection')
 			);

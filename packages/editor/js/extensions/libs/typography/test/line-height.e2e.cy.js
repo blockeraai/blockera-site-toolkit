@@ -1,6 +1,6 @@
 import {
 	savePage,
-	getWPDataObject,
+	assertBlockData,
 	getSelectedBlock,
 	redirectToFrontPage,
 	createPost,
@@ -11,7 +11,7 @@ describe('Line Height → Functionality', () => {
 		createPost();
 
 		cy.getBlock('default').type('This is test paragraph', { delay: 0 });
-		cy.getByDataTest('style-tab').click();
+		cy.getByAriaControls('styles-view').click();
 	});
 
 	it('simple value', () => {
@@ -29,7 +29,7 @@ describe('Line Height → Functionality', () => {
 		cy.getBlock('core/paragraph').should('have.css', 'line-height');
 
 		//Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('10').to.be.equal(
 				getSelectedBlock(data, 'blockeraLineHeight')
 			);
@@ -59,7 +59,7 @@ describe('Line Height → Functionality', () => {
 		cy.getBlock('core/paragraph').should('have.css', 'line-height', '10px');
 
 		//Check store
-		getWPDataObject().then((data) => {
+		assertBlockData((data) => {
 			expect('10px').to.be.equal(
 				getSelectedBlock(data, 'blockeraLineHeight')
 			);

@@ -4,24 +4,21 @@
  * External dependencies
  */
 import type { MixedElement } from 'react';
+import { memo } from '@wordpress/element';
 
-export const Style = ({
-	selector,
-	cssDeclaration,
+const StyleComponent = ({
+	declarations,
 }: {
-	selector: string,
-	cssDeclaration: Array<string>,
+	declarations: string,
 }): MixedElement => {
-	if (!cssDeclaration.length) {
+	if (!declarations) {
 		return <></>;
 	}
 
-	return (
-		<>
-			{selector}
-			{'{'}
-			{cssDeclaration}
-			{'}'}
-		</>
-	);
+	return <style>{declarations}</style>;
 };
+
+export const Style = memo(
+	StyleComponent,
+	(prev, next) => prev.declarations === next.declarations
+);
