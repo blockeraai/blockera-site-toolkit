@@ -8,6 +8,10 @@ inputs:
 runs:
     using: 'composite'
     steps:
+        - name: Ensure global-packages submodule
+          shell: bash
+          run: bash "${{ github.workspace }}/.github/actions/ensure-global-packages/ensure.sh" "${{ github.workspace }}"
+
         - name: Use desired version of Node.js
           uses: actions/setup-node@v3
           with:

@@ -8,3 +8,15 @@ dist
 .phpunit.result.cache
 .env
 build
+
+# Cypress artifacts (global-packages submodule)
+packages/global-packages/packages/dev-cypress/js/screenshots
+packages/global-packages/packages/dev-cypress/js/downloads
+packages/global-packages/packages/dev-cypress/js/videos
+
+# phpcs report
+.cache/**
+
+# nyc / coverage
+.nyc_output
+coverage
