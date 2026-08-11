@@ -1,13 +1,1 @@
-const wpConfig = require('@wordpress/prettier-config');
-
-module.exports = {
-	...wpConfig,
-	overrides: [
-		{
-			files: '*.{css,sass,scss}',
-			options: {
-				singleQuote: false,
-			},
-		},
-	],
-};
+module.exports = require('./packages/global-packages/packages/dev-tools/js/prettier/config');
