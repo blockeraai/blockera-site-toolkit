@@ -17,6 +17,10 @@ inputs:
 runs:
     using: 'composite'
     steps:
+        - name: Ensure global-packages submodule
+          shell: bash
+          run: bash "${{ github.workspace }}/.github/actions/ensure-global-packages/ensure.sh" "${{ github.workspace }}"
+
         ##
         # This allows Composer dependencies to be installed using a single step.
         #

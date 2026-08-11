@@ -28,7 +28,10 @@ try {
 }
 
 const setupNodeEvents = (on, config) => {
-	require('./packages/dev-cypress/js/plugins/index.js')(on, config);
+	require('./packages/global-packages/packages/dev-cypress/js/plugins/index.js')(
+		on,
+		config
+	);
 	//Requires and imports the main plugin function from the cypress-image-diff-js NPM package
 	const getCompareSnapshotsPlugin = require('cypress-image-diff-js/plugin');
 	//Calls the plugin's getCompareSnapshotsPlugin function, passing Cypress' on and config objects, to intialize and register the plugin with Cypress
@@ -44,10 +47,11 @@ module.exports = defineConfig({
 		setupNodeEvents,
 		specPattern: env.e2e.specPattern,
 		excludeSpecPattern: env.e2e.excludeSpecPattern,
-		supportFile: 'packages/dev-cypress/js/support/e2e.js',
+		supportFile:
+			'packages/global-packages/packages/dev-cypress/js/support/e2e.js',
 	},
 	env,
-	fixturesFolder: 'packages/dev-cypress/js/fixtures',
+	fixturesFolder: 'packages/global-packages/packages/dev-cypress/js/fixtures',
 	pageLoadTimeout: 120000,
 	projectId: 'blockera',
 	retries: {
@@ -56,8 +60,9 @@ module.exports = defineConfig({
 	},
 	coverage: true,
 	screenshotOnRunFailure: false,
-	screenshotsFolder: 'packages/dev-cypress/js/screenshots',
-	videosFolder: 'packages/dev-cypress/js/videos',
+	screenshotsFolder:
+		'packages/global-packages/packages/dev-cypress/js/screenshots',
+	videosFolder: 'packages/global-packages/packages/dev-cypress/js/videos',
 	viewportHeight: 1440,
 	viewportWidth: 2560,
 	component: {
@@ -67,7 +72,8 @@ module.exports = defineConfig({
 			bundler: 'webpack',
 		},
 		specPattern: 'packages/**/*.component.cy.js',
-		supportFile: 'packages/dev-cypress/js/support/component.js',
+		supportFile:
+			'packages/global-packages/packages/dev-cypress/js/support/component.js',
 	},
 	numTestsKeptInMemory: 25,
 	experimentalMemoryManagement: true,

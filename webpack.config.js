@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+const fs = require('fs');
 const path = require('path');
 const {
 	camelCaseDash,
@@ -10,15 +11,38 @@ const {
  * Internal dependencies
  */
 const { dependencies } = require('./package');
-const packagesConfig = require('./packages/dev-tools/js/webpack/packages');
+const packagesConfig = require('./packages/global-packages/packages/dev-tools/js/webpack/packages');
 
 const exportDefaultPackages = [];
+
+// Resolve package dir: vendor symlink → local packages/ → global-packages submodule.
+function resolveBlockeraPackageDir(packageName) {
+	const candidates = [
+		`./vendor/blockera/${packageName}`,
+		`./packages/${packageName}`,
+		`./packages/global-packages/packages/${packageName}`,
+	];
+
+	for (const candidate of candidates) {
+		if (
+			fs.existsSync(
+				path.resolve(process.cwd(), candidate, 'package.json')
+			)
+		) {
+			return candidate;
+		}
+	}
+
+	throw new Error(
+		`Cannot find Blockera package "${packageName}" under vendor/blockera, packages/, or packages/global-packages/packages/`
+	);
+}
 
 module.exports = (env, argv) => {
 	if (!argv) {
 		return require(path.resolve(
 			process.cwd(),
-			'packages/dev-cypress/js/webpack.config.js'
+			'packages/global-packages/packages/dev-cypress/js/webpack.config.js'
 		));
 	}
 
@@ -28,17 +52,8 @@ module.exports = (env, argv) => {
 		.map((packageName) => packageName.replace(BLOCKERA_NAMESPACE, ''));
 	const blockeraPackagesVersion = Object.fromEntries(
 		blockeraPackages.map((packageName) => {
-			let parentDirectory = '';
-			let name = packageName;
-
-			if (-1 !== packageName.indexOf('blocks-')) {
-				parentDirectory = 'blocks/';
-				name = name.split('blocks-')[1];
-			}
-
-			const {
-				version,
-			} = require(`./packages/${parentDirectory}${name}/package.json`);
+			const packageDir = resolveBlockeraPackageDir(packageName);
+			const { version } = require(`${packageDir}/package.json`);
 
 			return [packageName, version.replace(/\./g, '_')];
 		})
@@ -53,14 +68,8 @@ module.exports = (env, argv) => {
 			return memo;
 		}
 
-		let parentDirectory = '';
-		let _packageName = packageName;
-
-		if (-1 !== packageName.indexOf('blocks-')) {
-			parentDirectory = 'blocks/';
-			_packageName = _packageName.split('blocks-')[1];
-		}
 		const version = blockeraPackagesVersion[packageName];
+		const packageDir = resolveBlockeraPackageDir(packageName);
 
 		let name = packageName.startsWith('blockera')
 			? camelCaseDash(packageName + '_' + version)
@@ -75,7 +84,7 @@ module.exports = (env, argv) => {
 		return {
 			...memo,
 			[packageName]: {
-				import: `./packages/${parentDirectory}${_packageName}`,
+				import: packageDir,
 				library: {
 					name,
 					type: 'var',
@@ -89,6 +98,7 @@ module.exports = (env, argv) => {
 
 	return packagesConfig(env, {
 		...argv,
+		projectRoot: process.cwd(),
 		entry: blockeraEntries,
 		devtoolNamespace: 'blockeraSiteToolkit',
 		mode: argv?.mode || 'production',

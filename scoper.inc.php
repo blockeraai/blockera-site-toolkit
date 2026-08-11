@@ -54,12 +54,12 @@ return [
             ->files()
             ->ignoreVCS(true)
             ->exclude($excludedFiles)
-            ->in('packages/bootstrap/php'),
+            ->in('packages/global-packages/packages/bootstrap/php'),
         Finder::create()
             ->files()
             ->ignoreVCS(true)
             ->exclude($excludedFiles)
-            ->in('packages/utils/php'),
+            ->in('packages/global-packages/packages/utils/php'),
         Finder::create()
             ->files()
             ->ignoreVCS(true)
@@ -69,7 +69,7 @@ return [
             ->files()
             ->ignoreVCS(true)
             ->exclude($excludedFiles)
-            ->in('packages/wordpress/php'),
+            ->in('packages/global-packages/packages/wordpress/php'),
     ],
 
     // List of excluded files, i.e. files for which the content will be left untouched.
@@ -78,8 +78,8 @@ return [
     // For more see: https://github.com/humbug/php-scoper/blob/master/docs/configuration.md#patchers
     'exclude-files' => [
         // 'packages/site-toolkit/php/functions.php',
-        // 'packages/utils/php/functions.php',
-        // 'packages/wordpress/php/functions.php',
+        // 'packages/global-packages/packages/utils/php/functions.php',
+        // 'packages/global-packages/packages/wordpress/php/functions.php',
         // 'packages/site-toolkit/php/Views/licenses.php',
         // 'packages/site-toolkit/php/Views/consent-form.php',
     ],
@@ -96,19 +96,19 @@ return [
             if (!ctype_upper(basename($filePath)[0])) {
                 $contents = str_replace(
                     [
-                    	"'".$prefix . "\\",
-						"\\function_exists",
-						'namespace Build\Packages;',
-						'new BlockeraAI\\',
-						'new Blockera\\',
-                	],
+                        "'" . $prefix . "\\",
+                        "\\function_exists",
+                        'namespace Build\Packages;',
+                        'new BlockeraAI\\',
+                        'new Blockera\\',
+                    ],
                     [
-                    	"'",
-						'function_exists',
-						'',
-						'new ' . $prefix . '\\',
-						'new ' . $prefix . '\\',
-                	],
+                        "'",
+                        'function_exists',
+                        '',
+                        'new ' . $prefix . '\\',
+                        'new ' . $prefix . '\\',
+                    ],
                     $contents
                 );
             }
