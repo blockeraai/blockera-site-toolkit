@@ -1,0 +1,2 @@
+includes:
+	- packages/global-packages/packages/dev-tools/php/phpstan.neon

@@ -2,3 +2,8 @@
 dist
 example
 vendor
+source-codes
+
+# Ignore test fixtures
+tests/**/input.html
+tests/**/*.css

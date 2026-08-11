@@ -1,4 +1,8 @@
-<!--@see: https://github.com/wp-phpunit/docs to configuration project for wp phpunit testing-->
+<!--
+	Site-toolkit-specific PHPUnit config (__BLOCKERA_DIR__ / suites).
+	Do not replace with dev-tools/php/phpunit.plugin.xml.dist (core plugin suites).
+	@see https://github.com/wp-phpunit/docs
+-->
 <phpunit
         bootstrap="./packages/global-packages/packages/dev-phpunit/php/bootstrap.php"
         backupGlobals="false"
