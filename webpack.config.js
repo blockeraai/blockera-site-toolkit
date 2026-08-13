@@ -20,6 +20,24 @@ function resolvePackageDir(packageName) {
 		`./packages/global-packages/packages/${packageName}`,
 	];
 
+	// Library packages live under features-library/<name> / blocks-library/<name>.
+	if (packageName.startsWith('feature-')) {
+		candidates.push(
+			`./packages/global-packages/packages/features-library/${packageName.replace(
+				'feature-',
+				''
+			)}`
+		);
+	}
+	if (packageName.startsWith('block-')) {
+		candidates.push(
+			`./packages/global-packages/packages/blocks-library/${packageName.replace(
+				'block-',
+				''
+			)}`
+		);
+	}
+
 	for (const candidate of candidates) {
 		if (
 			fs.existsSync(
@@ -48,6 +66,12 @@ module.exports = createRootWebpackConfig({
 		'@blockera/data': 'blockeraData_' + blockeraPackagesVersion.data,
 		'@blockera/utils': 'blockeraUtils_' + blockeraPackagesVersion.utils,
 		'@blockera/editor': 'blockeraEditor_' + blockeraPackagesVersion.editor,
+		'@blockera/blocks-core':
+			'blockeraBlocksCore_' + blockeraPackagesVersion['blocks-core'],
+		'@blockera/feature-icon':
+			'blockeraFeatureIcon_' + blockeraPackagesVersion['feature-icon'],
+		'@blockera/features-core':
+			'blockeraFeaturesCore_' + blockeraPackagesVersion['features-core'],
 		'@blockera/controls':
 			'blockeraControls_' + blockeraPackagesVersion.controls,
 		'@blockera/bootstrap':
@@ -56,5 +80,10 @@ module.exports = createRootWebpackConfig({
 			'blockeraWordpress_' + blockeraPackagesVersion.wordpress,
 		'@blockera/classnames':
 			'blockeraClassnames_' + blockeraPackagesVersion.classnames,
+		'@blockera/data-editor':
+			'blockeraDataEditor_' + blockeraPackagesVersion['data-editor'],
+		'@blockera/global-styles-ui':
+			'blockeraGlobalStylesUi_' +
+			blockeraPackagesVersion['global-styles-ui'],
 	}),
 });
