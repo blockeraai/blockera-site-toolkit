@@ -7,7 +7,7 @@
 	--blockera-controls-primary-color: var(--blockera-product-color);
 	--blockera-controls-primary-color-darker-20: color-mix(in srgb, var(--blockera-product-color) 100%, #000000 30%);
 
-	&:before {
+	&::before {
 		content: "";
 		height: 4px;
 		background-color: var(--blockera-product-color);
@@ -209,7 +209,7 @@
 		.no-websites-notice {
 			background-color: rgb(247 247 247);
 			padding: 10px 20px;
-			margin: 0px;
+			margin: 0;
 			font-size: 13px;
 			color: var(--wp--preset--color--contrast);
 		}
@@ -333,7 +333,7 @@
 		color: var(--blockera-product-color);
 		background-color: color-mix(in srgb, var(--blockera-product-color) 10%, #ffffff);
 		padding: 10px 20px;
-		margin: 0px;
+		margin: 0;
 		font-size: 14px;
 		border-radius: 2px;
 
@@ -542,7 +542,7 @@
 				color: #a3a3a3;
 			}
 
-			.product-details + .product-details:before {
+			.product-details + .product-details::before {
 				content: "";
 				margin-right: 15px;
 				display: inline-block;
