@@ -2,37 +2,9 @@ name: Compressed Size
 
 on:
     pull_request:
-        paths:
-            # Any change to a CSS, Sass, or JavaScript file should run checks.
-            - '**.js'
-            - '**.css'
-            - '**.scss'
-            # Changes to any NPM related files could affect the outcome.
-            - '**package*.json'
-            # These files configures ESLint. Changes could affect the outcome.
-            - '**.eslint*'
-            - 'packages/dev-tools/js/eslint/*.js'
-            # These files configures JSHint. Changes could affect the outcome.
-            - '**.jshint*'
-            # These files configures Prettier. Changes could affect the outcome.
-            - '**.prettier*'
-            # These files configures stylelint. Changes could affect the outcome.
-            - '**.stylelint*'
-            # These archive file of Blockera Site Toolkit plugin. Changes could affect the outcome.
-            - 'blockera-site-toolikit.zip'
-            # These files configures TypeScript. Changes could affect the outcome.
-            # TODO: uncomment below pattern to detect tsconfig file in future.
-            #- '**.tsconfig*'
-            # This file configures Webpack. Changes could affect the outcome.
-            - 'webpack.config.js'
-            - 'packages/dev-tools/js/webpack/*.js'
-            # Changes to this workflow file should always verify the changes are successful.
-            - '.github/workflows/bundle-size.yml'
+    workflow_dispatch:
 
-# Cancels all previous workflow runs for pull requests that have not completed.
 concurrency:
-    # The concurrency group contains the workflow name and the branch name for pull requests
-    # or the commit hash for any other events.
     group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
     cancel-in-progress: true
 
@@ -40,29 +12,20 @@ jobs:
     build:
         name: Building and Give Sizes
         runs-on: ubuntu-latest
+        if: ${{ github.repository == 'blockeraai/blockera-site-toolkit' || github.event_name == 'pull_request' }}
         env:
             BLOCKERA_GLOBAL_PACKAGES_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
-        if: ${{ github.repository == 'blockeraai/blockera-site-toolikit' || github.event_name == 'pull_request' }}
-
+            BLOCKERA_BUNDLE_SIZE_PATHS_FILE: .github/bundle-size-paths
         steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-
-            - name: Setup Node.js and install dependencies
-              uses: ./.github/setup-node
-
-            - name: Install Composer dependencies
-              uses: ramsey/composer-install@v2
-              env:
-                  COMPOSER: composer.dev.json
+            - uses: actions/checkout@v5
               with:
-                  custom-cache-suffix: $(/bin/date -u --date='last Mon' "+%F")
-                  composer-options: '--no-dev -o --apcu-autoloader -a'
+                  token: ${{ secrets.BLOCKERABOT_PAT }}
+                  fetch-depth: 0
 
-            - name: Build Plugin Zip File
-              uses: ./.github/build-plugin-zip
+            - name: Ensure global-packages submodule
+              uses: ./.github/actions/ensure-global-packages
 
-            - uses: preactjs/compressed-size-action@v2
+            - uses: ./packages/global-packages/packages/dev-tools/github/actions/bundle-size
               with:
-                  repo-token: '${{ secrets.BLOCKERABOT_PAT }}'
-                  pattern: '{dist/**/*.min.js,dist/**/*.css,blockera-site-toolikit.zip}'
+                  repo-token: ${{ secrets.BLOCKERABOT_PAT }}
+                  pattern: '{dist/**/*.min.js,dist/**/*.css,blockera-site-toolkit.zip}'

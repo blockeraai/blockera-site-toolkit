@@ -1,15 +1,11 @@
-name: Build Blockera Site Toolkit Plugin Tests
+name: Build Blockera Site Toolkit Tests
 
 on:
     pull_request:
         types: [opened, synchronize, ready_for_review]
-
     workflow_dispatch:
 
-# Cancels all previous workflow runs for pull requests that have not completed.
 concurrency:
-    # The concurrency group contains the workflow name and the branch name for pull requests
-    # or the commit hash for any other events.
     group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
     cancel-in-progress: true
 
@@ -17,55 +13,28 @@ jobs:
     build_tests:
         name: Building and Run E2E Tests (PHP ${{ matrix.php }})
         runs-on: ubuntu-latest
-        env:
-            BLOCKERA_GLOBAL_PACKAGES_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
         if: ${{ github.repository == 'blockeraai/blockera-site-toolkit' || github.event_name == 'pull_request' }}
         strategy:
             fail-fast: true
             matrix:
-                php: ['8.2', '8.3', '8.4']
-
+                php: ['7.4', '8.0', '8.1', '8.2']
+        env:
+            BLOCKERA_GLOBAL_PACKAGES_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
+            GITHUB_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
+            BLOCKERA_BUILD_ZIP_TESTS_PRODUCT_STYLE: toolkit
+            BLOCKERA_BUILD_ZIP_TESTS_SPECS_ROOTS: ./packages/site-toolkit,./packages
+            BLOCKERA_BUILD_ZIP_TESTS_SPECS_PATH: '*toolkit*'
         steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+            - uses: actions/checkout@v5
+              with:
+                  token: ${{ secrets.BLOCKERABOT_PAT }}
 
-            - name: Setup Node.js and install dependencies
-              uses: ./.github/setup-node
+            - name: Ensure global-packages submodule
+              uses: ./.github/actions/ensure-global-packages
 
-            - name: Build Plugin Zip File
-              uses: ./.github/build-plugin-zip
-
-            - name: Extract blockera-site-toolkit.zip to build directory
-              run: |
-                  mkdir build
-                  unzip blockera-site-toolkit.zip -d ./build/blockera-site-toolkit
-                  rm -rf blockera-site-toolkit.zip
-
-            - name: Create Requirements
-              run: |
-                  cd ./build/blockera-site-toolkit
-                  mkdir packages
-                  mkdir packages/blockera-site-toolkit
-                  mkdir packages/blockera-site-toolkit/tests
-                  touch .wp-env.json
-                  echo '{"plugins": ["."], "phpVersion": "${{ matrix.php }}"}' >> .wp-env.json
-                  cat .wp-env.json
-                  touch cypress.env.json
-                  echo '{"isLogin": false,"wpUsername": "admin","wpPassword": "password","testURL": "http://localhost:8888","e2e": {"excludeSpecPattern": [],"specPattern": ["packages/**/*.toolkit.build.e2e.cy.js"]}}' >> cypress.env.json
-                  cat cypress.env.json
-                  cd ../..
-                  cp -r ./cypress ./build/blockera-site-toolkit
-                  cp ./package.json ./build/blockera-site-toolkit
-                  cp -r ./node_modules ./build/blockera-site-toolkit
-                  cp ./cypress.config.js ./build/blockera-site-toolkit
-                  mkdir -p ./build/blockera-site-toolkit/packages/global-packages/packages
-                  cp -r ./packages/global-packages/packages/dev-cypress ./build/blockera-site-toolkit/packages/global-packages/packages
-                  find ./packages/ -type f \( -name "*toolkit.build.e2e.cy.js" \) -exec cp {} ./build/blockera-site-toolkit/packages/blockera-site-toolkit/tests \;
-
-            - name: Setup and Run E2E tests on Blockera build
-              run: |
-                  cd ./build/blockera-site-toolkit
-                  npx cypress install
-                  npm run env:start
-                  npm run test:e2e
-                  npm run env:stop
+            - uses: ./packages/global-packages/packages/dev-tools/github/actions/build-plugin-zip-tests
+              with:
+                  php-version: ${{ matrix.php }}
+                  skip-if-no-specs: 'true'
+                  zip-file: blockera-site-toolkit.zip
+                  build-dir: ./build/blockera-site-toolkit
