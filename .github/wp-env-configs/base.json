@@ -1,0 +1,12 @@
+{
+	"core": "https://wordpress.org/wordpress-latest.zip",
+	"plugins": ["."],
+	"config": {
+		"BLOCKERA_TELEMETRY_OPT_IN_OFF": true,
+		"SCRIPT_DEBUG": false,
+		"WP_DEBUG": false
+	},
+	"lifecycleScripts": {
+		"afterStart": "wp-env run cli wp theme activate twentytwentyfive"
+	}
+}

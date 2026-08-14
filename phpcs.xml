@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <ruleset name="WordPress Coding Standards for Blockera Site Toolkit">
-    <description>Consumer ruleset: shared Blockera PHPCS (replaces stale PSR12-only ruleset).</description>
+    <description>Consumer ruleset: shared Blockera PHPCS + site-toolkit text_domain and scan roots.</description>
 
     <rule ref="./packages/global-packages/packages/dev-tools/php/phpcs.xml"/>
 
-    <config name="text_domain" value="blockera,default"/>
+    <config name="text_domain" value="blockera-site-toolkit,blockera,default"/>
     <file>./packages</file>
 
     <arg name="cache" value=".cache/phpcs.json"/>
