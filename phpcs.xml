@@ -7,5 +7,6 @@
     <config name="text_domain" value="blockera-site-toolkit,blockera,default"/>
     <file>./packages</file>
 
+    <!-- Cache path is relative to this consumer ruleset (project root). -->
     <arg name="cache" value=".cache/phpcs.json"/>
 </ruleset>
