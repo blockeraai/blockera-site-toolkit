@@ -39,7 +39,7 @@ export const Header = ({
 
 	const remainingDays = Math.ceil(
 		(new Date(expiryDate).getTime() - new Date().getTime()) /
-		(1000 * 60 * 60 * 24)
+			(1000 * 60 * 60 * 24)
 	);
 
 	return (
