@@ -17,7 +17,8 @@ jobs:
         strategy:
             fail-fast: true
             matrix:
-                php: ['7.4', '8.0', '8.1', '8.2']
+                # league/oauth2-server ^9 requires PHP >= 8.2.
+                php: ['8.2', '8.3']
         env:
             BLOCKERA_GLOBAL_PACKAGES_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
             GITHUB_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
