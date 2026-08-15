@@ -43,5 +43,8 @@ jobs:
 
             - if: matrix.setup == 'php'
               uses: ./packages/global-packages/packages/dev-tools/github/actions/setup-php
+              with:
+                  # league/oauth2-server ^9 requires PHP >= 8.2 (setup-php defaults to 7.4).
+                  php-version: '8.2'
 
             - run: bash packages/global-packages/packages/dev-tools/github/scripts/jobs/code-lint/${{ matrix.suite }}.sh
