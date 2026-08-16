@@ -5,6 +5,7 @@
 	"require": {
 		"php": ">=8.2",
 		"blockera/bootstrap": "*",
+		"blockera/products": "*",
 		"blockera/utils": "*"
 	},
 	"autoload": {

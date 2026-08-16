@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e153e38a34b57dfb6de462b52a446589",
+    "content-hash": "540b0c743ccded5dcee4f6e8bb7d08fa",
     "packages": [
         {
             "name": "blockera/bootstrap",
@@ -27,15 +27,45 @@
             }
         },
         {
+            "name": "blockera/products",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "packages/global-packages/packages/products",
+                "reference": "b2a7a7fa544181705a3d5e245b32ac6813496fa1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Blockera\\Products\\": "php/"
+                },
+                "files": [
+                    "php/functions.php",
+                    "php/hooks.php"
+                ]
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Blockera\\Products\\Tests\\": "php/tests/"
+                }
+            },
+            "description": "The Blockera products details registry, providing an object store api and localization for javascript consumers.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "blockera/site-toolkit",
             "version": "1.0.0",
             "dist": {
                 "type": "path",
                 "url": "./packages/site-toolkit",
-                "reference": "ecfa56f39a7ccc690968ec57a665f97bc90448ff"
+                "reference": "e3ef06de542ddd9aca135db3295345cf1278c86b"
             },
             "require": {
                 "blockera/bootstrap": "*",
+                "blockera/products": "*",
                 "blockera/utils": "*",
                 "php": ">=8.2"
             },

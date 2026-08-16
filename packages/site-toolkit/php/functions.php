@@ -621,3 +621,80 @@ if (! function_exists('bsaGetFileName')) {
 		return $filename;
 	}
 }
+
+if ( ! function_exists( 'blockera_site_toolkit_get_product_details' ) ) {
+	/**
+	 * Blockera Site Toolkit plugin product details for the products registry.
+	 *
+	 * Shape follows blockera/products `product-details.schema.json`.
+	 * Details are read from the plugin entry file headers so version bumps
+	 * need no code change.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return array<string, mixed>
+	 */
+	function blockera_site_toolkit_get_product_details(): array {
+		$plugin_file = defined( 'BSA_PLUGIN_FILE' ) ? BSA_PLUGIN_FILE : '';
+
+		$headers = $plugin_file
+			? get_file_data(
+				$plugin_file,
+				[
+					'Name'        => 'Plugin Name',
+					'PluginURI'   => 'Plugin URI',
+					'Description' => 'Description',
+					'Author'      => 'Author',
+					'Version'     => 'Version',
+					'RequiresWP'  => 'Requires at least',
+					'RequiresPHP' => 'Requires PHP',
+				]
+			)
+			: [];
+
+		$version = defined( 'BSA_VERSION' ) ? BSA_VERSION : ( ! empty( $headers['Version'] ) ? $headers['Version'] : '0.0.0' );
+
+		return [
+			'name'        => ! empty( $headers['Name'] ) ? $headers['Name'] : 'Blockera Site Toolkit',
+			'description' => ! empty( $headers['Description'] ) ? $headers['Description'] : '',
+			'slug'        => 'blockera-site-toolkit',
+			'version'     => $version,
+			'type'        => 'plugin',
+			// This code only runs while the plugin is active.
+			'status'      => 'active',
+			'isCompanion' => false,
+			'author'      => ! empty( $headers['Author'] ) ? $headers['Author'] : '',
+			'homepage'    => ! empty( $headers['PluginURI'] ) ? $headers['PluginURI'] : '',
+			'requires'    => [
+				'wordpress' => ! empty( $headers['RequiresWP'] ) ? $headers['RequiresWP'] : '',
+				'php'       => ! empty( $headers['RequiresPHP'] ) ? $headers['RequiresPHP'] : '',
+			],
+		];
+	}
+}
+
+if ( ! function_exists( 'blockera_site_toolkit_register_product' ) ) {
+	/**
+	 * Register the Blockera Site Toolkit plugin into the blockera products registry.
+	 *
+	 * Hooked on `blockera/products/registry/init` (fires once, on first read
+	 * access of the registry).
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	function blockera_site_toolkit_register_product(): void {
+		// The blockera/products package may be absent in stripped-down builds.
+		if ( ! function_exists( 'blockera_register_product' ) ) {
+			return;
+		}
+
+		blockera_register_product( blockera_site_toolkit_get_product_details() );
+	}
+}
+
+// Register as a product; the registry fires this once on first read access.
+if ( function_exists( 'add_action' ) ) {
+	add_action( 'blockera/products/registry/init', 'blockera_site_toolkit_register_product' );
+}
