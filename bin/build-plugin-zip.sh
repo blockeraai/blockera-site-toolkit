@@ -117,6 +117,18 @@ status "Generating blockera-site-toolkit.php 📝"
 php bin/generate-blockera-site-toolkit-php.php > blockera-site-toolkit.tmp.php
 mv blockera-site-toolkit.tmp.php blockera-site-toolkit.php
 
+# Ship autoloader-coordinator into inc/ (production entry requires inc/bootstrap.php).
+status "Generating inc/ autoloader-coordinator 📝"
+mkdir -p "inc"
+COORDINATOR_BOOTSTRAP="packages/global-packages/packages/autoloader-coordinator/bootstrap.php"
+COORDINATOR_CLASS="packages/global-packages/packages/autoloader-coordinator/class-shared-autoload-coordinator.php"
+if [ ! -f "${COORDINATOR_BOOTSTRAP}" ] || [ ! -f "${COORDINATOR_CLASS}" ]; then
+	error "ERROR: Could not find autoloader-coordinator under packages/global-packages/packages."
+	exit 1
+fi
+cp "${COORDINATOR_CLASS}" inc/class-shared-autoload-coordinator.php
+cp "${COORDINATOR_BOOTSTRAP}" inc/bootstrap.php
+
 build_files=$(
 	ls dist/*/*.{min.js,min.css,asset.php} \
 )
@@ -135,6 +147,7 @@ fi
 # Generate the plugin zip file.
 status "Creating archive... 🎁"
 zip -r -q blockera-site-toolkit.zip \
+	inc \
 	$build_files \
 	$main_plugin_file \
 	composer.json \
