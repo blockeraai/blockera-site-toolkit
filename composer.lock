@@ -4,15 +4,40 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4fa7ecf42165947e419e7bb656a951df",
+    "content-hash": "7a28a31bcd86a2b2995d4defdb4c238a",
     "packages": [
+        {
+            "name": "blockera/bootstrap",
+            "version": "1.0.2",
+            "dist": {
+                "type": "path",
+                "url": "packages/global-packages/packages/bootstrap",
+                "reference": "c030cb60aa6ce80395072f6e400859113ea86b68"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Blockera\\Bootstrap\\": "php/"
+                }
+            },
+            "description": "The initializer blockera any application on wordpress site.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
         {
             "name": "blockera/site-toolkit",
             "version": "1.0.0",
             "dist": {
                 "type": "path",
                 "url": "./packages/site-toolkit",
-                "reference": "e74e5c453cdb418e35fd5cebb6979e9156d1da92"
+                "reference": "ecfa56f39a7ccc690968ec57a665f97bc90448ff"
+            },
+            "require": {
+                "blockera/bootstrap": "*",
+                "blockera/utils": "*",
+                "php": ">=8.2"
             },
             "type": "library",
             "autoload": {
@@ -30,6 +55,62 @@
             },
             "description": "A toolkit package for Blockera site functionality including OAuth server implementation and utility functions.",
             "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "blockera/utils",
+            "version": "1.2.1",
+            "dist": {
+                "type": "path",
+                "url": "packages/global-packages/packages/utils",
+                "reference": "f505e5e55abc84fd7a2c508d7e5064aa708971e0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Blockera\\Utils\\": "php/"
+                },
+                "files": [
+                    "php/functions.php"
+                ]
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Blockera\\Utils\\Tests\\": "php/tests/"
+                }
+            },
+            "description": "The utilities for JavaScript and PHP blockera applications.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "blockera/wordpress",
+            "version": "1.1.6",
+            "dist": {
+                "type": "path",
+                "url": "packages/global-packages/packages/wordpress",
+                "reference": "810395b2ebe26967414c2c40c4c8e31f8ead3ce3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Blockera\\WordPress\\": "php/"
+                },
+                "files": [
+                    "php/functions.php"
+                ]
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Blockera\\WordPress\\Test\\": "php/tests/"
+                }
+            },
+            "description": "The utilities for blockera on WordPress CMS.",
+            "transport-options": {
+                "symlink": true,
                 "relative": true
             }
         },
