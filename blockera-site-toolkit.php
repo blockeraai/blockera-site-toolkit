@@ -18,34 +18,55 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 ### BEGIN AUTO-GENERATED AUTOLOADER
-// Coordinator only includes Composer require-dev (e.g. Whoops) when development runtime is set.
-// Signal before bootstrap; BSA_PLUGIN_MODE is defined later and is not read by the coordinator.
-if ( ! isset( $_ENV['APP_MODE'] ) && false === getenv( 'APP_MODE' ) ) {
-	$_ENV['APP_MODE'] = 'development';
-	putenv( 'APP_MODE=development' );
-}
 require_once __DIR__ . '/packages/global-packages/packages/autoloader-coordinator/bootstrap.php';
 blockera_bootstrap_shared_autoloader(
 	'blockera-site-toolkit',
 	__DIR__,
 	[
-		'priority'       => 10,
-		'default'        => ! defined( 'BSA_PLUGIN_FILE' ) || BSA_PLUGIN_FILE === __FILE__,
-		'file'           => __FILE__,
-		'entry_constant' => 'BSA_PLUGIN_FILE',
+		'priority'          => 5,
+		'default'           => ! defined( 'BSA_PLUGIN_FILE' ) || BSA_PLUGIN_FILE === __FILE__,
+		'file'              => __FILE__,
+		'entry_constant'    => 'BSA_PLUGIN_FILE',
+		// Prefer Free/Pro shared packages when those products are active on the same site.
+		'defer_files_until' => [ 'blockera' ],
+		'companions'        => [
+			[
+				'slug'           => 'blockera',
+				'plugin_file'    => 'blockera/blockera.php',
+				'entry_constant' => 'BLOCKERA_SB_FILE',
+			],
+			[
+				'slug'           => 'blockera-pro',
+				'plugin_file'    => 'blockera-pro/blockera-pro.php',
+				'entry_constant' => 'BLOCKERA_PRO_FILE',
+			],
+		],
 	]
 );
 ### END AUTO-GENERATED AUTOLOADER
 
-// Env Loading ...
-$dotenv = Dotenv\Dotenv::createImmutable( __DIR__ );
-$dotenv->safeLoad();
+if ( file_exists( __DIR__ . '/.env' ) ) {
+	// Env Loading ...
+	$dotenv = Dotenv\Dotenv::createImmutable( __DIR__ );
+	$dotenv->safeLoad();
+}
 
-define( 'BSA_PLUGIN_FILE', __FILE__ );
-define( 'BSA_PLUGIN_URL', plugin_dir_url( BSA_PLUGIN_FILE ) );
-define( 'BSA_PLUGIN_DIR', plugin_dir_path( BSA_PLUGIN_FILE ) );
+if ( ! defined( 'BSA_PLUGIN_FILE' ) ) {
+	define( 'BSA_PLUGIN_FILE', __FILE__ );
+}
+
+if ( ! defined( 'BSA_PLUGIN_URL' ) ) {
+	define( 'BSA_PLUGIN_URL', plugin_dir_url( BSA_PLUGIN_FILE ) );
+}
+
+if ( ! defined( 'BSA_PLUGIN_DIR' ) ) {
+	define( 'BSA_PLUGIN_DIR', plugin_dir_path( BSA_PLUGIN_FILE ) );
+}
+
 ### BEGIN AUTO-GENERATED DEFINES
-define( 'BSA_PLUGIN_MODE', 'dev' );
+if ( ! defined( 'BSA_PLUGIN_MODE' ) ) {
+	define( 'BSA_PLUGIN_MODE', 'development' );
+}
 ### END AUTO-GENERATED DEFINES
 
 ### BEGIN AUTO-GENERATED FRONT CONTROLLERS
@@ -76,7 +97,7 @@ add_action(
 	}
 );
 
-if ( 'dev' === BSA_PLUGIN_MODE && class_exists( \Whoops\Run::class ) ) {
+if ( 'development' === BSA_PLUGIN_MODE && class_exists( \Whoops\Run::class ) ) {
 	$whoops = new \Whoops\Run();
 	$whoops->pushHandler( new \Whoops\Handler\PrettyPageHandler() );
 	$whoops->register();

@@ -241,13 +241,7 @@ class AppServiceProvider extends ServiceProvider {
 			return;
 		}
 
-		$build_file = $this->app->getPath() . '/vendor/blockera/build/src/SiteToolkit/Views/licenses.php';
-
-		if ( file_exists( $build_file ) ) {
-			$default_path = $this->app->getPath() . '/vendor/blockera/build/src/SiteToolkit/';
-		} else {
-			$default_path = $this->app->getPath() . '/vendor/blockera/site-toolkit/php/';
-		}
+		$default_path = $this->app->getPath() . '/vendor/blockera/site-toolkit/php/';
 
 		try {
 			$mappedLicenses = $this->app->make( OrderRepository::class )->getLicenses();

@@ -33,14 +33,14 @@ class SetupTest extends AppTestCase
 
     public function testPluginModeManagement(): void
     {
-        // Test dev mode
-        $this->setup->setPluginMode('dev');
-        $this->assertEquals('dev', $this->setup->getPluginMode());
+        // Test development mode
+        $this->setup->setPluginMode('development');
+        $this->assertEquals('development', $this->setup->getPluginMode());
         $this->assertTrue($this->setup->isDebug());
 
         // Test production mode
-        $this->setup->setPluginMode('prod');
-        $this->assertEquals('prod', $this->setup->getPluginMode());
+        $this->setup->setPluginMode('production');
+        $this->assertEquals('production', $this->setup->getPluginMode());
         $this->assertFalse($this->setup->isDebug());
     }
 

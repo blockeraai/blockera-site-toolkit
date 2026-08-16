@@ -159,12 +159,9 @@ class Setup extends Application {
         // Rewrite rule to transform url specific page to query vars.
         $this->rewriteRules();
 
-		$build_filename = $this->getPath() . '/vendor/blockera/build/src/SiteToolkit/Routes/web.php';
-        $web_filename   = $this->getPath() . '/vendor/blockera/site-toolkit/php/Routes/web.php';
+        $web_filename = $this->getPath() . '/vendor/blockera/site-toolkit/php/Routes/web.php';
 
-		if (file_exists($build_filename)) {
-			require_once $build_filename;
-		} elseif (file_exists($web_filename)) {
+		if ( file_exists( $web_filename ) ) {
             // Require the web routes.
             require_once $web_filename;
         }
@@ -177,13 +174,9 @@ class Setup extends Application {
      */
     public function registerRestRoutes(): void {
 
-		$build_file = $this->getPath() . '/vendor/blockera/build/src/SiteToolkit/Routes/api.php';
-		
         $apiFilename = $this->getPath() . '/vendor/blockera/site-toolkit/php/Routes/api.php';
 
-		if (file_exists($build_file)) {
-			require_once $build_file;
-		} elseif (file_exists($apiFilename)) {
+		if ( file_exists( $apiFilename ) ) {
             // Require the API routes.
             require_once $apiFilename;
         }
@@ -309,6 +302,6 @@ class Setup extends Application {
      * @return bool true if the plugin is in debug mode, false otherwise.
      */
     public function isDebug(): bool {
-        return 'dev' === $this->getPluginMode();
+        return 'development' === $this->getPluginMode();
     }
 }

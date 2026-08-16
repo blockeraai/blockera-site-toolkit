@@ -82,11 +82,7 @@ add_action(
 			$raw_url    = parse_url( urldecode( $_GET['redirect_uri'] ) );
 			$domain     = '<div class="client-website"><span class="client-website-scheme">' . $raw_url['scheme'] . '://' . '</span> ' . $raw_url['host'] . '</div>';
 
-            $templateFile = $setupInstance->getPath() . '/vendor/blockera/build/src/SiteToolkit/Views/consent-form.php';
-
-			if (! file_exists($templateFile)) {
-				$templateFile = $setupInstance->getPath() . '/vendor/blockera/site-toolkit/php/Views/consent-form.php';
-			}
+            $templateFile = $setupInstance->getPath() . '/vendor/blockera/site-toolkit/php/Views/consent-form.php';
 
 			include $templateFile;
 
