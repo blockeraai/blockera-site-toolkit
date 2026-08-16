@@ -146,6 +146,7 @@ const Row = ({
 			)}
 
 			{isDeleteModalOpen && (
+				// $FlowFixMe[prop-missing] focusOnMount is forwarded to WP Modal via ...props
 				<Modal
 					className="delete-modal"
 					size="large"
