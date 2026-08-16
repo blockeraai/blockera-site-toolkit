@@ -1,0 +1,40 @@
+{
+	"meta": {
+		"title": "Install Blockera Site Toolkit from github artifact",
+		"author": "https://blockera.ai/",
+		"description": "Install and activate the Blockera Site Toolkit plugin from a zip file stored in a GitHub artifact.",
+		"categories": ["plugins"]
+	},
+	"landingPage": "/wp-admin/plugins.php",
+	"preferredVersions": {
+		"wp": "beta",
+		"php": "8.0"
+	},
+	"features": {
+		"networking": true
+	},
+	"steps": [
+		{
+			"step": "login"
+		},
+		{
+			"step": "defineWpConfigConsts",
+			"consts": {
+				"BLOCKERA_TELEMETRY_OPT_IN_OFF": true
+			}
+		},
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "url",
+				"url": "URL_PLACEMENT"
+			}
+		},
+		{
+			"step": "setSiteOptions",
+			"options": {
+				"blogname": "Blockera Site Toolkit Demo"
+			}
+		}
+	]
+}
