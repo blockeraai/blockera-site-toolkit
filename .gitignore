@@ -25,5 +25,5 @@ coverage
 images
 
 # development helper folders
-.cursor/
-source-codes/
+.cursor
+source-codes
