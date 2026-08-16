@@ -3,7 +3,7 @@ Contributors: blockeraai, aliaghdam, rezaelahidev
 Tags: blockera, licenses, oauth, woocommerce, rest-api
 Requires at least: 6.6
 Tested up to: 6.7
-Requires PHP: 8.2
+Requires PHP: 7.4
 Stable tag: 1.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.en.html
@@ -50,7 +50,7 @@ It is designed to run alongside **Blockera**, **Blockera Pro**, and **Blockera O
 ### Requirements
 
 - WordPress 6.6+
-- PHP 8.2+
+- PHP 7.4+
 - [WooCommerce](https://wordpress.org/plugins/woocommerce/) (My Account licenses, product meta, and related flows)
 - YITH WooCommerce Subscription (or compatible subscription data used by the licenses views), when license/subscription listing is required
 
