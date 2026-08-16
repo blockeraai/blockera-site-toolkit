@@ -9,6 +9,43 @@
 
 use Blockera\Utils\Utils;
 
+// PHP 8.0+ string helpers (WordPress also polyfills these; keep local fallbacks for early bootstrap).
+if ( ! function_exists( 'str_starts_with' ) ) {
+	/**
+	 * @param string $haystack The string being checked.
+	 * @param string $needle   The substring to find at the start.
+	 */
+	function str_starts_with( $haystack, $needle ): bool {
+		$haystack = (string) $haystack;
+		$needle   = (string) $needle;
+
+		if ( '' === $needle ) {
+			return true;
+		}
+
+		return 0 === strncmp( $haystack, $needle, strlen( $needle ) );
+	}
+}
+
+if ( ! function_exists( 'str_ends_with' ) ) {
+	/**
+	 * @param string $haystack The string being checked.
+	 * @param string $needle   The substring to find at the end.
+	 */
+	function str_ends_with( $haystack, $needle ): bool {
+		$haystack = (string) $haystack;
+		$needle   = (string) $needle;
+
+		if ( '' === $needle ) {
+			return true;
+		}
+
+		$len = strlen( $needle );
+
+		return substr( $haystack, -$len ) === $needle;
+	}
+}
+
 if (! function_exists('bsaGetRegisterClientParams')) {
     /**
      * Get the register client request parameters.
@@ -136,13 +173,13 @@ if (! function_exists('bsaGetUserAccessToken')) {
     /**
      * Get the user access token.
      *
-     * @param string   $cacheKey The cache key.
-	 * @param \WP_User $user The user object.
-	 * @param bool     $redirect The flag to determine if the user should be redirected to the redirect uri. Default is true.
+     * @param string        $cacheKey The cache key.
+	 * @param \WP_User|null $user The user object. Defaults to the current user when null.
+	 * @param bool          $redirect The flag to determine if the user should be redirected to the redirect uri. Default is true.
      *
      * @return array
      */
-    function bsaGetUserAccessToken( string $cacheKey = '', \WP_User $user = null, bool $redirect = true): array {
+    function bsaGetUserAccessToken( string $cacheKey = '', ?\WP_User $user = null, bool $redirect = true): array {
         $user = $user ?? wp_get_current_user();
 
 		// If the cache key is set, then we need to check if the user info is already cached.

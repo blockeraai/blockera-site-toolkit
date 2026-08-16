@@ -40,7 +40,7 @@ class LicenseManagerController {
      * @return bool true on success, false on otherwise!
      */
     public function permission( \WP_REST_Request $request): bool {
-        if (str_starts_with($request->get_header('referer'), home_url())) {
+        if (str_starts_with( (string) $request->get_header('referer'), home_url())) {
             if (! wp_verify_nonce($request->get_header('X-Blockera-Nonce'), 'blockera-site-toolkit')) {
                 return false;
             }
@@ -50,7 +50,7 @@ class LicenseManagerController {
 
         $auth = $request->get_header('Authorization');
 
-        return ! empty($auth) && str_starts_with($auth, 'Bearer ');
+        return ! empty($auth) && str_starts_with( (string) $auth, 'Bearer ');
     }
 
     /**
