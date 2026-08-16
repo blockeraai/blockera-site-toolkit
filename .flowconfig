@@ -6,6 +6,10 @@
 <PROJECT_ROOT>/node_modules/resolve/.*
 <PROJECT_ROOT>/packages/dev-cypress/js/.*
 <PROJECT_ROOT>/.storybook/.*
+<PROJECT_ROOT>/.patch/.*
+<PROJECT_ROOT>/packages/.*/\.patch/.*
+<PROJECT_ROOT>/packages/global-packages/packages/.*/js/\.patch/.*
+<PROJECT_ROOT>/packages/global-packages/packages/.*/\.patch/.*
 [include]
 
 [libs]
@@ -14,5 +18,20 @@
 
 [options]
 react.runtime=automatic
+module.name_mapper='^@blockera/global-styles-ui\(/.*\)?$' -> '<PROJECT_ROOT>/flow/TypeScriptModule.js.flow'
+module.name_mapper='^@blockera/experimental-config$' -> '<PROJECT_ROOT>/flow/TypeScriptModule.js.flow'
+# Editor-only WP packages are not installed in this repo; stub them for Flow.
+module.name_mapper='^@wordpress/core-data$' -> '<PROJECT_ROOT>/flow/TypeScriptModule.js.flow'
+module.name_mapper='^@wordpress/block-library$' -> '<PROJECT_ROOT>/flow/TypeScriptModule.js.flow'
+module.name_mapper='^@wordpress/editor$' -> '<PROJECT_ROOT>/flow/TypeScriptModule.js.flow'
+module.name_mapper.extension='ts' -> '<PROJECT_ROOT>/flow/TypeScriptModule.js.flow'
+module.name_mapper.extension='tsx' -> '<PROJECT_ROOT>/flow/TypeScriptModule.js.flow'
+module.name_mapper.extension='png' -> '<PROJECT_ROOT>/flow/WebpackAsset.js.flow'
+module.name_mapper.extension='jpg' -> '<PROJECT_ROOT>/flow/WebpackAsset.js.flow'
+module.name_mapper.extension='jpeg' -> '<PROJECT_ROOT>/flow/WebpackAsset.js.flow'
+module.name_mapper.extension='webp' -> '<PROJECT_ROOT>/flow/WebpackAsset.js.flow'
+module.name_mapper.extension='scss' -> '<PROJECT_ROOT>/flow/WebpackAsset.js.flow'
+module.name_mapper.extension='css' -> '<PROJECT_ROOT>/flow/WebpackAsset.js.flow'
+
 
 [strict]
