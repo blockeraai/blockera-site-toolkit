@@ -50,9 +50,15 @@ domReady(() => {
 	} = window;
 
 	if (isConsentForm) {
-		const root = createRoot(
-			document.getElementById('blockera-site-toolkit-consent-form')
+		const consentRootEl = document.getElementById(
+			'blockera-site-toolkit-consent-form'
 		);
+
+		if (!consentRootEl) {
+			return;
+		}
+
+		const root = createRoot(consentRootEl);
 
 		root.render(
 			<ConsentForm
@@ -69,9 +75,15 @@ domReady(() => {
 		return;
 	}
 
-	const root = createRoot(
-		document.getElementById('blockera-site-toolkit-subscription-manager')
+	const licensesRootEl = document.getElementById(
+		'blockera-site-toolkit-subscription-manager'
 	);
+
+	if (!licensesRootEl) {
+		return;
+	}
+
+	const root = createRoot(licensesRootEl);
 
 	const MappedLicenses = licenses.map((license, index) => {
 		return <LicenseManager key={index} {...license} />;
