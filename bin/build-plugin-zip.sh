@@ -173,6 +173,7 @@ fi
 status "Creating archive... 🎁"
 zip -r -q blockera-site-toolkit.zip \
 	inc \
+	readme.txt \
 	$build_files \
 	$main_plugin_file \
 	composer.json \
