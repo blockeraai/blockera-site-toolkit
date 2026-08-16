@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Blockera Site Toolkit
  * Plugin URI: https://blockera.ai/
- * Description: A site toolkit plugin for Blockera AI.
+ * Description: Powers Blockera account licensing, OAuth connect flows, secure downloads, and WooCommerce product release tooling.
  * Version: 1.0
  * Author: blockera.ai
  * Requires at least: 6.6
