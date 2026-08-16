@@ -19,6 +19,7 @@
 	"require": {
 		"php": ">=8.2",
 		"blockera/bootstrap": "*",
+		"blockera/products": "*",
 		"blockera/site-toolkit": "*",
 		"blockera/utils": "*",
 		"blockera/wordpress": "*",
