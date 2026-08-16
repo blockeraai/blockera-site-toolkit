@@ -4,8 +4,35 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dcee8556a1daaaf9f439ed0d446e09fd",
+    "content-hash": "4fa7ecf42165947e419e7bb656a951df",
     "packages": [
+        {
+            "name": "blockera/site-toolkit",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "./packages/site-toolkit",
+                "reference": "e74e5c453cdb418e35fd5cebb6979e9156d1da92"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "BlockeraAI\\SiteToolkit\\": "php/"
+                },
+                "files": [
+                    "php/functions.php"
+                ]
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "BlockeraAI\\SiteToolkit\\Tests\\": "php/tests/"
+                }
+            },
+            "description": "A toolkit package for Blockera site functionality including OAuth server implementation and utility functions.",
+            "transport-options": {
+                "relative": true
+            }
+        },
         {
             "name": "defuse/php-encryption",
             "version": "v2.4.0",
