@@ -7,6 +7,6 @@
 		"WP_DEBUG": false
 	},
 	"lifecycleScripts": {
-		"afterStart": "wp-env run cli wp theme activate twentytwentyfive"
+		"afterStart": "wp-env run cli wp theme activate twentytwentyfive && wp-env run cli wp rewrite structure '/%postname%/' --hard"
 	}
 }
