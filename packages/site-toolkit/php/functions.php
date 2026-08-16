@@ -1,8 +1,15 @@
 <?php
+/**
+ * Site toolkit helper functions.
+ *
+ * @package BlockeraAI\SiteToolkit
+ */
+
+// phpcs:disable WordPress.NamingConventions.ValidFunctionName -- Public bsa* helpers use established camelCase names.
 
 use Blockera\Utils\Utils;
 
-if (!function_exists('bsaGetRegisterClientParams')) {
+if (! function_exists('bsaGetRegisterClientParams')) {
     /**
      * Get the register client request parameters.
      *
@@ -10,15 +17,14 @@ if (!function_exists('bsaGetRegisterClientParams')) {
      *
      * @return array
      */
-    function bsaGetRegisterClientParams(bool $requestHasReferer = true): array
-    {
+    function bsaGetRegisterClientParams( bool $requestHasReferer = true): array {
         $parsed_referer = parse_url($_SERVER['HTTP_REFERER'] ?? '');
 
-        if ($requestHasReferer && !empty($parsed_referer['query'])) {
+        if ($requestHasReferer && ! empty($parsed_referer['query'])) {
 
             parse_str(parse_url($_SERVER['HTTP_REFERER'])['query'], $params);
 
-            $internal_redirect = str_starts_with($params['redirect_to'] ?? '', home_url()) ? $params['redirect_to'] : home_url('/' . $params['redirect_to'] ?? '');
+            $internal_redirect        = str_starts_with($params['redirect_to'] ?? '', home_url()) ? $params['redirect_to'] : home_url('/' . $params['redirect_to'] ?? '');
             $parsed_internal_redirect = parse_url(home_url($internal_redirect));
 
             if (empty($parsed_internal_redirect['query'])) {
@@ -28,41 +34,41 @@ if (!function_exists('bsaGetRegisterClientParams')) {
             parse_str($parsed_internal_redirect['query'], $params);
 
             $parsed_redirect_uri = parse_url($params['redirect_uri'] ?? '');
-            $scheme = $parsed_redirect_uri['scheme'] ?? '';
-            $host = $parsed_redirect_uri['host'] ?? '';
-			if (!empty($parsed_redirect_uri['port'])) {
+            $scheme              = $parsed_redirect_uri['scheme'] ?? '';
+            $host                = $parsed_redirect_uri['host'] ?? '';
+			if (! empty($parsed_redirect_uri['port'])) {
 				$host .= ':' . $parsed_redirect_uri['port'];
 			}
             $domain = "{$scheme}://{$host}";
 
             // Sanitize and get form data.
             $redirect_uri = esc_url_raw($params['redirect_uri'] ?? '');
-        } elseif (!$requestHasReferer) {
+        } elseif (! $requestHasReferer) {
 
-            $domain = $_POST['domain'] ?? '';
-            $redirect_uri = $_POST['redirect_uri'] ?? '';
+            $domain            = $_POST['domain'] ?? '';
+            $redirect_uri      = $_POST['redirect_uri'] ?? '';
             $internal_redirect = $_POST['redirect_uri'] ?? '';
         } else {
 
-            $redirect_uri = $_GET['redirect_uri'] ?? '';
+            $redirect_uri      = $_GET['redirect_uri'] ?? '';
             $internal_redirect = Utils::getCurrentPageURL();
-            $domain = Utils::extractDomainName($redirect_uri, true);
+            $domain            = Utils::extractDomainName($redirect_uri, true);
         }
 
         $grant_types = 'authorization_code';
         // Get the current logged in user identifier.
-        $user = wp_get_current_user();
-        $user_id = $user->ID;
+        $user     = wp_get_current_user();
+        $user_id  = $user->ID;
         $username = $user->user_email;
         // Generate client_id and client_secret.
-        $client_id = wp_generate_uuid4();
+        $client_id     = wp_generate_uuid4();
         $client_secret = wp_generate_password(32, false);
 
         return compact('user_id', 'username', 'client_id', 'client_secret', 'grant_types', 'domain', 'redirect_uri', 'internal_redirect');
     }
 }
 
-if (!function_exists('bsaGetAccessTokenIdentifier')) {
+if (! function_exists('bsaGetAccessTokenIdentifier')) {
     /**
      * Get the access token identifier.
      *
@@ -70,11 +76,10 @@ if (!function_exists('bsaGetAccessTokenIdentifier')) {
      *
      * @return string
      */
-    function bsaGetAccessTokenIdentifier(string $accessToken): string
-    {
-        // Decode the JWT without verifying to extract the identifier
+    function bsaGetAccessTokenIdentifier( string $accessToken): string {
+        // Decode the JWT without verifying to extract the identifier.
         $tokenParts = explode('.', $accessToken);
-        $payload = json_decode(base64_decode($tokenParts[1]), true);
+        $payload    = json_decode(base64_decode($tokenParts[1]), true);
 
         return $payload['jti'] ?? '';
     }
@@ -82,7 +87,7 @@ if (!function_exists('bsaGetAccessTokenIdentifier')) {
 
 // ============================================== New Implementation ==============================================
 
-if (!function_exists('bsaGetEnv')) {
+if (! function_exists('bsaGetEnv')) {
     /**
      * Get the environment variable.
      *
@@ -90,18 +95,17 @@ if (!function_exists('bsaGetEnv')) {
      *
      * @return string
      */
-    function bsaGetEnv(string $key): string
-    {
+    function bsaGetEnv( string $key): string {
 		// FIXME: remove this statement because we need to sure about .env file to be loaded or not. it seems that it's not loaded in the production environment.
         if ('BSA_API_BASE_URL' === $key && 'dev' !== BSA_PLUGIN_MODE) {
             return 'https://api.blockera.ai';
         }
 
-        return $_ENV[$key] ?? '';
+        return $_ENV[ $key ] ?? '';
     }
 }
 
-if (!function_exists('bsaGetConfig')) {
+if (! function_exists('bsaGetConfig')) {
     /**
      * Get the configuration variable.
      *
@@ -109,11 +113,10 @@ if (!function_exists('bsaGetConfig')) {
      *
      * @return string
      */
-    function bsaGetConfig(string $key): string
-    {
+    function bsaGetConfig( string $key): string {
         $env = bsaGetEnv($key);
 
-        if (!empty($env)) {
+        if (! empty($env)) {
             return $env;
         }
 
@@ -129,51 +132,57 @@ if (!function_exists('bsaGetConfig')) {
     }
 }
 
-if (!function_exists('bsaGetUserAccessToken')) {
+if (! function_exists('bsaGetUserAccessToken')) {
     /**
      * Get the user access token.
      *
-     * @param string $cacheKey The cache key.
+     * @param string   $cacheKey The cache key.
 	 * @param \WP_User $user The user object.
-	 * @param bool $redirect The flag to determine if the user should be redirected to the redirect uri. Default is true.
+	 * @param bool     $redirect The flag to determine if the user should be redirected to the redirect uri. Default is true.
      *
      * @return array
      */
-    function bsaGetUserAccessToken(string $cacheKey = '', \WP_User $user = null, bool $redirect = true): array
-    {
+    function bsaGetUserAccessToken( string $cacheKey = '', \WP_User $user = null, bool $redirect = true): array {
         $user = $user ?? wp_get_current_user();
 
 		// If the cache key is set, then we need to check if the user info is already cached.
-        if (!empty($cacheKey)) {	
+        if (! empty($cacheKey)) {	
 			$metadata = get_user_meta($user->ID, $cacheKey, true);
 
 			// If the user info is already cached, return it.
-			if (!empty($metadata) && isset($metadata['expires_at']) && $metadata['expires_at'] > time()) {
+			if (! empty($metadata) && isset($metadata['expires_at']) && $metadata['expires_at'] > time()) {
 				return $metadata;
 			}
 		}
 
-        $response = wp_remote_post(bsaGetEnv('BSA_API_BASE_URL') . '/auth/v1/token', [
-            'timeout' => 30,
-            'redirection' => 5,
-            'httpversion' => '1.1',
-            // TODO: remove it after testing.
-            'sslverify' => false,
-            'headers' => [
-                'Content-Type' => 'application/json',
-            ],
-            'body' => json_encode([
-				'user_id' => $user->ID,
-                'email' => $user->user_email,
-				'username' => $user->user_login,
-				'nonce' => md5('blockera-site-toolkit'),
-            ]),
-        ]);
+        $response = wp_remote_post(
+            bsaGetEnv('BSA_API_BASE_URL') . '/auth/v1/token',
+            [
+				'timeout' => 30,
+				'redirection' => 5,
+				'httpversion' => '1.1',
+				// TODO: remove it after testing.
+				'sslverify' => false,
+				'headers' => [
+					'Content-Type' => 'application/json',
+				],
+				'body' => json_encode(
+                    [
+						'user_id' => $user->ID,
+						'email' => $user->user_email,
+						'username' => $user->user_login,
+						'nonce' => md5('blockera-site-toolkit'),
+                    ]
+                ),
+			]
+        );
 
-        $query = http_build_query([
-            'access_denied' => 'true',
-            'error_description' => 'The user denied the request.',
-        ]);
+        $query       = http_build_query(
+            [
+				'access_denied' => 'true',
+				'error_description' => 'The user denied the request.',
+			]
+        );
         $redirectURI = empty($_GET['redirect_uri']) ? home_url() : $_GET['redirect_uri'] . '&' . $query;
 
         if (is_wp_error($response)) {
@@ -197,7 +206,7 @@ if (!function_exists('bsaGetUserAccessToken')) {
         }
 
         // Cache the user info in the user meta.
-        if (!empty($cacheKey)) {
+        if (! empty($cacheKey)) {
 			update_user_meta($user->ID, $cacheKey, $body['data']);
 		}
 
@@ -205,36 +214,38 @@ if (!function_exists('bsaGetUserAccessToken')) {
     }
 }
 
-if (!function_exists('bsaDoStoreClient')) {
+if (! function_exists('bsaDoStoreClient')) {
     /**
      * Do the client store request.
      *
-     * @param array $params The parameters to pass to the request.
+     * @param array  $params The parameters to pass to the request.
      * @param string $authorization The authorization header.
 	 * @param string $cacheKey The cache key.
      *
      * @return array
      */
-    function bsaDoStoreClient(array $params, string $authorization, string $cacheKey): array
-    {
-        $user = wp_get_current_user();
+    function bsaDoStoreClient( array $params, string $authorization, string $cacheKey): array {
+        $user     = wp_get_current_user();
 		$metadata = get_user_meta($user->ID, $cacheKey, true);
 
         // If the client info is already cached and the user id is the same, then return it.
-        if (!empty($metadata) && isset($metadata['user_id']) && $user->ID === $metadata['user_id']) {
+        if (! empty($metadata) && isset($metadata['user_id']) && $user->ID === $metadata['user_id']) {
             return $metadata;
         }
 
-        $response = wp_remote_post(bsaGetEnv('BSA_API_BASE_URL') . '/clients-manager/v1/clients', [
-            'timeout' => 30,
-            'redirection' => 5,
-            'httpversion' => '1.1',
-            'sslverify' => false,
-            'body' => $params,
-            'headers' => [
-                'Authorization' => $authorization,
-            ],
-        ]);
+        $response = wp_remote_post(
+            bsaGetEnv('BSA_API_BASE_URL') . '/clients-manager/v1/clients',
+            [
+				'timeout' => 30,
+				'redirection' => 5,
+				'httpversion' => '1.1',
+				'sslverify' => false,
+				'body' => $params,
+				'headers' => [
+					'Authorization' => $authorization,
+				],
+			]
+        );
 
         if (is_wp_error($response)) {
             return [];
@@ -253,7 +264,7 @@ if (!function_exists('bsaDoStoreClient')) {
     }
 }
 
-if (!function_exists('bsaDoTerminateClient')) {
+if (! function_exists('bsaDoTerminateClient')) {
     /**
      * Do the client terminate request.
 	 * 
@@ -261,29 +272,31 @@ if (!function_exists('bsaDoTerminateClient')) {
      *
      * @return bool true on success, false on otherwise.
      */
-    function bsaDoTerminateClient(string $authorization): bool
-    {
-        $user = wp_get_current_user();
-        $metaKey = 'blockera_api_client_info';
+    function bsaDoTerminateClient( string $authorization): bool {
+        $user     = wp_get_current_user();
+        $metaKey  = 'blockera_api_client_info';
         $metadata = get_user_meta($user->ID, $metaKey, true);
 
         if (empty($metadata)) {
             return true;
         }
 
-        $response = wp_remote_request(bsaGetEnv('BSA_API_BASE_URL') . '/clients-manager/v1/clients/' . $metadata['client_id'], [
-            'timeout' => 30,
-            'redirection' => 5,
-            'httpversion' => '1.1',
-            'sslverify' => false,
-            'method' => 'DELETE',
-            'headers' => [
-                'Authorization' => $authorization,
-            ],
-			'body' => [
-				'client_id' => $metadata['client_id'],
+        $response = wp_remote_request(
+            bsaGetEnv('BSA_API_BASE_URL') . '/clients-manager/v1/clients/' . $metadata['client_id'],
+            [
+				'timeout' => 30,
+				'redirection' => 5,
+				'httpversion' => '1.1',
+				'sslverify' => false,
+				'method' => 'DELETE',
+				'headers' => [
+					'Authorization' => $authorization,
+				],
+				'body' => [
+					'client_id' => $metadata['client_id'],
+				],
 			]
-        ]);
+        );
 
         if (is_wp_error($response)) {
             return false;
@@ -299,7 +312,7 @@ if (!function_exists('bsaDoTerminateClient')) {
     }
 }
 
-if (!function_exists('bsaDoAuthorization')) {
+if (! function_exists('bsaDoAuthorization')) {
     /**
      * Do the authorization request.
      *
@@ -307,12 +320,11 @@ if (!function_exists('bsaDoAuthorization')) {
      *
      * @return array
      */
-    function bsaDoAuthorization(array $args): array
-    {
-        $params = $args['params'] ?? [];
+    function bsaDoAuthorization( array $args): array {
+        $params        = $args['params'] ?? [];
         $authorization = $args['authorization'] ?? '';
 
-        if (!empty($params['event']) && in_array($params['event'], ['registration-client'], true)) {
+        if (! empty($params['event']) && in_array($params['event'], [ 'registration-client' ], true)) {
             $params = array_merge(
                 $params,
                 [
@@ -323,16 +335,19 @@ if (!function_exists('bsaDoAuthorization')) {
             );
         }
 
-        $response = wp_remote_post(bsaGetEnv('BSA_API_BASE_URL') . '/auth/v1/authorize', [
-            'timeout' => 30,
-            'redirection' => 5,
-            'httpversion' => '1.1',
-            'sslverify' => false,
-            'headers' => [
-                'Authorization' => $authorization,
-            ],
-            'body' => empty($_GET['response_type']) ? $params : array_merge($_GET, $params),
-        ]);
+        $response = wp_remote_post(
+            bsaGetEnv('BSA_API_BASE_URL') . '/auth/v1/authorize',
+            [
+				'timeout' => 30,
+				'redirection' => 5,
+				'httpversion' => '1.1',
+				'sslverify' => false,
+				'headers' => [
+					'Authorization' => $authorization,
+				],
+				'body' => empty($_GET['response_type']) ? $params : array_merge($_GET, $params),
+			]
+        );
 
         if (is_wp_error($response)) {
             return [];
@@ -354,13 +369,14 @@ if (!function_exists('bsaDoAuthorization')) {
  *
  * @param int $subscription_id The ID of the subscription to renew.
  *
+ * @throws \Exception When the operation fails.
+ *
  * @return string the checkout url or empty string.
  */
-function bsaRenewalSubscription(int $subscription_id): string
-{
+function bsaRenewalSubscription( int $subscription_id): string {
     $subscription = ywsbs_get_subscription($subscription_id);
 
-    if (!$subscription || !is_object($subscription)) {
+    if (! $subscription || ! is_object($subscription)) {
         return '';
     }
 
@@ -389,38 +405,38 @@ function bsaRenewalSubscription(int $subscription_id): string
  *
  * @param int $subscriptionId The ID of the subscription to renew.
  *
+ * @throws \Exception When the operation fails.
+ *
  * @return string the checkout url.
  */
-function bsaUpgradingSubscription(int $subscriptionId): string
-{
-    if (!function_exists('YITH_WC_Subscription')) {
+function bsaUpgradingSubscription( int $subscriptionId): string {
+    if (! function_exists('YITH_WC_Subscription')) {
         throw new Exception('The YITH WooCommerce Subscription plugin is required but not installed.');
     }
 
     $subscription = ywsbs_get_subscription($subscriptionId);
 
-    if (!$subscription || !is_object($subscription)) {
+    if (! $subscription || ! is_object($subscription)) {
         throw new Exception('Invalid or missing subscription');
     }
 
     try {
         // Get the current variation ID and target variation ID.
         $from = $subscription->get_variation_id();
-        $to = $subscription->get('variation_id');
+        $to   = $subscription->get('variation_id');
 
         // Get the variation products.
         $fromVariation = wc_get_product($from);
-        $toVariation = wc_get_product($to);
+        $toVariation   = wc_get_product($to);
 
-        if (!$fromVariation || !$toVariation) {
+        if (! $fromVariation || ! $toVariation) {
             throw new Exception('Invalid variation products');
         }
 
-        // Calculate price gap between variations
+        // Calculate price gap between variations.
         $fromPrice = $fromVariation->get_price();
-        $toPrice = $toVariation->get_price();
+        $toPrice   = $toVariation->get_price();
         $gapAmount = $toPrice - $fromPrice;
-
 
         add_user_meta(
             $subscription->get_user_id(),
@@ -434,7 +450,7 @@ function bsaUpgradingSubscription(int $subscriptionId): string
 
         $variation = wc_get_product($to);
 
-        if (!$variation instanceof \WC_Product) {
+        if (! $variation instanceof \WC_Product) {
             throw new Exception("Variation: '$to' not found!");
         }
 
@@ -463,7 +479,7 @@ function bsaUpgradingSubscription(int $subscriptionId): string
     return $checkoutUrl;
 }
 
-if (!function_exists('bsaFilterActiveLicenses')) {
+if (! function_exists('bsaFilterActiveLicenses')) {
     /**
      * Filter the active licenses.
      *
@@ -471,33 +487,34 @@ if (!function_exists('bsaFilterActiveLicenses')) {
      *
      * @return array The filtered licenses.
      */
-    function bsaFilterActiveLicenses(array $licenses): array
-    {
-        return array_filter($licenses, function (array $license): bool {
-            return 'deleted' !== $license['status'];
-        });
+    function bsaFilterActiveLicenses( array $licenses): array {
+        return array_filter(
+            $licenses,
+            function ( array $license): bool {
+				return 'deleted' !== $license['status'];
+			}
+        );
     }
 }
 
-if (!function_exists('bsaGetDownloadableFiles')) {
+if (! function_exists('bsaGetDownloadableFiles')) {
     /**
      * Get the downloadable files.
      *
-	 * @param int $variationId The ID of the variation.
-	 * @param array $args The extra arguments. includes 
+	 * @param int   $variationId The ID of the variation.
+	 * @param array $args Extra arguments for downloadable file lookup.
      *
      * @return array The downloadable files.
      */
-    function bsaGetDownloadableFiles(int $variationId, array $args): array
-    {
-		$downloads = [];
+    function bsaGetDownloadableFiles( int $variationId, array $args): array {
+		$downloads         = [];
 		$downloadableFiles = get_post_meta($variationId, '_downloadable_files', true);
 
-		if (!empty($downloadableFiles)) {
+		if (! empty($downloadableFiles)) {
 
 			foreach ($downloadableFiles as $downloadableFileId => $downloadableFile) {
 
-				$downloads[$downloadableFileId] = [
+				$downloads[ $downloadableFileId ] = [
 					'resource' => 'api',
                     'name' => $downloadableFile['name'],
                     'filename' => bsaGetFileName($downloadableFile['file']),
@@ -508,24 +525,28 @@ if (!function_exists('bsaGetDownloadableFiles')) {
 			}
 		}
 
-		if(empty($downloads)) {
+		if (empty($downloads)) {
 			$fallbackDownloadableFiles = $args['fallbackDownloadableFiles'] ?? [];
 			
 			if (is_string($fallbackDownloadableFiles)) {
 				$fallbackDownloadableFiles = [];
 			}
 
-			$downloads = array_map(function (array $downloadableFile, string $downloadableFilename):array {
-				return [
-					'resource' => 'api',
-					'name' => $downloadableFilename,
-					'filename' => bsaGetFileName($downloadableFile['file']),
-					'file' => bsaGetEnv('BSA_API_BASE_URL') . '/files/v1/download/' . $downloadableFile['hash'],
-					'enabled' => true,
-					'id' => $downloadableFile['hash'],
-					'version' => $downloadableFile['version'],
-				];
-			}, $fallbackDownloadableFiles, array_keys($fallbackDownloadableFiles));
+			$downloads = array_map(
+                function ( array $downloadableFile, string $downloadableFilename):array {
+					return [
+						'resource' => 'api',
+						'name' => $downloadableFilename,
+						'filename' => bsaGetFileName($downloadableFile['file']),
+						'file' => bsaGetEnv('BSA_API_BASE_URL') . '/files/v1/download/' . $downloadableFile['hash'],
+						'enabled' => true,
+						'id' => $downloadableFile['hash'],
+						'version' => $downloadableFile['version'],
+					];
+				},
+                $fallbackDownloadableFiles,
+                array_keys($fallbackDownloadableFiles)
+            );
 		}
 		
 		if (isset($args['isActivatedFreeDownload']) && $args['isActivatedFreeDownload']) {
@@ -539,7 +560,7 @@ if (!function_exists('bsaGetDownloadableFiles')) {
 				'version' => bsaGetWPOrgPluginVersion($args['freeSlug']),
 			];
 
-			if(!empty($downloads)) {
+			if (! empty($downloads)) {
 				array_unshift($downloads, $freeVersion);
 			} else {
 				$downloads[] = $freeVersion;
@@ -550,7 +571,7 @@ if (!function_exists('bsaGetDownloadableFiles')) {
     }
 }
 
-if(!function_exists('bsaGetWPOrgPluginVersion')) {
+if (! function_exists('bsaGetWPOrgPluginVersion')) {
 	/**
 	 * Get the version of the plugin from the WordPress.org.
 	 * 
@@ -558,19 +579,18 @@ if(!function_exists('bsaGetWPOrgPluginVersion')) {
 	 * 
 	 * @return string The version of the plugin.
 	 */
-	function bsaGetWPOrgPluginVersion(string $slug): string
-	{
+	function bsaGetWPOrgPluginVersion( string $slug): string {
 		$transientKey = 'blockera_wp_org_' . $slug . '_plugin_info';
-		$transient = get_transient($transientKey);
+		$transient    = get_transient($transientKey);
 
 		if (false !== $transient) {
 			return $transient['version'] ?? '';
 		}
 
-		$url = sprintf('https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request[slug]=%s', $slug);
+		$url      = sprintf('https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request[slug]=%s', $slug);
 		$response = wp_remote_get($url);
 
-		if(is_wp_error($response)) {
+		if (is_wp_error($response)) {
 			return '';
 		}
 
@@ -582,7 +602,7 @@ if(!function_exists('bsaGetWPOrgPluginVersion')) {
 	}
 }
 
-if(!function_exists('bsaGetFileName')) {
+if (! function_exists('bsaGetFileName')) {
 	/**
 	 * Get file name.
 	 * 
@@ -590,11 +610,10 @@ if(!function_exists('bsaGetFileName')) {
 	 *
 	 * @return string 
 	 */
-	function bsaGetFileName(string $file): string
-	{
+	function bsaGetFileName( string $file): string {
 		$filename = basename($file);
 
-		// Remove random string from filename if present (e.g. blockera-pro-x5ttot.zip -> blockera-pro.zip)
+		// Remove random string from filename if present (e.g. blockera-pro-x5ttot.zip -> blockera-pro.zip).
 		if (preg_match('/-[a-zA-Z0-9]{6}\.([\w\d]+)$/', $filename, $matches)) {
 			$filename = preg_replace('/-[a-zA-Z0-9]{6}\./', '.', $filename);
 		}
