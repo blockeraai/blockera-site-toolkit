@@ -74,7 +74,7 @@ blockera_bootstrap_shared_autoloader(
 		'default'           => ! defined('BSA_PLUGIN_FILE') || BSA_PLUGIN_FILE === __FILE__,
 		'file'              => __FILE__,
 		'entry_constant'    => 'BSA_PLUGIN_FILE',
-		'defer_files_until' => [ 'blockera' ],
+		'defer_files_until' => [ 'blockera', 'blockera-one' ],
 		'companions'        => [
 			[
 				'slug'           => 'blockera',
@@ -85,6 +85,11 @@ blockera_bootstrap_shared_autoloader(
 				'slug'           => 'blockera-pro',
 				'plugin_file'    => 'blockera-pro/blockera-pro.php',
 				'entry_constant' => 'BLOCKERA_PRO_FILE',
+			],
+			[
+				'slug'             => 'blockera-one',
+				'type'             => 'theme',
+				'theme_stylesheet' => 'blockera-one',
 			],
 		],
 	]
