@@ -6,7 +6,7 @@
  * Version: 1.0
  * Author: blockera.ai
  * Requires at least: 6.6
- * Requires PHP: 8.2
+ * Requires PHP: 7.4
  * Tested up to: 6.7
  * Domain Path: /languages
  * License: GPLv3 or later
