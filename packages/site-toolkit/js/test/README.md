@@ -37,3 +37,7 @@ npm run env:start
 npm run build
 npm run test:e2e -- --spec 'packages/site-toolkit/**/*.toolkit.api.e2e.cy.js'
 ```
+
+## Helpers
+
+Use `./helpers` (`goTo`, `visitFront`, `wpRest`, …). Do **not** import the `@blockera/dev-cypress/js/helpers` barrel — it pulls editor/controls helpers and can fail Cypress bundling for this consumer.
