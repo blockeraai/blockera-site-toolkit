@@ -5,8 +5,8 @@ namespace BlockeraAI\SiteToolkit\Repositories;
 
 use BlockeraAI\SiteToolkit\Repositories\Traits\RepositoryTrait;
 
-class LicenseRepository
-{
+class LicenseRepository {
+
 	use RepositoryTrait;
 
 	/**
@@ -24,9 +24,23 @@ class LicenseRepository
 	 *
 	 * @return array|null The license array or null if not found.
 	 */
-	public function getBy(string $field, $value): ?array
-	{
-		return $this->wpdb->get_results($this->wpdb->prepare("SELECT * FROM {$this->api_table_prefix}{$this->table_name} WHERE $field = %s", $value), ARRAY_A);
+	public function getBy( string $field, $value ): ?array {
+		$allowed_fields = [ 'id', 'client_id', 'subscription_id', 'order_id', 'product_id', 'user_id' ];
+		if ( ! in_array( $field, $allowed_fields, true ) ) {
+			return null;
+		}
+
+		$table = $this->api_table_prefix . $this->table_name;
+
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- Table/column from trusted prefix + whitelist.
+		return $this->wpdb->get_results(
+			$this->wpdb->prepare(
+				"SELECT * FROM {$table} WHERE {$field} = %s",
+				$value
+			),
+			ARRAY_A
+		);
+		// phpcs:enable
 	}
 
 	/**
@@ -36,8 +50,7 @@ class LicenseRepository
 	 *
 	 * @return bool true if the zip file is valid, false otherwise.
 	 */
-	public function isValidZipFile(string $zipFile): bool
-	{
+	public function isValidZipFile( string $zipFile): bool {
 		return true;
 	}
 }
