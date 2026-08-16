@@ -5,6 +5,7 @@
  * @package Site\Toolkit
  * @since   1.0.0
  */
+
 ?>
 <div class="options_group woocommerce_options_panel">
 	<p class="form-field">
@@ -66,19 +67,21 @@
 			<tfoot>
 				<tr>
 					<th colspan="5">
-						<a href="#" class="button insert" data-row="<?php
-							$file = array(
+						<a href="#" class="button insert" data-row="
+                        <?php
+							$file              = array(
 								'file' => '',
-								'name' => ''
+								'name' => '',
 							);
-							$name = '';
-							$fileUrl = '';
-							$version = '';
+							$name              = '';
+							$fileUrl           = '';
+							$version           = '';
 							$disabled_download = false;
 							ob_start();
-							include 'html-product-download.php';
+							require 'html-product-download.php';
 							echo esc_attr(ob_get_clean());
-						?>"><?php esc_html_e('Add File', 'blockera-site-toolkit'); ?></a>
+							?>
+                        "><?php esc_html_e('Add File', 'blockera-site-toolkit'); ?></a>
 					</th>
 				</tr>
 			</tfoot>

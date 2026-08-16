@@ -5,6 +5,7 @@
  * @package Site\Toolkit
  * @since   1.0.0
  */
+
 ?>
 <div class="variation-custom-fields" style="display: none;">
 	<div class="max-domains"></div>

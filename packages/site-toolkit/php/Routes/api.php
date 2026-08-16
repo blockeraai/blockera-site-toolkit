@@ -1,5 +1,5 @@
 <?php
 
-include(__DIR__ . '/api/files.php');
-include(__DIR__ . '/api/product.php');
-include(__DIR__ . '/api/license-manager.php');
+require(__DIR__ . '/api/files.php');
+require(__DIR__ . '/api/product.php');
+require(__DIR__ . '/api/license-manager.php');

@@ -2,8 +2,8 @@
 
 namespace BlockeraAI\SiteToolkit\Repositories;
 
-class ProductRepository
-{
+class ProductRepository {
+
 	/**
 	 * Get the product by id.
 	 *
@@ -11,8 +11,7 @@ class ProductRepository
 	 * 
 	 * @return \WP_POST|null The product data.
 	 */
-	public function getById(int $id): ?\WP_POST
-	{
+	public function getById( int $id): ?\WP_POST {
 		return get_post($id);
 	}
 
@@ -23,11 +22,10 @@ class ProductRepository
 	 *
 	 * @return array The product variations.
 	 */
-	public function getProductVariations(int $id): array
-	{
+	public function getProductVariations( int $id): array {
 		$product = wc_get_product($id);
 
-		if (!$product || !$product instanceof \WC_Product_Variable) {
+		if (! $product || ! $product instanceof \WC_Product_Variable) {
 			return [];
 		}
 
