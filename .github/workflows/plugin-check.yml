@@ -31,6 +31,8 @@ jobs:
                   repo-token: ${{ secrets.BLOCKERABOT_PAT }}
                   zip-file: blockera-site-toolkit.zip
                   build-dir: ./build/blockera-site-toolkit
+                  php-version: '8.2'
+                  composer-options: '--no-dev -o --apcu-autoloader -a'
                   exclude-directories: vendor,.wordpress-org
                   exclude-checks: |
                       textdomain
