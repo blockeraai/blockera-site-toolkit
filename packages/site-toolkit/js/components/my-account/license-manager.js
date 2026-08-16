@@ -11,6 +11,7 @@ import type { MixedElement } from 'react';
 import { Header } from './header';
 import { SubscriptionInformation } from './subscription-information';
 import { LicenseInformation } from './license-information';
+import type { DownloadsMap } from './types';
 
 export const LicenseManager = ({
 	type,
@@ -40,14 +41,7 @@ export const LicenseManager = ({
 	maxDomains: number,
 	startDate: string,
 	expiryDate: string,
-	downloads: {
-		[key: string]: {
-			name: string,
-			enabled: boolean,
-			id: string,
-			file: string,
-		},
-	},
+	downloads: DownloadsMap,
 	activeWebsites: {
 		[key: string]: { mode: 'production' | 'development', website: string },
 	},
