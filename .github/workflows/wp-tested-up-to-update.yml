@@ -27,4 +27,4 @@ jobs:
             - uses: ./packages/global-packages/packages/dev-tools/github/actions/wp-tested-up-to-update
               with:
                   github-token: ${{ secrets.BLOCKERABOT_PAT }}
-                  file-paths: blockera-site-toolkit.php
+                  file-paths: blockera-site-toolkit.php,readme.txt
