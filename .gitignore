@@ -20,3 +20,4 @@ packages/global-packages/packages/dev-cypress/js/videos
 # nyc / coverage
 .nyc_output
 coverage
+.wp-env.json
