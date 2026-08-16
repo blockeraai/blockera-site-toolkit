@@ -32,7 +32,7 @@ jobs:
 
             - uses: ./packages/global-packages/packages/dev-tools/github/actions/setup-php
               with:
-                  php-version: '8.2'
+                  php-version: '7.4'
                   composer-options: '--no-dev -o --apcu-autoloader -a'
 
             - uses: ./packages/global-packages/packages/dev-tools/github/actions/create-demo-attachments
