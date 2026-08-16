@@ -330,7 +330,7 @@ export const WebsitesManager = ({
 								{
 									mode: 'production' | 'development',
 									website: string,
-								}
+								},
 							],
 							index
 						) => (
