@@ -117,11 +117,12 @@ class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider {
     protected function getAssets(): array {
         return [
             'utils',
+			'storage',
             'classnames',
+			'icons',
             'data-editor',
             'env',
-            'icons',
-            'data',
+			'data',
             'controls',
             'bootstrap',
             'site-toolkit',
