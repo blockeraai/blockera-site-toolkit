@@ -23,3 +23,7 @@ coverage
 .wp-env.json
 
 images
+
+# development helper folders
+.cursor/
+source-codes/
