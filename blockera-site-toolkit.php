@@ -18,6 +18,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 ### BEGIN AUTO-GENERATED AUTOLOADER
+// Coordinator only includes Composer require-dev (e.g. Whoops) when development runtime is set.
+// Signal before bootstrap; BSA_PLUGIN_MODE is defined later and is not read by the coordinator.
+if ( ! isset( $_ENV['APP_MODE'] ) && false === getenv( 'APP_MODE' ) ) {
+	$_ENV['APP_MODE'] = 'development';
+	putenv( 'APP_MODE=development' );
+}
 require_once __DIR__ . '/packages/global-packages/packages/autoloader-coordinator/bootstrap.php';
 blockera_bootstrap_shared_autoloader(
 	'blockera-site-toolkit',
@@ -70,7 +76,7 @@ add_action(
 	}
 );
 
-if ( 'dev' === BSA_PLUGIN_MODE ) {
+if ( 'dev' === BSA_PLUGIN_MODE && class_exists( \Whoops\Run::class ) ) {
 	$whoops = new \Whoops\Run();
 	$whoops->pushHandler( new \Whoops\Handler\PrettyPageHandler() );
 	$whoops->register();
