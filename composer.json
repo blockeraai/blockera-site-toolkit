@@ -55,8 +55,7 @@
 		"filp/whoops": "^2.15",
 		"yoast/phpunit-polyfills": "^2.0@dev",
 		"symfony/var-dumper": "5.4.x-dev",
-		"10up/wp_mock": "^0.4",
-		"humbug/php-scoper": "^0.18.13"
+		"10up/wp_mock": "^0.4"
 	},
 	"scripts": {
 		"test": "@php ./vendor/bin/phpunit",

@@ -4,7 +4,6 @@
 	"description": "The repository is toolkit for Blockeraai web apps.",
 	"scripts": {
 		"build": "wp-scripts build --progress --mode production",
-		"build:php": "./vendor/bin/php-scoper add-prefix --output-dir=build --force && ./bin/psr-4-architecture.sh && ./bin/generate-composer.json.sh",
 		"format": "wp-scripts format",
 		"lint:js": "wp-scripts lint-js \"packages/site-toolkit\"",
 		"lint:js:fix": "npm run lint:js -- --fix",
