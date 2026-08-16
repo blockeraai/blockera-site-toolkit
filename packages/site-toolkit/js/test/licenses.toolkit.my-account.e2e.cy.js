@@ -4,8 +4,7 @@
  * @category my-account
  */
 
-import { goTo } from '@blockera/dev-cypress/js/helpers';
-import { isWooCommerceActive, visitFront } from './helpers';
+import { goTo, isWooCommerceActive, visitFront } from './helpers';
 
 describe('Site Toolkit My Account licenses', () => {
 	beforeEach(function () {

@@ -4,8 +4,7 @@
  * @category bootstrap
  */
 
-import { goTo } from '@blockera/dev-cypress/js/helpers';
-import { getTestUrl, visitFront, wpRest } from './helpers';
+import { goTo, getTestUrl, visitFront, wpRest } from './helpers';
 
 describe('Site Toolkit plugin bootstrap', () => {
 	it('should expose the plugin main file over HTTP', () => {

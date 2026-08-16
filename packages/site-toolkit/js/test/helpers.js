@@ -1,8 +1,10 @@
 /**
  * Shared helpers for Blockera Site Toolkit Cypress E2E specs.
+ *
+ * Keep this file free of `@blockera/dev-cypress/js/helpers` barrel imports —
+ * that barrel pulls editor/controls helpers and breaks Cypress bundling for
+ * non-editor consumers.
  */
-
-import { goTo } from '@blockera/dev-cypress/js/helpers';
 
 /**
  * Absolute test site URL without trailing slash.
@@ -17,10 +19,57 @@ export function getTestUrl() {
 }
 
 /**
+ * Resolve an absolute URL from the Cypress test site base.
+ *
+ * @param {string} path Path beginning with / or absolute URL.
+ * @return {string}
+ */
+export function resolveTestUrl(path = '/') {
+	if (/^https?:\/\//i.test(path)) {
+		return path;
+	}
+
+	const testURL = Cypress.env('testURL') || getTestUrl();
+
+	if (
+		(testURL.endsWith('/') && !path.startsWith('/')) ||
+		(!testURL.endsWith('/') && path.startsWith('/'))
+	) {
+		return `${testURL}${path}`;
+	}
+
+	if (!testURL.endsWith('/') && !path.startsWith('/')) {
+		return `${testURL}/${path}`;
+	}
+
+	if (testURL.endsWith('/') && path.startsWith('/')) {
+		return `${testURL.slice(0, -1)}${path}`;
+	}
+
+	return `${testURL}${path}`;
+}
+
+/**
+ * Visit a path on the test site.
+ *
+ * Signature matches `@blockera/dev-cypress` `goTo`, but does not depend on
+ * block-editor `getWPDataObject()` (site-toolkit specs are front/admin PHP UI).
+ *
+ * @param {string}  path  URI path.
+ * @param {boolean} login When true, skip editor data-store waits.
+ * @return {Cypress.Chainable}
+ */
+export function goTo(path = '/wp-admin', login = false) {
+	return cy.visit(resolveTestUrl(path)).then(() => {
+		return login ? cy.window().then((win) => win) : cy.window();
+	});
+}
+
+/**
  * Visit a front-end (non-block-editor) path.
- * Uses login=true so goTo skips getWPDataObject().
  *
  * @param {string} path Path beginning with /.
+ * @return {Cypress.Chainable}
  */
 export function visitFront(path = '/') {
 	return goTo(path, true);
@@ -40,6 +89,7 @@ export function getWpJsonRoot() {
  *
  * @param {string} path REST path (e.g. /auth/v1/licenses).
  * @param {object} options Cypress request options.
+ * @return {Cypress.Chainable}
  */
 export function wpRest(path, options = {}) {
 	const normalized = path.startsWith('/') ? path : `/${path}`;
@@ -57,7 +107,7 @@ export function wpRest(path, options = {}) {
  * @return {Cypress.Chainable<string>}
  */
 export function getWpRestNonce() {
-	return goTo('/wp-admin/index.php').then(() =>
+	return goTo('/wp-admin/index.php', true).then(() =>
 		cy.window().then((win) => {
 			const nonce = win?.wpApiSettings?.nonce;
 

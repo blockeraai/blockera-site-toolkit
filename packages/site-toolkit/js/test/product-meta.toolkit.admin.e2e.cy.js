@@ -4,8 +4,7 @@
  * @category admin
  */
 
-import { goTo } from '@blockera/dev-cypress/js/helpers';
-import { isWooCommerceActive } from './helpers';
+import { goTo, isWooCommerceActive } from './helpers';
 
 describe('Site Toolkit product admin meta', () => {
 	beforeEach(function () {

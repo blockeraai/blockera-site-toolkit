@@ -4,8 +4,7 @@
  * @category oauth
  */
 
-import { goTo } from '@blockera/dev-cypress/js/helpers';
-import { getTestUrl, visitFront } from './helpers';
+import { goTo, getTestUrl, visitFront } from './helpers';
 
 const buildConsentUrl = () => {
 	const redirectUri = encodeURIComponent(`${getTestUrl()}/`);

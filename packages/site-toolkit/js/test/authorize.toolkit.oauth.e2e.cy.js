@@ -4,8 +4,7 @@
  * @category oauth
  */
 
-import { goTo } from '@blockera/dev-cypress/js/helpers';
-import { visitFront } from './helpers';
+import { goTo, visitFront } from './helpers';
 
 describe('Site Toolkit authorize OAuth entry', () => {
 	it('should redirect guests from /authorize to wp-login', () => {
