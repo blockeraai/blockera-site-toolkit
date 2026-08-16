@@ -152,6 +152,7 @@
 		"concurrently": "^8.2.0",
 		"copy-webpack-plugin": "^10.2.0",
 		"css-minimizer-webpack-plugin": "^5.0.0",
+		"cypress": "^15.20.1",
 		"cypress-image-diff-js": "^2.4.0",
 		"deep-object-diff": "^1.1.9",
 		"deep-state-observer": "^5.5.13",
