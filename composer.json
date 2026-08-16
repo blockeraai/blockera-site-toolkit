@@ -18,11 +18,14 @@
 	],
 	"require": {
 		"php": ">=8.2",
+		"blockera/bootstrap": "*",
+		"blockera/site-toolkit": "*",
+		"blockera/utils": "*",
+		"blockera/wordpress": "*",
 		"illuminate/container": "8.x-dev",
 		"league/oauth2-server": "^9.0",
 		"guzzlehttp/psr7": "^2.7",
-		"vlucas/phpdotenv": "^5.6",
-		"blockera/site-toolkit": "*"
+		"vlucas/phpdotenv": "^5.6"
 	},
 	"config": {
 		"process-timeout": 0,
