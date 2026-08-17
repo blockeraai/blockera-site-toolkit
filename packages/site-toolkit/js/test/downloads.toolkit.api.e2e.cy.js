@@ -4,7 +4,7 @@
  * @category api
  */
 
-import { wpRest } from './helpers';
+import { goTo, wpRest } from './helpers';
 
 describe('Site Toolkit downloads API', () => {
 	it('should reject download when bearer token is missing required fields', () => {
@@ -12,19 +12,20 @@ describe('Site Toolkit downloads API', () => {
 			method: 'POST',
 			headers: {
 				Authorization: 'Bearer test-token',
+				'Content-Type': 'application/json',
 			},
 			body: {},
 		}).then((response) => {
-			expect(response.status).to.be.oneOf([200, 400, 403, 500]);
-			if (response.body && typeof response.body === 'object') {
-				expect(response.body).to.satisfy(
-					(body) =>
-						body.success === false ||
-						Boolean(body.code) ||
-						Boolean(body.message) ||
-						Boolean(body.errors)
-				);
-			}
+			expect(response.status).to.eq(400);
+			expect(response.body).to.include({
+				code: 400,
+				success: false,
+			});
+			expect(response.body.errors).to.be.an('object');
+			expect(response.body.errors).to.include.all.keys(
+				'invalid_token',
+				'invalid_name'
+			);
 		});
 	});
 });
