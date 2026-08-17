@@ -87,6 +87,10 @@ export function getWpJsonRoot() {
 /**
  * Perform a wp-json request (does not fail on non-2xx by default).
  *
+ * Follows HTTPS canonical redirects while keeping the original method/body.
+ * Cypress' default redirect follow turns POST+301 into GET, which 404s
+ * POST-only routes as rest_no_route.
+ *
  * @param {string} path REST path (e.g. /auth/v1/licenses).
  * @param {object} options Cypress request options.
  * @return {Cypress.Chainable}
@@ -94,11 +98,30 @@ export function getWpJsonRoot() {
 export function wpRest(path, options = {}) {
 	const normalized = path.startsWith('/') ? path : `/${path}`;
 
-	return cy.request({
-		url: `${getWpJsonRoot()}${normalized}`,
-		failOnStatusCode: false,
-		...options,
-	});
+	return requestWpRest(`${getWpJsonRoot()}${normalized}`, options);
+}
+
+function requestWpRest(url, options) {
+	return cy
+		.request({
+			failOnStatusCode: false,
+			followRedirect: false,
+			...options,
+			url,
+		})
+		.then((response) => {
+			const location =
+				response.headers?.location || response.headers?.Location;
+
+			if (
+				!location ||
+				![301, 302, 303, 307, 308].includes(response.status)
+			) {
+				return response;
+			}
+
+			return requestWpRest(location, options);
+		});
 }
 
 /**
