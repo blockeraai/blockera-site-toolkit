@@ -58,7 +58,7 @@ while (true) {
         case '### BEGIN AUTO-GENERATED FRONT CONTROLLERS':
             $inside_defines = true;
             echo $line;
-			echo '$setup = BlockeraAI\SiteToolkit\Setup::getInstance();' . "\n";
+			echo '$bsa_setup = BlockeraAI\SiteToolkit\Setup::getInstance();' . "\n";
             break;
 
 		case '### BEGIN AUTO-GENERATED AUTOLOADER':
