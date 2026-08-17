@@ -77,10 +77,14 @@ add_action(
 				exit;
 			}
 
-			$clientInfo = isset($_COOKIE['token_key']) ? get_user_meta(get_current_user_id(), $_COOKIE['token_key'] ?? '', true) : [];
-			$clientId   = $clientInfo['client_id'] ?? '';
-			$raw_url    = parse_url( urldecode( $_GET['redirect_uri'] ) );
-			$domain     = '<div class="client-website"><span class="client-website-scheme">' . $raw_url['scheme'] . '://' . '</span> ' . $raw_url['host'] . '</div>';
+			$clientInfo  = isset($_COOKIE['token_key']) ? get_user_meta(get_current_user_id(), $_COOKIE['token_key'] ?? '', true) : [];
+			$clientId    = $clientInfo['client_id'] ?? '';
+			$redirectUri = isset($_GET['redirect_uri']) && is_string($_GET['redirect_uri']) ? urldecode(wp_unslash($_GET['redirect_uri'])) : '';
+			$parsedUrl   = '' !== $redirectUri ? parse_url($redirectUri) : [];
+			$raw_url     = is_array($parsedUrl) ? $parsedUrl : [];
+			$scheme      = $raw_url['scheme'] ?? '';
+			$host        = $raw_url['host'] ?? '';
+			$domain      = '<div class="client-website"><span class="client-website-scheme">' . esc_html($scheme) . '://' . '</span> ' . esc_html($host) . '</div>';
 
             $templateFile = $setupInstance->getPath() . '/vendor/blockera/site-toolkit/php/Views/consent-form.php';
 

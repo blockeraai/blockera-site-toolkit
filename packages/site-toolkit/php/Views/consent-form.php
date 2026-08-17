@@ -25,13 +25,14 @@ if ( ! defined( 'YITH_YWSBS_INIT' ) ) {
 	return;
 }
 
-$host = $raw_url['host'];
+$raw_url = is_array( $raw_url ?? null ) ? $raw_url : [];
+$host    = $raw_url['host'] ?? '';
 
-if ( isset( $raw_url['port'] ) && ! empty( $raw_url['port'] ) ) {
+if ( ! empty( $raw_url['port'] ) ) {
 	$host .= ':' . $raw_url['port'];
 }
 
-$client_url = $raw_url['scheme'] . '://' . $host;
+$client_url = ( $raw_url['scheme'] ?? '' ) . '://' . $host;
 
 ?>
 <div id="blockera-site-toolkit-consent-form"></div>
