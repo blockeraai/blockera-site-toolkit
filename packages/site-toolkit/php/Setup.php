@@ -308,9 +308,17 @@ class Setup extends Application {
     /**
      * Check if the plugin is in debug mode.
      *
+     * Matches Blockera: both plugin mode and APP_MODE must be development
+     * before loading non-minified dist assets. CI sets APP_MODE=production
+     * while BSA_PLUGIN_MODE stays development in source builds.
+     *
      * @return bool true if the plugin is in debug mode, false otherwise.
      */
     public function isDebug(): bool {
-        return 'development' === $this->getPluginMode();
+        $app_mode = isset( $_ENV['APP_MODE'] )
+            ? sanitize_text_field( wp_unslash( $_ENV['APP_MODE'] ) )
+            : 'production';
+
+        return 'development' === $this->getPluginMode() && 'development' === $app_mode;
     }
 }

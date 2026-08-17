@@ -33,15 +33,24 @@ class SetupTest extends AppTestCase
 
     public function testPluginModeManagement(): void
     {
-        // Test development mode
         $this->setup->setPluginMode('development');
         $this->assertEquals('development', $this->setup->getPluginMode());
+
+        // Source checkout defaults APP_MODE to production (CI / production dist).
+        unset($_ENV['APP_MODE']);
+        $this->assertFalse($this->setup->isDebug());
+
+        $_ENV['APP_MODE'] = 'development';
         $this->assertTrue($this->setup->isDebug());
 
-        // Test production mode
+        $_ENV['APP_MODE'] = 'production';
+        $this->assertFalse($this->setup->isDebug());
+
         $this->setup->setPluginMode('production');
         $this->assertEquals('production', $this->setup->getPluginMode());
         $this->assertFalse($this->setup->isDebug());
+
+        unset($_ENV['APP_MODE']);
     }
 
     public function testPluginFileManagement(): void
