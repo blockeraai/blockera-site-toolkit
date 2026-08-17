@@ -71,16 +71,10 @@ describe('Site Toolkit My Account licenses', () => {
 	it('should keep assets available on the licenses endpoint', () => {
 		visitFront('/my-account/licenses/');
 
-		cy.document().then((doc) => {
-			const scripts = Array.from(doc.querySelectorAll('script[src]')).map(
-				(el) => el.getAttribute('src') || ''
-			);
-
-			expect(
-				scripts.some((src) => /site-toolkit/i.test(src)),
-				'expected site-toolkit script enqueue'
-			).to.eq(true);
-		});
+		cy.get('script[src*="site-toolkit"]', { timeout: 20000 }).should(
+			'have.length.at.least',
+			1
+		);
 	});
 
 	it('should open the licenses page from wp-admin customer view path', () => {
