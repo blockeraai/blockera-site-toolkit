@@ -9,6 +9,14 @@ concurrency:
     group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
     cancel-in-progress: true
 
+env:
+    BLOCKERA_GLOBAL_PACKAGES_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
+    BLOCKERA_E2E_SCAN_ROOTS: packages/site-toolkit
+    BLOCKERA_E2E_FILE_PATTERN: '\.toolkit(\.[a-z0-9-]+)?\.e2e\.cy\.js$'
+    BLOCKERA_E2E_CATEGORY_MODE: last-segment
+    BLOCKERA_E2E_GENERAL_CATEGORY: none
+    BLOCKERA_E2E_PACKAGE_GLOB: packages/site-toolkit/**
+
 jobs:
     detect_categories:
         name: Detecting E2E Test Categories
@@ -16,9 +24,6 @@ jobs:
         timeout-minutes: 30
         outputs:
             categories: ${{ steps.detect.outputs.categories }}
-        env:
-            BLOCKERA_GLOBAL_PACKAGES_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
-            BLOCKERA_E2E_LIST_CATEGORIES_CMD: node packages/global-packages/packages/dev-tools/github/scripts/list-e2e-test-categories-toolkit.js
         steps:
             - uses: actions/checkout@v5
               with:
@@ -43,11 +48,7 @@ jobs:
             matrix:
                 category: ${{ fromJson(needs.detect_categories.outputs.categories) }}
         env:
-            BLOCKERA_GLOBAL_PACKAGES_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
             BLOCKERA_E2E_CATEGORY: ${{ matrix.category }}
-            BLOCKERA_E2E_PRODUCT_STYLE: toolkit
-            # Only site-toolkit product specs (*.toolkit.{category}.e2e.cy.js).
-            BLOCKERA_E2E_PACKAGE_GLOB: packages/site-toolkit/**
         steps:
             - uses: actions/checkout@v5
               with:
