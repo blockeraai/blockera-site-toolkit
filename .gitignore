@@ -8,6 +8,7 @@ dist
 .phpunit.result.cache
 .env
 build
+inc
 
 # Cypress artifacts (global-packages submodule)
 packages/global-packages/packages/dev-cypress/js/screenshots
