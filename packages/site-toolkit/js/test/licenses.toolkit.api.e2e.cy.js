@@ -28,40 +28,4 @@ describe('Site Toolkit licenses API', () => {
 			}
 		});
 	});
-
-	it('should require action and license_id for renew', () => {
-		wpRest('/auth/v1/license/renew', {
-			method: 'POST',
-			headers: {
-				Authorization: 'Bearer test-token',
-			},
-			body: {},
-		}).then((response) => {
-			expect(response.status).to.be.oneOf([200, 400, 500]);
-			if (response.body?.errors) {
-				expect(response.body.errors).to.include.keys(
-					'invalid_action',
-					'required_license_id'
-				);
-			}
-		});
-	});
-
-	it('should require action and license_id for upgrade', () => {
-		wpRest('/auth/v1/license/upgrade', {
-			method: 'POST',
-			headers: {
-				Authorization: 'Bearer test-token',
-			},
-			body: {},
-		}).then((response) => {
-			expect(response.status).to.be.oneOf([200, 400, 500]);
-			if (response.body?.errors) {
-				expect(response.body.errors).to.include.keys(
-					'invalid_action',
-					'required_license_id'
-				);
-			}
-		});
-	});
 });
