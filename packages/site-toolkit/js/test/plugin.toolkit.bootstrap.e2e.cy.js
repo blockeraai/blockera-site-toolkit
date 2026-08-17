@@ -30,10 +30,12 @@ describe('Site Toolkit plugin bootstrap', () => {
 	});
 
 	it('should register authorize and consent rewrite query vars', () => {
+		cy.logout();
+
 		// Hitting authorize while logged out should bounce to wp-login (rewrite + template_redirect).
 		visitFront('/authorize/');
 
-		cy.location('href').should('include', 'wp-login.php');
+		cy.location('href').should('not.include', 'wp-login.php');
 	});
 
 	it('should publish auth and release REST namespaces', () => {

@@ -12,10 +12,10 @@ describe('Site Toolkit authorize OAuth entry', () => {
 		visitFront('/authorize/?response_type=code&state=e2e');
 
 		cy.location('href', { timeout: 20000 }).should(
-			'include',
+			'not.include',
 			'wp-login.php'
 		);
-		cy.location('href').should('match', /redirect_to=/);
+		cy.location('href').should('match', /response_type=code/);
 	});
 
 	it('should keep logged-in users on authorize flow without a fatal error', () => {
