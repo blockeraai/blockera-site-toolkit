@@ -27,3 +27,4 @@ images
 # development helper folders
 .cursor
 source-codes
+cypress.env.json
