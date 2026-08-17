@@ -7,7 +7,7 @@
  * Author: blockera.ai
  * Requires at least: 6.6
  * Requires PHP: 7.4
- * Tested up to: 6.7
+ * Tested up to: 7.0
  * Domain Path: /languages
  * License: GPLv3 or later
  * Domain: blockera-site-toolkit
@@ -55,8 +55,8 @@ blockera_bootstrap_shared_autoloader(
 
 if ( file_exists( __DIR__ . '/.env' ) ) {
 	// Env Loading ...
-	$dotenv = Dotenv\Dotenv::createImmutable( __DIR__ );
-	$dotenv->safeLoad();
+	$bsa_dotenv = Dotenv\Dotenv::createImmutable( __DIR__ );
+	$bsa_dotenv->safeLoad();
 }
 
 if ( ! defined( 'BSA_PLUGIN_FILE' ) ) {
@@ -78,15 +78,15 @@ if ( ! defined( 'BSA_PLUGIN_MODE' ) ) {
 ### END AUTO-GENERATED DEFINES
 
 ### BEGIN AUTO-GENERATED FRONT CONTROLLERS
-$setup = BlockeraAI\SiteToolkit\Setup::getInstance();
+$bsa_setup = BlockeraAI\SiteToolkit\Setup::getInstance();
 ### END AUTO-GENERATED FRONT CONTROLLERS
 
-$setup->setPluginDir( BSA_PLUGIN_DIR );
-$setup->setPluginUrl( BSA_PLUGIN_URL );
-$setup->setPluginMode( BSA_PLUGIN_MODE );
-$setup->setPluginFile( BSA_PLUGIN_FILE );
+$bsa_setup->setPluginDir( BSA_PLUGIN_DIR );
+$bsa_setup->setPluginUrl( BSA_PLUGIN_URL );
+$bsa_setup->setPluginMode( BSA_PLUGIN_MODE );
+$bsa_setup->setPluginFile( BSA_PLUGIN_FILE );
 
-$setup->mount()->unmount();
+$bsa_setup->mount()->unmount();
 
 /**
  * Initialize the plugin.
@@ -95,18 +95,18 @@ $setup->mount()->unmount();
  */
 add_action(
 	'plugins_loaded',
-	function () use ( $setup ): void {
+	function () use ( $bsa_setup ): void {
 		add_action(
 			'init',
-			static function () use ( $setup ): void {
-				$setup->bootstrap();
+			static function () use ( $bsa_setup ): void {
+				$bsa_setup->bootstrap();
 			}
 		);
 	}
 );
 
 if ( 'development' === BSA_PLUGIN_MODE && class_exists( \Whoops\Run::class ) ) {
-	$whoops = new \Whoops\Run();
-	$whoops->pushHandler( new \Whoops\Handler\PrettyPageHandler() );
-	$whoops->register();
+	$bsa_whoops = new \Whoops\Run();
+	$bsa_whoops->pushHandler( new \Whoops\Handler\PrettyPageHandler() );
+	$bsa_whoops->register();
 }
