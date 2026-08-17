@@ -142,10 +142,25 @@ class Setup extends Application {
     public function rewriteRules(): void {
         add_rewrite_rule('^authorize/?$', 'index.php?authorize=true', 'top');
         add_rewrite_rule('^consent-form/?$', 'index.php?consent-form=true', 'top');
+    }
 
-		global $wp_rewrite;
+    /**
+     * Resolve a PHP file inside this package (dev tree or vendor symlink).
+     *
+     * @param string $relative Path under php/, e.g. Routes/api.php.
+     * @return string Absolute path or empty string when missing.
+     */
+    private function getPackagePhpFile( string $relative ): string {
+        $relative    = ltrim( $relative, '/' );
+        $fromPackage = __DIR__ . '/' . $relative;
 
-		$wp_rewrite->flush_rules();
+        if ( is_readable( $fromPackage ) ) {
+            return $fromPackage;
+        }
+
+        $fromVendor = $this->getPath() . '/vendor/blockera/site-toolkit/php/' . $relative;
+
+        return is_readable( $fromVendor ) ? $fromVendor : '';
     }
 
     /**
@@ -154,30 +169,24 @@ class Setup extends Application {
      * @return void
      */
     public function registerRoutes(): void {
-        add_action('rest_api_init', [ $this, 'registerRestRoutes' ]);
-
-        // Rewrite rule to transform url specific page to query vars.
         $this->rewriteRules();
 
-        $web_filename = $this->getPath() . '/vendor/blockera/site-toolkit/php/Routes/web.php';
+        $webFilename = $this->getPackagePhpFile( 'Routes/web.php' );
 
-		if ( file_exists( $web_filename ) ) {
-            // Require the web routes.
-            require_once $web_filename;
+		if ( $webFilename ) {
+            require_once $webFilename;
         }
     }
 
     /**
-     * Register REST API routes.
+     * Register REST API routes on rest_api_init.
      *
      * @return void
      */
     public function registerRestRoutes(): void {
+        $apiFilename = $this->getPackagePhpFile( 'Routes/api.php' );
 
-        $apiFilename = $this->getPath() . '/vendor/blockera/site-toolkit/php/Routes/api.php';
-
-		if ( file_exists( $apiFilename ) ) {
-            // Require the API routes.
+		if ( $apiFilename ) {
             require_once $apiFilename;
         }
     }

@@ -8,7 +8,7 @@ register_rest_route(
     'auth/v1',
     '/download',
     [
-		'methods' => 'POST',
+		'methods' => \WP_REST_Server::CREATABLE,
 		'callback' => [ $fileController, 'download' ],
 		'permission_callback' => [ $fileController, 'permission' ],
 	]

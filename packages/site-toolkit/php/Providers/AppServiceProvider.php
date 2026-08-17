@@ -43,6 +43,12 @@ class AppServiceProvider extends ServiceProvider {
 
 		// Must register before WC `init` → `add_endpoints()` so rewrite rules include `licenses`.
 		add_filter( 'woocommerce_get_query_vars', [ $this, 'registerLicensesQueryVar' ] );
+
+		// WordPress requires REST routes on rest_api_init. Hook at plugin load so we
+		// cannot miss the action if rest_get_server() runs during init.
+		if ( $this->app instanceof Setup ) {
+			add_action( 'rest_api_init', [ $this->app, 'registerRestRoutes' ] );
+		}
     }
 
     /**
@@ -55,7 +61,6 @@ class AppServiceProvider extends ServiceProvider {
             return;
         }
 
-        // Register REST API routes.
         $this->app->registerRoutes();
 
         add_filter(
