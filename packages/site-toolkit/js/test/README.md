@@ -4,7 +4,7 @@ Cypress specs for `@blockera/site-toolkit` (JS UI + PHP routes/views/REST).
 
 ## Naming
 
-Follow the toolkit consumer convention (see `list-e2e-test-categories-toolkit.js`):
+Follow the toolkit consumer convention (CI scans `*.toolkit.{category}.e2e.cy.js` via `list-test-categories.js` with `BLOCKERA_E2E_*` env on `.github/workflows/cypress-e2e-tests.yml`):
 
 ```text
 {feature}.toolkit.{category}.e2e.cy.js
