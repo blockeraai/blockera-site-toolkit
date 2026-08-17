@@ -1,0 +1,27 @@
+# Copyright (C) 2026 Blockera AI
+# This file is distributed under the GPLv3 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Blockera Site Toolkit 1.0\n"
+"Report-Msgid-Bugs-To: https://blockera.ai/\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-01-01T00:00:00+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: manual\n"
+"X-Domain: blockera-site-toolkit\n"
+
+#. Plugin Name of the plugin
+msgid "Blockera Site Toolkit"
+msgstr ""
+
+#. Description of the plugin
+msgid "Powers Blockera account licensing, OAuth connect flows, secure downloads, and WooCommerce product release tooling."
+msgstr ""
+
+#. Author of the plugin
+msgid "blockera.ai"
+msgstr ""
