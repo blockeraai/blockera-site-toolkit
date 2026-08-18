@@ -51,5 +51,6 @@ jobs:
               uses: ./packages/global-packages/packages/dev-tools/github/actions/setup-php
               with:
                   php-version: '7.4'
+                  composer-options: ''
 
             - run: bash packages/global-packages/packages/dev-tools/github/scripts/jobs/code-lint/${{ matrix.suite }}.sh
