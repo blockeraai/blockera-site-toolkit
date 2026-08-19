@@ -28,11 +28,32 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
+    pr-workflow-gate:
+        name: PR workflow filter
+        runs-on: ubuntu-latest
+        outputs:
+            run: ${{ steps.gate.outputs.run }}
+        env:
+            BLOCKERA_GLOBAL_PACKAGES_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                  token: ${{ secrets.BLOCKERABOT_PAT }}
+
+            - name: Ensure global-packages submodule
+              uses: ./.github/actions/ensure-global-packages
+
+            - id: gate
+              uses: ./packages/global-packages/packages/dev-tools/github/actions/pr-workflow-gate
+              with:
+                  workflow-file: build-plugin-zip.yml
+
     compute-next-stable-branch:
         name: Compute next stable release branches
+        needs: pr-workflow-gate
+        if: ${{ needs.pr-workflow-gate.outputs.run == 'true' && (github.event_name == 'workflow_dispatch') }}
         runs-on: ubuntu-latest
         timeout-minutes: 30
-        if: ${{ github.event_name == 'workflow_dispatch' }}
         outputs:
             next_stable_branch: ${{ steps.get_branches.outputs.next_stable_branch }}
         env:
@@ -51,24 +72,26 @@ jobs:
                   VERSION_TYPE: ${{ github.event.inputs.version_type }}
               run: bash packages/global-packages/packages/dev-tools/github/scripts/jobs/build-plugin-zip/compute-next-stable-branch.sh
 
+
     bump-version:
         name: Bump version
+        needs: [pr-workflow-gate, compute-next-stable-branch]
+        if: |
+            needs.pr-workflow-gate.outputs.run == 'true' &&
+                github.event_name == 'workflow_dispatch' && (
+                  (
+                    github.ref == 'refs/heads/master' ||
+                    endsWith( github.ref, needs.compute-next-stable-branch.outputs.next_stable_branch )
+                  ) && (
+                    github.event.inputs.release_type == 'rc' ||
+                    github.event.inputs.release_type == 'stable'
+                  ) || (
+                    startsWith( github.ref, 'refs/heads/release/' ) &&
+                    github.event.inputs.release_type == 'stable'
+                  )
+                )
         runs-on: ubuntu-latest
         timeout-minutes: 30
-        needs: compute-next-stable-branch
-        if: |
-            github.event_name == 'workflow_dispatch' && (
-              (
-                github.ref == 'refs/heads/master' ||
-                endsWith( github.ref, needs.compute-next-stable-branch.outputs.next_stable_branch )
-              ) && (
-                github.event.inputs.release_type == 'rc' ||
-                github.event.inputs.release_type == 'stable'
-              ) || (
-                startsWith( github.ref, 'refs/heads/release/' ) &&
-                github.event.inputs.release_type == 'stable'
-              )
-            )
         outputs:
             changelog: ${{ steps.update_packages.outputs.changelog }}
             old_version: ${{ steps.get_version.outputs.old_version }}
@@ -128,17 +151,19 @@ jobs:
                   RELEASE_BRANCH: ${{ steps.get_version.outputs.release_branch }}
               run: bash packages/global-packages/packages/dev-tools/github/scripts/jobs/build-plugin-zip/cherry-pick-to-master.sh
 
+
     build:
         name: Build Release Artifact
+        needs: [pr-workflow-gate, bump-version]
+        if: |
+            needs.pr-workflow-gate.outputs.run == 'true' &&
+                always() && (
+                  github.event_name == 'pull_request' ||
+                  github.event_name == 'workflow_dispatch' ||
+                  github.repository == 'blockeraai/blockera-site-toolkit'
+                )
         runs-on: ubuntu-latest
         timeout-minutes: 30
-        needs: bump-version
-        if: |
-            always() && (
-              github.event_name == 'pull_request' ||
-              github.event_name == 'workflow_dispatch' ||
-              github.repository == 'blockeraai/blockera-site-toolkit'
-            )
         outputs:
             job_status: ${{ job.status }}
         env:
@@ -171,15 +196,17 @@ jobs:
                   name: release-notes
                   path: ./release-notes.txt
 
+
     revert-version-bump:
         name: Revert version bump if build failed
-        needs: [bump-version, build]
+        needs: [pr-workflow-gate, bump-version, build]
+        if: |
+            needs.pr-workflow-gate.outputs.run == 'true' &&
+                always() &&
+                ( needs.build.outputs.job_status == 'failure' ) &&
+                needs.bump-version.outputs.release_branch_commit
         runs-on: ubuntu-latest
         timeout-minutes: 30
-        if: |
-            always() &&
-            ( needs.build.outputs.job_status == 'failure' ) &&
-            needs.bump-version.outputs.release_branch_commit
         env:
             BLOCKERA_GLOBAL_PACKAGES_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
         steps:
@@ -215,9 +242,11 @@ jobs:
                   MASTER_COMMIT: ${{ needs.bump-version.outputs.master_commit }}
               run: bash packages/global-packages/packages/dev-tools/github/scripts/jobs/build-plugin-zip/revert-master-bump.sh
 
+
     create-release:
         name: Create Release Draft and Attach Asset
-        needs: [bump-version, build]
+        needs: [pr-workflow-gate, bump-version, build]
+        if: ${{ needs.pr-workflow-gate.outputs.run == 'true' }}
         runs-on: ubuntu-latest
         timeout-minutes: 30
         env:
