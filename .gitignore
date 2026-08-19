@@ -100,7 +100,6 @@ cypress.env.json
 .pr-github-playground.example.json
 .pr-cypress.env.json
 .pr-playwright.env.json
-.pr-workflows.json
 visual-screenshots/diff
 visual-screenshots/comparison
 cypress-image-diff-html-report
