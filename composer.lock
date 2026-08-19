@@ -1593,12 +1593,13 @@
             "dist": {
                 "type": "path",
                 "url": "packages/global-packages/packages/dev-phpunit",
-                "reference": "377a7f6b0137be7f26dd5f0968510fd16612a927"
+                "reference": "2657c0e862e10eeedc3d8653279c3f27d0d62c4b"
             },
             "type": "library",
             "autoload-dev": {
                 "psr-4": {
-                    "Blockera\\Dev\\PHPUnint\\": "php/"
+                    "Blockera\\Dev\\PHPUnit\\": "php/",
+                    "Blockera\\Dev\\PhpUnit\\": "php/"
                 }
             },
             "description": "The development phpunit package of blockera",
@@ -9362,12 +9363,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Yoast/PHPUnit-Polyfills.git",
-                "reference": "299897d1dc34469cfc58033db378886b2f1f2ac3"
+                "reference": "4fad816e80049765d3748efc217be3212f68ea46"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Yoast/PHPUnit-Polyfills/zipball/299897d1dc34469cfc58033db378886b2f1f2ac3",
-                "reference": "299897d1dc34469cfc58033db378886b2f1f2ac3",
+                "url": "https://api.github.com/repos/Yoast/PHPUnit-Polyfills/zipball/4fad816e80049765d3748efc217be3212f68ea46",
+                "reference": "4fad816e80049765d3748efc217be3212f68ea46",
                 "shasum": ""
             },
             "require": {
@@ -9417,7 +9418,7 @@
                 "security": "https://github.com/Yoast/PHPUnit-Polyfills/security/policy",
                 "source": "https://github.com/Yoast/PHPUnit-Polyfills"
             },
-            "time": "2026-08-07T00:30:00+00:00"
+            "time": "2026-08-17T12:35:38+00:00"
         }
     ],
     "aliases": [],
@@ -9442,5 +9443,5 @@
     "platform-overrides": {
         "php": "7.4"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
