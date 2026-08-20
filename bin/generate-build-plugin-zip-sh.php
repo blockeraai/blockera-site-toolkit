@@ -81,7 +81,7 @@ while ( true ) {
 				array_map(
 					static function ( string $name ): string {
 						return sprintf(
-							'	$(find ./vendor/blockera/%1$s/ -type f \( -name "*.php" -o -name "*.json" \)) \\',
+							'	$(find ./vendor/blockera/%1$s/ -type f ! -path "*/tests/*" \( -name "*.php" -o -name "*.json" \)) \\',
 							$name
 						);
 					},
@@ -98,7 +98,7 @@ while ( true ) {
 				array_map(
 					static function ( string $name ): string {
 						return sprintf(
-							'	$(find ./vendor/blockera/%1$s/) \\',
+							'	$(find ./vendor/blockera/%1$s/ ! -path "*/tests/*") \\',
 							$name
 						);
 					},
