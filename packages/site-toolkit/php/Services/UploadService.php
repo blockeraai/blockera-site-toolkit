@@ -67,8 +67,10 @@ class UploadService {
 
         // Skip if request failed.
         if ( is_wp_error( $response ) || 201 !== $status ) {
-            $body = json_decode(wp_remote_retrieve_body($response), true);
-            wp_die(implode(', ', iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveArrayIterator($body['errors'])))));
+            return [
+				'status' => false,
+				'message' => __('File upload failed.', 'blockera-site-toolkit'),
+			];
         }
 
 		return [

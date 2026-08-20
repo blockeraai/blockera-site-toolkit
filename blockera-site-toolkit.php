@@ -17,7 +17,7 @@
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
-	die( 'Access Denied!' );
+	exit;
 }
 
 ### BEGIN AUTO-GENERATED AUTOLOADER

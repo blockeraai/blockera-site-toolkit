@@ -101,8 +101,7 @@ const Row = ({
 										setIsBusy(false);
 									}
 								})
-								.catch((error) => {
-									console.error('Download failed:', error);
+								.catch(() => {
 									setIsBusy(false);
 									setIsDestructive(true);
 								});
