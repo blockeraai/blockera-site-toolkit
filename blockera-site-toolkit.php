@@ -17,7 +17,8 @@
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+	// @debug-ignore
+	die( 'Access Denied!' );	
 }
 
 ### BEGIN AUTO-GENERATED AUTOLOADER
