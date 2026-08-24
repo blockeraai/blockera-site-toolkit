@@ -1,9 +1,8 @@
-name: Check PR Config Files
+name: Check for Debugging Code
 
 on:
     pull_request:
-        branches:
-            - master
+        types: [opened, synchronize, ready_for_review]
     workflow_dispatch:
 
 concurrency:
@@ -11,8 +10,8 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    check-files:
-        name: Check PR Config Files
+    check-debugging:
+        name: Check for Debugging Code
         if: ${{ github.repository == 'blockeraai/blockera-site-toolkit' || github.event_name == 'pull_request' }}
         runs-on: ubuntu-latest
         timeout-minutes: 5
@@ -26,4 +25,4 @@ jobs:
             - name: Ensure global-packages submodule
               uses: ./.github/actions/ensure-global-packages
 
-            - run: bash packages/global-packages/packages/dev-tools/github/scripts/jobs/check-pr-config-files/run.sh
+            - run: bash packages/global-packages/packages/dev-tools/github/scripts/jobs/check-debugging-code/run.sh

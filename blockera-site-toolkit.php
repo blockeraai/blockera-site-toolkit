@@ -7,7 +7,7 @@
  * Author: blockera.ai
  * Requires at least: 6.6
  * Requires PHP: 7.4
- * Tested up to: 7.0
+ * Tested up to: 7.1
  * Domain Path: /languages
  * License: GPLv3 or later
  * Domain: blockera-site-toolkit
@@ -17,7 +17,8 @@
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
-	die( 'Access Denied!' );
+	// @debug-ignore
+	die( 'Access Denied!' );	
 }
 
 ### BEGIN AUTO-GENERATED AUTOLOADER
