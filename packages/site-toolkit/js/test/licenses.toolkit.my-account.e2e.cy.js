@@ -10,6 +10,7 @@ describe('Site Toolkit My Account licenses', () => {
 	beforeEach(function () {
 		isWooCommerceActive().then((active) => {
 			if (!active) {
+				// @debug-ignore — skip when WooCommerce is not active
 				this.skip();
 			}
 		});

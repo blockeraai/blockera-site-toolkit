@@ -96,8 +96,7 @@ const Row = ({
 					}
 				}
 			})
-			.catch((error) => {
-				console.log(error);
+			.catch(() => {
 				setIsDeleting(false);
 				setIsDeletingError(true);
 			})
