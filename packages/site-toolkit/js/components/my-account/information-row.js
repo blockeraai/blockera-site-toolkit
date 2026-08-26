@@ -28,13 +28,13 @@ export const InformationRow = ({
 	children?: Array<MixedElement> | MixedElement,
 	maxDomains?: number,
 	justifyContent?:
-	| 'start'
-	| 'center'
-	| 'end'
-	| 'space-evenly'
-	| 'space-around'
-	| 'space-between'
-	| 'stretch',
+		| 'start'
+		| 'center'
+		| 'end'
+		| 'space-evenly'
+		| 'space-around'
+		| 'space-between'
+		| 'stretch',
 	columnsTemplate?: string,
 }): MixedElement => {
 	return (

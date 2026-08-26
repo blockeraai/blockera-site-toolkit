@@ -1,32 +1,44 @@
 <?php
-
 /**
- * My Account Subscriptions Section of Blockera Site Toolkit WooCommerce Subscription
+ * My Account Licenses section for Blockera Site Toolkit.
  *
- * @package Blockera\Site\Toolkit
+ * @package BlockeraAI\SiteToolkit
  * @since   1.0.0
  * @author Blockera
  *
- * @var array $subscriptions Subscription List.
- * @var $max_pages
- * @var $current_page
+ * @var array $mappedLicenses Mapped license list for the current customer.
  */
 
-defined('YITH_YWSBS_INIT') || exit; // Exit if accessed directly.
+defined( 'ABSPATH' ) || exit;
 
-do_action('blockera_site_toolkit_before_licenses_view');
+// Included as WC My Account content — use return (not exit) so theme header/footer still render.
+if ( ! defined( 'YITH_YWSBS_INIT' ) ) {
+	echo '<p class="woocommerce-info">' . esc_html__(
+		'Subscriptions plugin is required to manage licenses.',
+		'blockera-site-toolkit'
+	) . '</p>';
+	return;
+}
 
-?>
-<?php if (empty($mappedLicenses)) : ?>
-    <?php $no_subscription_text = apply_filters('ywsbs_no_subscription_text', __('There is no active subscription for your account.', 'blockera-site-toolkit')); ?>
-    <p class="ywsbs-my-subscriptions"><?php esc_html_e($no_subscription_text); ?></p>
-<?php else : ?>
-    <script>
-        window.blockeraaiNonce = '<?php echo wp_create_nonce('blockera-site-toolkit'); ?>';
-        window.restURL = '<?php echo rest_url('/auth/v1/licenses/create'); ?>';
-        window.blockeraSiteToolkitLicenses = <?php echo json_encode($mappedLicenses); ?>;
-    </script>
-    <div id="blockera-site-toolkit-subscription-manager"></div>
-<?php endif;
+do_action( 'blockera_site_toolkit_before_licenses_view' );
 
-do_action('blockera_site_toolkit_after_licenses_view');
+if ( empty( $mappedLicenses ) ) :
+	$no_subscription_text = apply_filters(
+		'ywsbs_no_subscription_text',
+		__( 'There is no active subscription for your account.', 'blockera-site-toolkit' )
+	);
+	?>
+	<p class="ywsbs-my-subscriptions"><?php echo esc_html( $no_subscription_text ); ?></p>
+	<?php
+else :
+	?>
+	<script>
+		window.blockeraaiNonce = '<?php echo esc_js( wp_create_nonce( 'blockera-site-toolkit' ) ); ?>';
+		window.restURL = '<?php echo esc_url_raw( rest_url( '/auth/v1/licenses/create' ) ); ?>';
+		window.blockeraSiteToolkitLicenses = <?php echo wp_json_encode( $mappedLicenses ); ?>;
+	</script>
+	<div id="blockera-site-toolkit-subscription-manager"></div>
+	<?php
+endif;
+
+do_action( 'blockera_site_toolkit_after_licenses_view' );

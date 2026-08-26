@@ -316,11 +316,24 @@ export const ConsentForm = ({
 				{licenses.length === 0 && (
 					<>
 						<h1>
-							{__('❌ No Licenses found for ', 'blockera')}
-							<strong>
-								{window.blockeraProductId || 'EMPTY'}
-							</strong>
-							{__(' product', 'blockera')}
+							<DynamicHtmlFormatter
+								text={sprintf(
+									/* translators: %s is the product identifier. */
+									__(
+										'❌ No Licenses found for %s product',
+										'blockera'
+									),
+									'{product}'
+								)}
+								replacements={{
+									product: (
+										<strong>
+											{window.blockeraProductId ||
+												'EMPTY'}
+										</strong>
+									),
+								}}
+							/>
 						</h1>
 						<p className="consent-form-description">
 							{__(
@@ -345,7 +358,7 @@ export const ConsentForm = ({
 				<p className="consent-text">
 					<DynamicHtmlFormatter
 						text={sprintf(
-							/* translators: %1$s is a link to the terms of service, %2$s is a link to the privacy policy. */
+							/* translators: %1$s is a link to the terms of service, %2$s is a link to the opt-in usage terms, %3$s is a link to the privacy policy. */
 							__(
 								'By connecting, you agree to our %1$s, %2$s and %3$s.',
 								'blockera'

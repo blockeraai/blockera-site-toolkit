@@ -18,6 +18,7 @@ import { Flex, Button } from '@blockera/controls';
  */
 import { Table } from './table';
 import { HeaderSection } from './header-section';
+import type { DownloadsMap } from './types';
 
 const Row = ({
 	num,
@@ -33,12 +34,12 @@ const Row = ({
 	id: string,
 	num: number,
 	name: string,
-	version: string,
+	version?: string,
 	generalVersion: string,
 	file: string,
-	filename: string,
+	filename?: string,
 	enabled: boolean,
-	resource: 'wp' | 'api',
+	resource?: 'wp' | 'api',
 }): MixedElement => {
 	const { blockeraaiNonce } = window;
 	const [isBusy, setIsBusy] = useState(false);
@@ -88,20 +89,19 @@ const Row = ({
 										a.download = name;
 										a.style.display = 'none';
 
-										// Ensure document.body exists before appending
-										if (document.body) {
-											document.body.appendChild(a);
+										const body = document.body;
+
+										if (body) {
+											body.appendChild(a);
 											a.click();
-											document.body.removeChild(a);
+											body.removeChild(a);
 										} else {
-											// Fallback if document.body is not available
 											a.click();
 										}
 										setIsBusy(false);
 									}
 								})
-								.catch((error) => {
-									console.error('Download failed:', error);
+								.catch(() => {
 									setIsBusy(false);
 									setIsDestructive(true);
 								});
@@ -147,17 +147,7 @@ export const Downloads = ({
 	downloads,
 	version,
 }: {
-	downloads: {
-		[key: string]: {
-			name: string,
-			enabled: boolean,
-			id: string,
-			file: string,
-			filename: string,
-			version: string,
-			resource: 'wp' | 'api',
-		},
-	},
+	downloads: DownloadsMap,
 	version: string,
 }): MixedElement => {
 	return (

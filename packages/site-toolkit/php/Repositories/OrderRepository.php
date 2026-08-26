@@ -4,8 +4,8 @@ namespace BlockeraAI\SiteToolkit\Repositories;
 
 use Blockera\Bootstrap\Application;
 
-class OrderRepository
-{
+class OrderRepository {
+
     /**
      * Store the application instance.
      *
@@ -38,19 +38,18 @@ class OrderRepository
      * Create a new order repository instance.
      *
      * @param Application $app The application instance.
-     * @param array $orders The orders.
-	 * @param string $context The context. default is licenses.
+     * @param array       $orders The orders.
+	 * @param string      $context The context. default is licenses.
      */
-    public function __construct(Application $app, array $orders, string $context = '')
-    {
-        $this->app = $app;
+    public function __construct( Application $app, array $orders, string $context = '') {
+        $this->app    = $app;
         $this->orders = $orders;
 
-		if (!empty(trim($context))) {
+		if (! empty(trim($context))) {
 			$this->context = $context;
 		}
 
-        array_map([$this, 'prepareLicense'], $this->orders);
+        array_map([ $this, 'prepareLicense' ], $this->orders);
     }
 
     /**
@@ -58,8 +57,7 @@ class OrderRepository
      *
      * @return array
      */
-    public function getLicenses(): array
-    {
+    public function getLicenses(): array {
         return $this->licenses;
     }
 
@@ -70,8 +68,7 @@ class OrderRepository
      *
      * @return void
      */
-    public function setLicenses(array $licenses): void
-    {
+    public function setLicenses( array $licenses): void {
         $this->licenses = $licenses;
     }
 
@@ -82,8 +79,7 @@ class OrderRepository
      *
      * @return void
      */
-    public function prepareLicense(\WC_Order $order): void
-    {
+    public function prepareLicense( \WC_Order $order): void {
         foreach ($order->get_items() as $item) {
             $licenses = $this->processOrderItemProduct($order, $item);
             $this->setLicenses(array_merge($this->licenses, $licenses));
@@ -93,43 +89,42 @@ class OrderRepository
     /**
      * Process the order item product.
      *
-     * @param \WC_Order $order The order.
+     * @param \WC_Order              $order The order.
      * @param \WC_Order_Item_Product $item The item.
      *
      * @return array
      */
-    protected function processOrderItemProduct(\WC_Order $order, \WC_Order_Item_Product $item): array
-    {
+    protected function processOrderItemProduct( \WC_Order $order, \WC_Order_Item_Product $item): array {
         $mappedLicenses = [];
-        $productId = $item->get_product_id();
-        $product = wc_get_product($productId);
-        $variationId = $item->get_variation_id();
+        $productId      = $item->get_product_id();
+        $product        = wc_get_product($productId);
+        $variationId    = $item->get_variation_id();
 
         // If the product is not a variation or product is not found, skip it.
-        if (! $variationId || !$product) {
+        if (! $variationId || ! $product) {
             return $mappedLicenses;
         }
 
 		$blockeraProductId = get_post_meta($productId, 'product_id', true);
 
 		if ('consent-form' === $this->context) {
-			if (!$blockeraProductId || !isset($_GET['product']) || $blockeraProductId !== $_GET['product']) {
+			if (! $blockeraProductId || ! isset($_GET['product']) || $blockeraProductId !== $_GET['product']) {
 				return $mappedLicenses;
 			}
 		}
 
         $itemSubscriptions = $order->get_meta('subscriptions');
 
-        if(!empty($itemSubscriptions)) {
+        if (! empty($itemSubscriptions)) {
 			$mappedSubscriptionLicenses = $this->processOrderItemSubscriptions($itemSubscriptions, $item);
 
-			if (!empty($mappedSubscriptionLicenses)) {
+			if (! empty($mappedSubscriptionLicenses)) {
 				$mappedLicenses = array_merge($mappedLicenses, $mappedSubscriptionLicenses);
 			}
 		}
 
 		// If the license already exists, return the mapped licenses.
-		if ((!empty($mappedLicenses) && in_array($variationId, array_column($mappedLicenses, 'id'))) || $order->get_meta('_subscription_id') ) {
+		if (( ! empty($mappedLicenses) && in_array( $variationId, array_column( $mappedLicenses, 'id' ), true ) ) || $order->get_meta('_subscription_id') ) {
 			return $mappedLicenses;
 		}
 
@@ -155,11 +150,11 @@ class OrderRepository
 		}
 
 		$developmentWebsites = $this->getNormalizedWebsites($licenses, 'development');
-		$productionWebsites = $this->getNormalizedWebsites($licenses, 'production');
+		$productionWebsites  = $this->getNormalizedWebsites($licenses, 'production');
 
         $fallbackDownloadableFiles = get_post_meta($productId, 'product_downloadable_files', true);
-        $isActivatedFreeDownload = get_post_meta($productId, 'product_is_activated_free_download', true);
-        $freeSlug = get_post_meta($productId, 'product_free_slug', true);
+        $isActivatedFreeDownload   = get_post_meta($productId, 'product_is_activated_free_download', true);
+        $freeSlug                  = get_post_meta($productId, 'product_free_slug', true);
 
 		$quantity = 'consent-form' === $this->context ? 1 : $item->get_quantity();
 
@@ -199,13 +194,12 @@ class OrderRepository
     /**
      * Process the order item subscription.
      *
-     * @param array $subscriptions The subscriptions array of post ids or objects.
+     * @param array                  $subscriptions The subscriptions array of post ids or objects.
 	 * @param \WC_Order_Item_Product $item The item.
      *
      * @return array
      */
-    protected function processOrderItemSubscriptions(array $subscriptions, \WC_Order_Item_Product $item): array
-    {
+    protected function processOrderItemSubscriptions( array $subscriptions, \WC_Order_Item_Product $item): array {
 		$mappedLicenses = [];
 
 		$quantity = 'consent-form' === $this->context ? 1 : $item->get_quantity();
@@ -213,9 +207,12 @@ class OrderRepository
 		for ($i = 0; $i < $quantity; $i++) {
 			$mappedLicenses = array_merge(
 				$mappedLicenses,
-				array_map(function ($subscriptionPost) use ($item, $i) {
-					return $this->processOrderItemSubscription($subscriptionPost, $item, $i);
-				}, $subscriptions)
+				array_map(
+                    function ( $subscriptionPost) use ( $item, $i) {
+						return $this->processOrderItemSubscription($subscriptionPost, $item, $i);
+					},
+                    $subscriptions
+                )
 			);
 		}
 
@@ -225,36 +222,35 @@ class OrderRepository
     /**
      * Process the order item subscription.
      *
-     * @param \WP_Post|int $subscriptionPost The subscription post.
+     * @param \WP_Post|int           $subscriptionPost The subscription post.
 	 * @param \WC_Order_Item_Product $item The item.
-	 * @param int $number The index number of the license being processed when quantity is greater than 1.
+	 * @param int                    $number The index number of the license being processed when quantity is greater than 1.
      *
      * @return array
      */
-    protected function processOrderItemSubscription($subscriptionPost, \WC_Order_Item_Product $item, int $number): array
-    {
+    protected function processOrderItemSubscription( $subscriptionPost, \WC_Order_Item_Product $item, int $number): array {
         $subscriptionStatusList = ywsbs_get_status();
-        $subscriptionId       = is_numeric($subscriptionPost) ? $subscriptionPost : $subscriptionPost->ID;
-        $subscription          = ywsbs_get_subscription($subscriptionId);
+        $subscriptionId         = is_numeric($subscriptionPost) ? $subscriptionPost : $subscriptionPost->ID;
+        $subscription           = ywsbs_get_subscription($subscriptionId);
 
-		$productId = (int) $subscription->get('product_id');
-        $product = wc_get_product($productId);
+		$productId   = (int) $subscription->get('product_id');
+        $product     = wc_get_product($productId);
 		$variationId = (int) $subscription->get('variation_id');
 
-        $nameParts            = explode(' - ', $subscription->get('product_name'));
-        $subscriptionName     = count($nameParts) > 1 ? $nameParts[1] : $subscription->get('product_name');
-        $subscriptionStatus   = $subscriptionStatusList[$subscription->get_status()];
-        $nextPaymentDueDate = (! in_array($subscriptionStatus, array('paused', 'cancelled'), true) && $subscription->get('payment_due_date')) ? date_i18n(wc_date_format(), $subscription->get('payment_due_date')) : '<span class="empty-date">-</span>';
-        $endDate              = ($subscription->get('end_date')) ? date_i18n(wc_date_format(), $subscription->get('end_date')) : false;
-        $endDate              = ! $endDate && ($subscription->get('expired_date')) ? date_i18n(wc_date_format(), $subscription->get('expired_date')) : '<div class="empty-date">-</div>';
-        $startDate            = ($subscription->get('start_date')) ? date_i18n(wc_date_format(), $subscription->get('start_date')) : date_i18n(wc_date_format(), strtotime('-1 year', strtotime($endDate)));
+        $nameParts          = explode(' - ', $subscription->get('product_name'));
+        $subscriptionName   = count($nameParts) > 1 ? $nameParts[1] : $subscription->get('product_name');
+        $subscriptionStatus = $subscriptionStatusList[ $subscription->get_status() ];
+        $nextPaymentDueDate = ( ! in_array($subscriptionStatus, array( 'paused', 'cancelled' ), true) && $subscription->get('payment_due_date') ) ? date_i18n(wc_date_format(), $subscription->get('payment_due_date')) : '<span class="empty-date">-</span>';
+        $endDate            = ( $subscription->get('end_date') ) ? date_i18n(wc_date_format(), $subscription->get('end_date')) : false;
+        $endDate            = ! $endDate && ( $subscription->get('expired_date') ) ? date_i18n(wc_date_format(), $subscription->get('expired_date')) : '<div class="empty-date">-</div>';
+        $startDate          = ( $subscription->get('start_date') ) ? date_i18n(wc_date_format(), $subscription->get('start_date')) : date_i18n(wc_date_format(), strtotime('-1 year', strtotime($endDate)));
 
         /**
          * @var LicenseRepository $licenseRepository
          */
         $licenseRepository = $this->app->make(LicenseRepository::class);
 
-        $licenses = bsaFilterActiveLicenses(
+        $licenses            = bsaFilterActiveLicenses(
             $licenseRepository
 				->where('license_id', $subscriptionId)
 				->where('product_id', $productId)
@@ -262,11 +258,11 @@ class OrderRepository
 				->get('api')
         );
 		$developmentWebsites = $this->getNormalizedWebsites($licenses, 'development');
-		$productionWebsites = $this->getNormalizedWebsites($licenses, 'production');
+		$productionWebsites  = $this->getNormalizedWebsites($licenses, 'production');
 
         $fallbackDownloadableFiles = get_post_meta($productId, 'product_downloadable_files', true);
-        $isActivatedFreeDownload = get_post_meta($productId, 'product_is_activated_free_download', true);
-        $freeSlug = get_post_meta($productId, 'product_free_slug', true);
+        $isActivatedFreeDownload   = get_post_meta($productId, 'product_is_activated_free_download', true);
+        $freeSlug                  = get_post_meta($productId, 'product_free_slug', true);
 
         return [
             'id' => $variationId,
@@ -303,27 +299,26 @@ class OrderRepository
 	 *
 	 * @return array
 	 */
-	public function getLicenseInfo(array $license): array
-	{
+	public function getLicenseInfo( array $license): array {
 		$licenseId = $license['license_id'];
 
-		if('subscription' === $license['type']) {	
+		if ('subscription' === $license['type']) {	
 			$subscription_statuses = ywsbs_get_status();
-			$subscription = ywsbs_get_subscription($licenseId);
-			$name = sprintf('%s - %s', $subscription->get_number(), $subscription->get('product_name'));
-			$subscriptionStatus = $subscription->get_status();
-			$status = $subscription_statuses[$subscriptionStatus];
-			$nextPaymentDueDate = (! in_array($status, array('paused', 'cancelled'), true) && $subscription->get('payment_due_date')) ? date_i18n(wc_date_format(), $subscription->get('payment_due_date')) : '';
-			$startDate = ($subscription->get('start_date')) ? date_i18n(wc_date_format(), $subscription->get('start_date')) : '';
-			$endDate = ($subscription->get('end_date')) ? date_i18n(wc_date_format(), $subscription->get('end_date')) : false;
-			$endDate = ! $endDate && ($subscription->get('expired_date')) ? date_i18n(wc_date_format(), $subscription->get('expired_date')) : '';
-			$description = empty($subscription->get('post_content')) ? $subscription->get('post_content') : $subscription->get('post_excerpt');
-			$productId = $subscription->get('product_id');
-			$productVersion = get_post_meta($productId, 'product_version', true);
-			$thumbnail = get_the_post_thumbnail_url($productId);
-			$id = $subscription->get('id');
-			$productName = get_post_meta($productId, 'product_id', true);
-			$type = 'subscription';
+			$subscription          = ywsbs_get_subscription($licenseId);
+			$name                  = sprintf('%s - %s', $subscription->get_number(), $subscription->get('product_name'));
+			$subscriptionStatus    = $subscription->get_status();
+			$status                = $subscription_statuses[ $subscriptionStatus ];
+			$nextPaymentDueDate    = ( ! in_array($status, array( 'paused', 'cancelled' ), true) && $subscription->get('payment_due_date') ) ? date_i18n(wc_date_format(), $subscription->get('payment_due_date')) : '';
+			$startDate             = ( $subscription->get('start_date') ) ? date_i18n(wc_date_format(), $subscription->get('start_date')) : '';
+			$endDate               = ( $subscription->get('end_date') ) ? date_i18n(wc_date_format(), $subscription->get('end_date')) : false;
+			$endDate               = ! $endDate && ( $subscription->get('expired_date') ) ? date_i18n(wc_date_format(), $subscription->get('expired_date')) : '';
+			$description           = empty($subscription->get('post_content')) ? $subscription->get('post_content') : $subscription->get('post_excerpt');
+			$productId             = $subscription->get('product_id');
+			$productVersion        = get_post_meta($productId, 'product_version', true);
+			$thumbnail             = get_the_post_thumbnail_url($productId);
+			$id                    = $subscription->get('id');
+			$productName           = get_post_meta($productId, 'product_id', true);
+			$type                  = 'subscription';
 
 			return compact('id', 'type', 'name', 'description', 'status', 'thumbnail', 'nextPaymentDueDate', 'startDate', 'endDate', 'productName', 'productId', 'productVersion');
 		}
@@ -353,26 +348,25 @@ class OrderRepository
 	 *
 	 * @return array|null The latest version file.
 	 */
-	private function getLatestVersionFile(array $files): ?array
-	{
-		$latest = null;
+	private function getLatestVersionFile( array $files): ?array {
+		$latest         = null;
 		$highestVersion = null;
 
 		foreach ($files as $file) {
-			// Skip if file name is not set
-			if (!isset($file['name'])) {
+			// Skip if file name is not set.
+			if (! isset($file['name'])) {
 				continue;
 			}
 
-			// Extract version number using regex
+			// Extract version number using regex.
 			if (preg_match('/v(\d+(?:\.\d+)*)/i', $file['name'], $matches)) {
-				$version = $matches[1];
+				$version      = $matches[1];
 				$versionParts = array_map('intval', explode('.', $version));
 
-				// If this is the first valid version or higher than current highest
-				if ($highestVersion === null || $this->compareVersions($versionParts, $highestVersion) > 0) {
+				// If this is the first valid version or higher than current highest.
+				if (null === $highestVersion || $this->compareVersions($versionParts, $highestVersion) > 0) {
 					$highestVersion = $versionParts;
-					$latest = $file;
+					$latest         = $file;
 				}
 			}
 		}
@@ -388,19 +382,18 @@ class OrderRepository
 	 *
 	 * @return int The comparison result.
 	 */
-	private function compareVersions(array $version1, array $version2): int
-	{
+	private function compareVersions( array $version1, array $version2): int {
 		$maxLength = max(count($version1), count($version2));
 
-		// Pad arrays with zeros if needed
+		// Pad arrays with zeros if needed.
 		$version1 = array_pad($version1, $maxLength, 0);
 		$version2 = array_pad($version2, $maxLength, 0);
 
 		for ($i = 0; $i < $maxLength; $i++) {
-			if ($version1[$i] > $version2[$i]) {
+			if ($version1[ $i ] > $version2[ $i ]) {
 				return 1;
 			}
-			if ($version1[$i] < $version2[$i]) {
+			if ($version1[ $i ] < $version2[ $i ]) {
 				return -1;
 			}
 		}
@@ -411,20 +404,22 @@ class OrderRepository
 	/**
 	 * Get the normalized websites.
 	 *
-	 * @param array $licenses The licenses.
+	 * @param array  $licenses The licenses.
 	 * @param string $type The domain type. default is production.
 	 *
 	 * @return array
 	 */
-	protected function getNormalizedWebsites(array $licenses, string $type = 'production'): array
-	{
-		$websites = [];
-		$filteredLicenses = array_filter($licenses, function(array $license)use($type):bool{
-			return $type === $license['domain_type'];
-		});
+	protected function getNormalizedWebsites( array $licenses, string $type = 'production'): array {
+		$websites         = [];
+		$filteredLicenses = array_filter(
+            $licenses,
+            function( array $license) use ( $type):bool{
+				return $type === $license['domain_type'];
+			}
+        );
 
 		foreach ($filteredLicenses as $license) {
-			$websites[$license['id']] = [
+			$websites[ $license['id'] ] = [
 				'website' => $license['domain'],
 				'mode' => $license['domain_type'],
 			];

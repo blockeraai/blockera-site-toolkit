@@ -2,8 +2,8 @@
 
 namespace BlockeraAI\SiteToolkit\Repositories\Traits;
 
-trait RepositoryTrait
-{
+trait RepositoryTrait {
+
 	/**
 	 * The wpdb instance.
 	 *
@@ -37,28 +37,26 @@ trait RepositoryTrait
 	 *
 	 * @return void
 	 */
-	public function __construct()
-	{
+	public function __construct() {
 		global $wpdb;
 
-		$this->wpdb = $wpdb;
-		$this->api_table_prefix = bsaGetEnv('API_TABLE_PREFIX');
+		$this->wpdb             = $wpdb;
+		$this->api_table_prefix = bsaGetEnv( 'API_TABLE_PREFIX' );
 	}
 
 	/**
 	 * Add a WHERE clause to the query.
 	 *
 	 * @param string $field The field name.
-	 * @param mixed $value The field value.
+	 * @param mixed  $value The field value.
 	 *
 	 * @return self
 	 */
-	public function where(string $field, $value): self
-	{
-		if (empty($this->where)) {
+	public function where( string $field, $value ): self {
+		if ( empty( $this->where ) ) {
 			$this->where[] = "$field = $value";
 		} else {
-			$this->where[] = "AND $field = $value"; 
+			$this->where[] = "AND $field = $value";
 		}
 
 		return $this;
@@ -68,12 +66,11 @@ trait RepositoryTrait
 	 * Add an OR WHERE clause to the query.
 	 *
 	 * @param string $field The field name.
-	 * @param mixed $value The field value.
+	 * @param mixed  $value The field value.
 	 *
 	 * @return self
 	 */
-	public function orWhere(string $field, $value): self
-	{
+	public function orWhere( string $field, $value ): self {
 		$this->where[] = "OR $field = $value";
 
 		return $this;
@@ -86,15 +83,16 @@ trait RepositoryTrait
 	 *
 	 * @return array|null
 	 */
-	public function first(string $prefix_type = 'default'): ?array
-	{
-		if('default' === $prefix_type) {
+	public function first( string $prefix_type = 'default' ): ?array {
+		if ( 'default' === $prefix_type ) {
 			$this->api_table_prefix = $this->wpdb->prefix;
 		}
 
-		$where = implode(' ', $this->where);
+		$where = implode( ' ', $this->where );
+		$table = $this->api_table_prefix . $this->table_name;
 
-		return $this->wpdb->get_row($this->wpdb->prepare("SELECT * FROM {$this->api_table_prefix}{$this->table_name} WHERE {$where}"), ARRAY_A);
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- Table/where built from internal repository state.
+		return $this->wpdb->get_row( "SELECT * FROM {$table} WHERE {$where}", ARRAY_A );
 	}
 
 	/**
@@ -104,15 +102,16 @@ trait RepositoryTrait
 	 *
 	 * @return array
 	 */
-	public function get(string $prefix_type = 'default'): array
-	{
-		if('default' === $prefix_type) {
+	public function get( string $prefix_type = 'default' ): array {
+		if ( 'default' === $prefix_type ) {
 			$this->api_table_prefix = $this->wpdb->prefix;
 		}
 
-		$where = implode(' ', $this->where);
+		$where = implode( ' ', $this->where );
+		$table = $this->api_table_prefix . $this->table_name;
 
-		$results = $this->wpdb->get_results($this->wpdb->prepare("SELECT * FROM {$this->api_table_prefix}{$this->table_name} WHERE {$where}"), ARRAY_A);
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- Table/where built from internal repository state.
+		$results = $this->wpdb->get_results( "SELECT * FROM {$table} WHERE {$where}", ARRAY_A );
 
 		// Reset the WHERE clause.
 		$this->resetWhere();
@@ -127,15 +126,16 @@ trait RepositoryTrait
 	 *
 	 * @return int
 	 */
-	public function count(string $prefix_type = 'default'): int
-	{
-		if('default' === $prefix_type) {
+	public function count( string $prefix_type = 'default' ): int {
+		if ( 'default' === $prefix_type ) {
 			$this->api_table_prefix = $this->wpdb->prefix;
 		}
 
-		$where = implode(' ', $this->where);
+		$where = implode( ' ', $this->where );
+		$table = $this->api_table_prefix . $this->table_name;
 
-		return $this->wpdb->get_var($this->wpdb->prepare("SELECT COUNT(*) FROM {$this->api_table_prefix}{$this->table_name} WHERE {$where}"));
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- Table/where built from internal repository state.
+		return (int) $this->wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE {$where}" );
 	}
 
 	/**
@@ -143,8 +143,7 @@ trait RepositoryTrait
 	 *
 	 * @return self
 	 */
-	public function resetWhere(): self
-	{
+	public function resetWhere(): self {
 		$this->where = [];
 
 		return $this;

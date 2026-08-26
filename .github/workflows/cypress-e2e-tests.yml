@@ -5,91 +5,81 @@ on:
         types: [opened, synchronize, ready_for_review]
     workflow_dispatch:
 
-# Cancels all previous workflow runs for pull requests that have not completed.
 concurrency:
-    # The concurrency group contains the workflow name and the branch name for pull requests
-    # or the commit hash for any other events.
     group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
     cancel-in-progress: true
 
+env:
+    BLOCKERA_GLOBAL_PACKAGES_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
+    BLOCKERA_E2E_SCAN_ROOTS: packages/site-toolkit
+    BLOCKERA_E2E_FILE_PATTERN: '\.toolkit(\.[a-z0-9-]+)?\.e2e\.cy\.js$'
+    BLOCKERA_E2E_CATEGORY_MODE: last-segment
+    BLOCKERA_E2E_GENERAL_CATEGORY: none
+    BLOCKERA_E2E_PACKAGE_GLOB: packages/site-toolkit/**
+
 jobs:
-    detect_categories:
-        name: Detecting E2E Test Categories
+    pr-workflow-gate:
+        name: PR workflow filter
         runs-on: ubuntu-latest
         outputs:
-            categories: ${{ steps.set_categories.outputs.categories }}
+            run: ${{ steps.gate.outputs.run }}
+        env:
+            BLOCKERA_GLOBAL_PACKAGES_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
         steps:
-            - name: Checkout Repository
-              uses: actions/checkout@v3
+            - uses: actions/checkout@v5
+              with:
+                  token: ${{ secrets.BLOCKERABOT_PAT }}
 
-            - name: Setup Node.js and install dependencies
-              uses: ./.github/setup-node
+            - name: Ensure global-packages submodule
+              uses: ./.github/actions/ensure-global-packages
 
-            - name: List test categories
-              id: set_categories
-              run: |
-                  categories=$(node .github/scripts/list-e2e-test-categories.js)
-                  categories_json=$(echo $categories | jq -c '.')
-                  echo "categories=$categories_json" >> $GITHUB_OUTPUT
+            - id: gate
+              uses: ./packages/global-packages/packages/dev-tools/github/actions/pr-workflow-gate
+              with:
+                  workflow-file: cypress-e2e-tests.yml
 
-            - name: Print categories output
-              run: |
-                  echo "Detected categories: ${{ steps.set_categories.outputs.categories }}"
+    detect_categories:
+        name: Detecting E2E Test Categories
+        needs: pr-workflow-gate
+        if: ${{ needs.pr-workflow-gate.outputs.run == 'true' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        outputs:
+            categories: ${{ steps.detect.outputs.categories }}
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                  token: ${{ secrets.BLOCKERABOT_PAT }}
+
+            - name: Ensure global-packages submodule
+              uses: ./.github/actions/ensure-global-packages
+
+            - uses: ./packages/global-packages/packages/dev-tools/github/actions/setup-node
+
+            - id: detect
+              run: bash packages/global-packages/packages/dev-tools/github/scripts/jobs/cypress-e2e-tests/detect-categories.sh
+
 
     cypress_e2e_tests:
         name: Test
-        needs: detect_categories
+        needs: [pr-workflow-gate, detect_categories]
+        if: ${{ needs.pr-workflow-gate.outputs.run == 'true' && (needs.detect_categories.outputs.categories != '[]' && (github.repository == 'blockeraai/blockera-site-toolkit' || github.event_name == 'pull_request')) }}
         runs-on: ubuntu-latest
-        if: ${{ github.repository == 'blockeraai/blockera-site-toolkit' || github.event_name == 'pull_request' }}
+        timeout-minutes: 30
         strategy:
             fail-fast: false
             matrix:
                 category: ${{ fromJson(needs.detect_categories.outputs.categories) }}
+        env:
+            BLOCKERA_E2E_CATEGORY: ${{ matrix.category }}
         steps:
-            - name: Checkout Repository
-              uses: actions/checkout@v3
+            - uses: actions/checkout@v5
+              with:
+                  token: ${{ secrets.BLOCKERABOT_PAT }}
 
-            - name: Setup Node.js and install dependencies
-              uses: ./.github/setup-node
+            - name: Ensure global-packages submodule
+              uses: ./.github/actions/ensure-global-packages
 
-            - name: Install Cypress
-              run: npx cypress install
+            - uses: ./packages/global-packages/packages/dev-tools/github/actions/setup-node
 
-            - name: Install Composer Packages
-              run: COMPOSER=composer.dev.json composer install --no-dev -o --apcu-autoloader -a
-
-            - name: Create required environment files
-              run: |
-                  # Step 1: Read the .pr-env.json
-                  PLUGINS_ARRAY=$(jq '.plugins' .pr-env.json)
-
-                  # Step 2: Add new requirements plugins to the .wp-env.json plugins property
-                  node .github/scripts/create-wp-env.js '${{ matrix.category }}'
-                  cat .wp-env.json
-                  touch .env
-                  echo APP_MODE=production >> .env
-                  echo DB=wp_tests >> .env
-                  cat .env
-
-            - name: Start WordPress Environment
-              run: npm run env:start
-
-            - name: Build wp-env app
-              run: npm run build
-
-            - name: Debug Matrix Category
-              run: |
-                  echo "Running category: ${{ matrix.category }}"
-
-            - name: Run Cypress E2E Tests
-              run: |
-                  if [ "${{ matrix.category }}" != "general" ]; then
-                    spec_pattern="packages/**/*.${{ matrix.category }}.e2e.cy.js"
-                  else
-                    spec_pattern=$(find packages -type f -name "*.e2e.cy.js" ! -name "*.*.e2e.cy.js" | tr '\n' ',')
-                    spec_pattern="${spec_pattern%,}" # Remove trailing comma
-                  fi
-                  npm run test:e2e -- --spec "$spec_pattern"
-
-            - name: Stop WordPress Environment
-              run: npm run env:stop
+            - run: bash packages/global-packages/packages/dev-tools/github/scripts/jobs/cypress-e2e-tests/run.sh

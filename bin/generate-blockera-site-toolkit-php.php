@@ -26,7 +26,7 @@ function print_production_defines()
     $git_commit = trim(shell_exec('git rev-parse HEAD'));
 
     echo "if (! defined('BSA_PLUGIN_MODE')) { define( 'BSA_PLUGIN_MODE', 'production' ); }\n";
-    echo "if (! defined('BSA__GIT_COMMIT')) { define( 'BSAT__GIT_COMMIT', '$git_commit' ); }\n";
+    echo "if (! defined('BSA_GIT_COMMIT')) { define( 'BSA_GIT_COMMIT', '$git_commit' ); }\n";
 }
 
 while (true) {
@@ -58,9 +58,50 @@ while (true) {
         case '### BEGIN AUTO-GENERATED FRONT CONTROLLERS':
             $inside_defines = true;
             echo $line;
-			echo '$setup = Build\Packages\SiteToolkit\Setup::getInstance();';
-			// implement front controllers
+			echo '$bsa_setup = BlockeraAI\SiteToolkit\Setup::getInstance();' . "\n";
             break;
+
+		case '### BEGIN AUTO-GENERATED AUTOLOADER':
+			$inside_defines = true;
+			echo $line;
+			echo <<<'PHP'
+require_once __DIR__ . '/inc/bootstrap.php';
+blockera_bootstrap_shared_autoloader(
+	'blockera-site-toolkit',
+	__DIR__,
+	[
+		'priority'          => 5,
+		'default'           => ! defined('BSA_PLUGIN_FILE') || BSA_PLUGIN_FILE === __FILE__,
+		'file'              => __FILE__,
+		'entry_constant'    => 'BSA_PLUGIN_FILE',
+		'defer_files_until' => [ 'blockera', 'blockera-one' ],
+		'companions'        => [
+			[
+				'slug'           => 'blockera',
+				'plugin_file'    => 'blockera/blockera.php',
+				'entry_constant' => 'BLOCKERA_SB_FILE',
+			],
+			[
+				'slug'           => 'blockera-pro',
+				'plugin_file'    => 'blockera-pro/blockera-pro.php',
+				'entry_constant' => 'BLOCKERA_PRO_FILE',
+			],
+			[
+				'slug'             => 'blockera-one',
+				'type'             => 'theme',
+				'theme_stylesheet' => 'blockera-one',
+			],
+		],
+	]
+);
+
+PHP;
+			break;
+
+		case '### END AUTO-GENERATED AUTOLOADER':
+			$inside_defines = false;
+			echo $line;
+			break;
 
         default:
             if (! $inside_defines) {

@@ -18,6 +18,7 @@ import { Downloads } from './downloads';
 import { HeaderSection } from './header-section';
 import { WebsitesManager } from './websites-manager';
 import { InformationRow } from './information-row';
+import type { DownloadsMap } from './types';
 
 /**
  * Subscription information component.
@@ -50,14 +51,7 @@ export const SubscriptionInformation = ({
 	developmentWebsites: {
 		[key: string]: { mode: 'production' | 'development', website: string },
 	},
-	downloads: {
-		[key: string]: {
-			name: string,
-			enabled: boolean,
-			id: string,
-			file: string,
-		},
-	},
+	downloads: DownloadsMap,
 	productColor: string,
 }): MixedElement => {
 	const isExpired = status === 'expired';

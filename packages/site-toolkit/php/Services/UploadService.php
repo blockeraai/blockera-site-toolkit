@@ -2,8 +2,8 @@
 
 namespace BlockeraAI\SiteToolkit\Services;
 
-class UploadService
-{
+class UploadService {
+
 	/**
 	 * The boundary.
 	 *
@@ -22,12 +22,11 @@ class UploadService
      * }
      * @return array The result of the upload process.
      */
-    public function uploadFile(array $fileData, array $args): array
-    {
+    public function uploadFile( array $fileData, array $args): array {
         $file = str_replace(get_site_url() . '/', ABSPATH, $fileData['file']);
 
         // Throw error if file is empty or not exists.
-        if (empty($file) || !file_exists($file)) {
+        if (empty($file) || ! file_exists($file)) {
             return [
 				'status' => false,
 				'message' => __('File not found.', 'blockera-site-toolkit'),
@@ -44,9 +43,9 @@ class UploadService
                 'sslverify' => false,
                 'headers' => [
                     'Accept' => 'application/json',
-                    'Content-Type' => 'multipart/form-data; boundary=' . $this->getBoundary()
+                    'Content-Type' => 'multipart/form-data; boundary=' . $this->getBoundary(),
                 ],
-                'body' => $payload
+                'body' => $payload,
             ]
         );
 
@@ -67,9 +66,11 @@ class UploadService
         }
 
         // Skip if request failed.
-        if (is_wp_error($response) || $status !== 201) {
-            $body = json_decode(wp_remote_retrieve_body($response), true);
-            wp_die(implode(', ', iterator_to_array(new \RecursiveIteratorIterator(new \RecursiveArrayIterator($body['errors'])))));
+        if ( is_wp_error( $response ) || 201 !== $status ) {
+            return [
+				'status' => false,
+				'message' => __('File upload failed.', 'blockera-site-toolkit'),
+			];
         }
 
 		return [
@@ -95,13 +96,12 @@ class UploadService
      *
 	 * @return string The payload.
      */
-    public function getPayload(array $fileData, array $args): string
-    {
-		// Upload file to remote server
+    public function getPayload( array $fileData, array $args): string {
+		// Upload file to remote server.
         $boundary = $this->getBoundary();
-        $payload = '';
+        $payload  = '';
 
-        // Add text fields
+        // Add text fields.
         $payload .= '--' . $boundary . "\r\n";
         $payload .= 'Content-Disposition: form-data; name="token"' . "\r\n\r\n";
         $payload .= $fileData['hash'] . "\r\n";
@@ -112,7 +112,7 @@ class UploadService
         $payload .= bsaGetFileName($fileData['file']) . "\r\n";
 
 		// Add variation id if exists.
-        if (!empty($args['variationId'])) {
+        if (! empty($args['variationId'])) {
 			$payload .= '--' . $boundary . "\r\n";
 			$payload .= 'Content-Disposition: form-data; name="variation_id"' . "\r\n\r\n";
 			$payload .= $args['variationId'] . "\r\n";
@@ -126,7 +126,7 @@ class UploadService
 		// Add version.
         $payload .= '--' . $boundary . "\r\n";
         $payload .= 'Content-Disposition: form-data; name="version"' . "\r\n\r\n";
-        $payload .= (empty($fileData['version']) ? $args['version'] ?? '' : $fileData['version']) . "\r\n";
+        $payload .= ( empty($fileData['version']) ? $args['version'] ?? '' : $fileData['version'] ) . "\r\n";
 
         // Add file name and content.
         $payload .= '--' . $boundary . "\r\n";
@@ -147,8 +147,7 @@ class UploadService
      *
      * @return void
      */
-    protected function deleteFile(string $fileUrl): void
-    {
+    protected function deleteFile( string $fileUrl): void {
         $mediaId = attachment_url_to_postid($fileUrl);
         wp_delete_post($mediaId);
     }
@@ -158,8 +157,7 @@ class UploadService
 	 *
 	 * @return string The boundary.
 	 */
-	public function getBoundary(): string
-	{
+	public function getBoundary(): string {
 		if (empty($this->boundary)) {
 			$this->boundary = wp_generate_password(24);
 		}

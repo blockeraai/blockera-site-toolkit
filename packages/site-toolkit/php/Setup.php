@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.NamingConventions.ValidVariableName -- Existing camelCase properties match the public Setup API.
 
 namespace BlockeraAI\SiteToolkit;
 
@@ -9,8 +10,8 @@ use BlockeraAI\SiteToolkit\Providers\AssetsProvider;
 use BlockeraAI\SiteToolkit\Providers\AppServiceProvider;
 use League\OAuth2\Server\Middleware\ResourceServerMiddleware;
 
-class Setup extends Application
-{
+class Setup extends Application {
+
     /**
      * Store the OAuth server instance.
      *
@@ -56,8 +57,7 @@ class Setup extends Application
     /**
      * Setup constructor.
      */
-    public function __construct()
-    {
+    public function __construct() {
         // Register the service providers.
         $this->service_providers = [
             AssetsProvider::class,
@@ -73,8 +73,7 @@ class Setup extends Application
      * @param string $pluginDir The plugin directory.
      * @return void
      */
-    public function setPluginDir(string $pluginDir): void
-    {
+    public function setPluginDir( string $pluginDir): void {
         $this->pluginDir = $pluginDir;
     }
 
@@ -84,8 +83,7 @@ class Setup extends Application
      * @param string $pluginUrl The plugin URL.
      * @return void
      */
-    public function setPluginUrl(string $pluginUrl): void
-    {
+    public function setPluginUrl( string $pluginUrl): void {
         $this->pluginUrl = $pluginUrl;
     }
 
@@ -94,8 +92,7 @@ class Setup extends Application
      *
      * @return string
      */
-    public function getIURL(): string
-    {
+    public function getIURL(): string {
         return $this->pluginUrl;
     }
 
@@ -105,8 +102,7 @@ class Setup extends Application
      * @param string $pluginMode The plugin mode.
      * @return void
      */
-    public function setPluginMode(string $pluginMode): void
-    {
+    public function setPluginMode( string $pluginMode): void {
         $this->pluginMode = $pluginMode;
     }
 
@@ -115,8 +111,7 @@ class Setup extends Application
      *
      * @return string
      */
-    public function getPluginMode(): string
-    {
+    public function getPluginMode(): string {
         return $this->pluginMode;
     }
 
@@ -126,8 +121,7 @@ class Setup extends Application
      * @param string $pluginFile The plugin file.
      * @return void
      */
-    public function setPluginFile(string $pluginFile): void
-    {
+    public function setPluginFile( string $pluginFile): void {
         $this->pluginFile = $pluginFile;
     }
 
@@ -136,8 +130,7 @@ class Setup extends Application
      *
      * @return string
      */
-    public function getPluginFile(): string
-    {
+    public function getPluginFile(): string {
         return $this->pluginFile;
     }
 
@@ -146,14 +139,28 @@ class Setup extends Application
      *
      * @return void
      */
-    public function rewriteRules(): void
-    {
+    public function rewriteRules(): void {
         add_rewrite_rule('^authorize/?$', 'index.php?authorize=true', 'top');
         add_rewrite_rule('^consent-form/?$', 'index.php?consent-form=true', 'top');
+    }
 
-		global $wp_rewrite;
+    /**
+     * Resolve a PHP file inside this package (dev tree or vendor symlink).
+     *
+     * @param string $relative Path under php/, e.g. Routes/api.php.
+     * @return string Absolute path or empty string when missing.
+     */
+    private function getPackagePhpFile( string $relative ): string {
+        $relative    = ltrim( $relative, '/' );
+        $fromPackage = __DIR__ . '/' . $relative;
 
-		$wp_rewrite->flush_rules();
+        if ( is_readable( $fromPackage ) ) {
+            return $fromPackage;
+        }
+
+        $fromVendor = $this->getPath() . '/vendor/blockera/site-toolkit/php/' . $relative;
+
+        return is_readable( $fromVendor ) ? $fromVendor : '';
     }
 
     /**
@@ -161,41 +168,25 @@ class Setup extends Application
      *
      * @return void
      */
-    public function registerRoutes(): void
-    {
-        add_action('rest_api_init', [$this, 'registerRestRoutes']);
-
-        // Rewrite rule to transform url specific page to query vars.
+    public function registerRoutes(): void {
         $this->rewriteRules();
 
-		$build_filename = $this->getPath() . '/vendor/blockera/build/src/SiteToolkit/Routes/web.php';
-        $web_filename = $this->getPath() . '/vendor/blockera/site-toolkit/php/Routes/web.php';
+        $webFilename = $this->getPackagePhpFile( 'Routes/web.php' );
 
-		if (file_exists($build_filename)) {
-			require_once $build_filename;
-		}elseif (file_exists($web_filename)) {
-            // Require the web routes.
-            require_once $web_filename;
+		if ( $webFilename ) {
+            require_once $webFilename;
         }
     }
 
     /**
-     * Register REST API routes.
+     * Register REST API routes on rest_api_init.
      *
      * @return void
      */
+    public function registerRestRoutes(): void {
+        $apiFilename = $this->getPackagePhpFile( 'Routes/api.php' );
 
-    public function registerRestRoutes(): void
-    {
-
-		$build_file = $this->getPath() . '/vendor/blockera/build/src/SiteToolkit/Routes/api.php';
-		
-        $apiFilename = $this->getPath() . '/vendor/blockera/site-toolkit/php/Routes/api.php';
-
-		if (file_exists($build_file)) {
-			require_once $build_file;
-		}elseif (file_exists($apiFilename)) {
-            // Require the API routes.
+		if ( $apiFilename ) {
             require_once $apiFilename;
         }
     }
@@ -205,12 +196,11 @@ class Setup extends Application
      *
      * @return self
      */
-    public function mount(): self
-    {
+    public function mount(): self {
         // Register activation and deactivation hooks.
-        register_activation_hook($this->getPluginFile(), [$this, 'activate']);
+        register_activation_hook($this->getPluginFile(), [ $this, 'activate' ]);
 
-        add_action('init', [$this, 'addEndpoint']);
+        add_action('init', [ $this, 'addEndpoint' ]);
 
         return $this;
     }
@@ -220,8 +210,7 @@ class Setup extends Application
      *
      * @return void
      */
-    public function activate(): void
-    {
+    public function activate(): void {
         // Rewrite rules.
         $this->rewriteRules();
         flush_rewrite_rules();
@@ -232,9 +221,14 @@ class Setup extends Application
      *
      * @since 1.0.0
      */
-    public function addEndpoint()
-    {
+    public function addEndpoint() {
+		if ( ! function_exists( 'WC' ) || ! WC()->query ) {
+			return;
+		}
+
+		// Keep query var in sync and ensure rewrite endpoint exists even if hook order varies.
         WC()->query->query_vars['licenses'] = 'licenses';
+		add_rewrite_endpoint( 'licenses', WC()->query->get_endpoints_mask() );
     }
 
     /**
@@ -242,8 +236,7 @@ class Setup extends Application
      *
      * @return self
      */
-    public function unmount(): self
-    {
+    public function unmount(): self {
         // Register uninstall hook.
         register_deactivation_hook($this->getPluginFile(), 'flush_rewrite_rules');
 
@@ -255,10 +248,9 @@ class Setup extends Application
      *
      * @return ResourceServer
      */
-    public function getResourceServer(): ResourceServer
-    {
-        if (!$this->resourceServer) {
-            $this->make(ResourceServerMiddleware::class, [$this->resourceServer]);
+    public function getResourceServer(): ResourceServer {
+        if (! $this->resourceServer) {
+            $this->make(ResourceServerMiddleware::class, [ $this->resourceServer ]);
         }
 
         return $this->resourceServer;
@@ -271,8 +263,7 @@ class Setup extends Application
      *
      * @return void
      */
-    public function setResourceServer(ResourceServer $server): void
-    {
+    public function setResourceServer( ResourceServer $server): void {
         $this->resourceServer = $server;
     }
 
@@ -281,8 +272,7 @@ class Setup extends Application
      *
      * @return  AuthorizationServer
      */
-    public function getAuthorizationServer(): AuthorizationServer
-    {
+    public function getAuthorizationServer(): AuthorizationServer {
         return $this->authorizationServer;
     }
 
@@ -293,8 +283,7 @@ class Setup extends Application
      *
      * @return void
      */
-    public function setAuthorizationServer(AuthorizationServer $server)
-    {
+    public function setAuthorizationServer( AuthorizationServer $server) {
         $this->authorizationServer = $server;
     }
 
@@ -303,28 +292,33 @@ class Setup extends Application
      *
      * @return string
      */
-    public function getPath(): string
-    {
+    public function getPath(): string {
         return $this->pluginDir;
     }
 
     /**
-     *Get the plugin url.
+     * Get the plugin url.
      *
      * @return string
      */
-    public function getURL(): string
-    {
+    public function getURL(): string {
         return $this->pluginUrl;
     }
 
     /**
      * Check if the plugin is in debug mode.
      *
+     * Matches Blockera: both plugin mode and APP_MODE must be development
+     * before loading non-minified dist assets. CI sets APP_MODE=production
+     * while BSA_PLUGIN_MODE stays development in source builds.
+     *
      * @return bool true if the plugin is in debug mode, false otherwise.
      */
-    public function isDebug(): bool
-    {
-        return 'dev' === $this->getPluginMode();
+    public function isDebug(): bool {
+        $app_mode = isset( $_ENV['APP_MODE'] )
+            ? sanitize_text_field( wp_unslash( $_ENV['APP_MODE'] ) )
+            : 'production';
+
+        return 'development' === $this->getPluginMode() && 'development' === $app_mode;
     }
 }

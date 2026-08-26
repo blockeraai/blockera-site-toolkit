@@ -4,8 +4,8 @@ namespace BlockeraAI\SiteToolkit\Http\Controller;
 
 use Blockera\Bootstrap\Application;
 
-class FileController
-{
+class FileController {
+
 	/**
      * Array to store error messages during license validation and management.
      *
@@ -25,8 +25,7 @@ class FileController
      *
      * @param Application $app The application instance.
      */
-    public function __construct(Application $app)
-    {
+    public function __construct( Application $app) {
         $this->app = $app;
     }
 
@@ -38,10 +37,9 @@ class FileController
      *
      * @return bool true on success, false on otherwise!
      */
-    public function permission(\WP_REST_Request $request): bool
-    {
-        if (str_starts_with($request->get_header('referer'), home_url())) {
-            if (!wp_verify_nonce($request->get_header('X-Blockera-Nonce'), 'blockera-site-toolkit')) {
+    public function permission( \WP_REST_Request $request): bool {
+        if (str_starts_with( (string) $request->get_header('referer'), home_url())) {
+            if (! wp_verify_nonce($request->get_header('X-Blockera-Nonce'), 'blockera-site-toolkit')) {
                 return false;
             }
 
@@ -50,7 +48,7 @@ class FileController
 
         $auth = $request->get_header('Authorization');
 
-        return !empty($auth) && str_starts_with($auth, 'Bearer ');
+        return ! empty($auth) && str_starts_with( (string) $auth, 'Bearer ');
     }
 
 	/**
@@ -60,8 +58,7 @@ class FileController
      *
      * @return \WP_REST_Response The response object.
      */
-    public function download(\WP_REST_Request $request): \WP_REST_Response
-    {
+    public function download( \WP_REST_Request $request): \WP_REST_Response {
         if (empty($request->get_param('token'))) {
             $this->errors['invalid_token'] = __('Token field is required!', 'blockera-site-toolkit');
         }
@@ -70,18 +67,21 @@ class FileController
 			$this->errors['invalid_name'] = __('Name field is required!', 'blockera-site-toolkit');
 		}
 
-        $userCredentials = bsaGetUserAccessToken('',null, false);
+        $userCredentials = bsaGetUserAccessToken('', null, false);
 
         if (empty($userCredentials) || empty($userCredentials['access_token'])) {
             $this->errors['invalid_authorization'] = __('Authorization field is required!', 'blockera-site-toolkit');
         }
 
-        if (!empty($this->errors)) {
-            return new \WP_REST_Response([
-                'code' => 400,
-                'success' => false,
-                'errors' => $this->errors,
-            ], 400);
+        if (! empty($this->errors)) {
+            return new \WP_REST_Response(
+                [
+					'code' => 400,
+					'success' => false,
+					'errors' => $this->errors,
+				],
+                400
+            );
         }
 
         $response = wp_remote_get(
@@ -101,29 +101,38 @@ class FileController
         );
 
         if (is_wp_error($response)) {
-            return new \WP_REST_Response([
-                'code' => 500,
-                'success' => false,
-                'errors' => [
-                    'download_error' => $response->get_error_message(),
-                ],
-            ], 500);
+            return new \WP_REST_Response(
+                [
+					'code' => 500,
+					'success' => false,
+					'errors' => [
+						'download_error' => $response->get_error_message(),
+					],
+				],
+                500
+            );
         }
 
 		$body = json_decode(wp_remote_retrieve_body($response), true);
 
 		if (empty($body['success'])) {
-			return new \WP_REST_Response([
-				'code' => 400,
-				'success' => false,
-				'errors' => $body['errors'],
-			], 400);
+			return new \WP_REST_Response(
+                [
+					'code' => 400,
+					'success' => false,
+					'errors' => $body['errors'],
+				],
+                400
+            );
 		}
 
-        return new \WP_REST_Response([
-            'code' => 200,
-            'success' => true,
-            'data' => $body['data'],
-        ], 200);
+        return new \WP_REST_Response(
+            [
+				'code' => 200,
+				'success' => true,
+				'data' => $body['data'],
+			],
+            200
+        );
     }
 }

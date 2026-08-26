@@ -4,26 +4,25 @@ namespace BlockeraAI\SiteToolkit\Meta;
 
 use Blockera\Utils\View;
 
-class Factory
-{
+class Factory {
+
     /**
      * Constructor.
      *
      * @return void
      */
-    public function __construct()
-    {
+    public function __construct() {
         // Variation Custom Fields.
-        add_action('woocommerce_product_after_variable_attributes', [$this, 'addVariationCustomFields'], 10, 3);
-        add_action('woocommerce_save_product_variation', [$this, 'saveVariationCustomFields'], 10, 2);
-        add_filter('woocommerce_add_cart_item_data', [$this, 'addVariationDataToCart'], 10, 3);
-        add_action('woocommerce_before_add_to_cart_button', [$this, 'displayVariationCustomFields']);
-        add_filter('woocommerce_available_variation', [$this, 'addCustomFieldsToVariationData']);
+        add_action('woocommerce_product_after_variable_attributes', [ $this, 'addVariationCustomFields' ], 10, 3);
+        add_action('woocommerce_save_product_variation', [ $this, 'saveVariationCustomFields' ], 10, 2);
+        add_filter('woocommerce_add_cart_item_data', [ $this, 'addVariationDataToCart' ], 10, 3);
+        add_action('woocommerce_before_add_to_cart_button', [ $this, 'displayVariationCustomFields' ]);
+        add_filter('woocommerce_available_variation', [ $this, 'addCustomFieldsToVariationData' ]);
 
         // Product Custom Fields.
-        add_action('add_meta_boxes', [$this, 'AddProductCustomFields']);
-        add_action('save_post_product', [$this, 'saveProductCustomFields']);
-        // add_action('woocommerce_single_product_summary', [$this, 'displayProductCustomFields'], 25);
+        add_action('add_meta_boxes', [ $this, 'AddProductCustomFields' ]);
+        add_action('save_post_product', [ $this, 'saveProductCustomFields' ]);
+        // Disabled: display custom fields on the single product summary.
     }
 
     /**
@@ -31,12 +30,11 @@ class Factory
      *
      * @return void
      */
-    public function AddProductCustomFields()
-    {
+    public function AddProductCustomFields() {
         add_meta_box(
             'product_extra_fields', // Meta box ID.
             'Product Additional Information', // Meta box title.
-            [$this, 'productCustomFieldsContent'], // Callback function.
+            [ $this, 'productCustomFieldsContent' ], // Callback function.
             'product', // Post type (WooCommerce products).
             'normal', // Context.
             'high' // Priority.
@@ -49,18 +47,17 @@ class Factory
      * @param \WP_Post $post The post object.
      * @return void
      */
-    public function productCustomFieldsContent($post)
-    {
+    public function productCustomFieldsContent( $post) {
         // Add nonce for security.
         wp_nonce_field('product_custom_fields', 'product_custom_fields_nonce');
 
         // Get existing values.
-        $product_id = get_post_meta($post->ID, 'product_id', true);
-        $product_version = get_post_meta($post->ID, 'product_version', true);
-        $product_color = get_post_meta($post->ID, 'product_color', true);
+        $product_id                 = get_post_meta($post->ID, 'product_id', true);
+        $product_version            = get_post_meta($post->ID, 'product_version', true);
+        $product_color              = get_post_meta($post->ID, 'product_color', true);
         $product_downloadable_files = get_post_meta($post->ID, 'product_downloadable_files', true);
         $is_activated_free_download = get_post_meta($post->ID, 'product_is_activated_free_download', true);
-        $product_free_slug = get_post_meta($post->ID, 'product_free_slug', true);
+        $product_free_slug          = get_post_meta($post->ID, 'product_free_slug', true);
 
         View::load(
             'product-meta-box-custom-fields',
@@ -77,15 +74,14 @@ class Factory
      * @param int $post_id The post ID.
      * @return void
      */
-    public function saveProductCustomFields($post_id)
-    {
+    public function saveProductCustomFields( $post_id) {
         // Check if nonce is set.
-        if (!isset($_POST['product_custom_fields_nonce'])) {
+        if (! isset($_POST['product_custom_fields_nonce'])) {
             return;
         }
 
         // Verify nonce.
-        if (!wp_verify_nonce($_POST['product_custom_fields_nonce'], 'product_custom_fields')) {
+        if (! wp_verify_nonce($_POST['product_custom_fields_nonce'], 'product_custom_fields')) {
             return;
         }
 
@@ -130,11 +126,11 @@ class Factory
 
 			$downloadableFiles = [];
 
-			foreach($_POST['_blockera_file_names'] as $index => $name) {
-				$downloadableFiles[$name] = [
+			foreach ($_POST['_blockera_file_names'] as $index => $name) {
+				$downloadableFiles[ $name ] = [
 					'hash' => wp_generate_uuid4(),
-					'file' => $_POST['_blockera_file_urls'][$index],
-					'version' => $_POST['_blockera_versions'][$index],
+					'file' => $_POST['_blockera_file_urls'][ $index ],
+					'version' => $_POST['_blockera_versions'][ $index ],
 				];
 			}
 
@@ -145,7 +141,7 @@ class Factory
             );
         }
 
-		if(isset($_POST['product_free_slug'])) {
+		if (isset($_POST['product_free_slug'])) {
 			update_post_meta(
 				$post_id,
 				'product_free_slug',
@@ -159,8 +155,7 @@ class Factory
      *
      * @return void
      */
-    public function displayProductCustomFields()
-    {
+    public function displayProductCustomFields() {
         global $product;
 
         if ($product) {
@@ -200,22 +195,23 @@ class Factory
     /**
      * Add Variation Custom Fields.
      *
-     * @param int $loop The loop index.
-     * @param array $variation_data The variation data.
+     * @param int      $loop The loop index.
+     * @param array    $variation_data The variation data.
      * @param \WP_Post $variation The variation post object.
      * @return void
      */
-    public function addVariationCustomFields($loop, $variation_data, $variation)
-    {
+    public function addVariationCustomFields( $loop, $variation_data, $variation) {
         // Max Domains field.
-        woocommerce_wp_text_input(array(
-            'id' => 'max_domains[' . $loop . ']',
-            'name' => 'max_domains[' . $loop . ']',
-            'label' => 'Max Domains',
-            'type' => 'number',
-            'value' => get_post_meta($variation->ID, 'max_domains', true),
-            'wrapper_class' => 'form-row form-row-full'
-        ));
+        woocommerce_wp_text_input(
+            array(
+				'id' => 'max_domains[' . $loop . ']',
+				'name' => 'max_domains[' . $loop . ']',
+				'label' => 'Max Domains',
+				'type' => 'number',
+				'value' => get_post_meta($variation->ID, 'max_domains', true),
+				'wrapper_class' => 'form-row form-row-full',
+            )
+        );
     }
 
     /**
@@ -225,14 +221,13 @@ class Factory
      * @param int $loop The loop index.
      * @return void
      */
-    public function saveVariationCustomFields($variation_id, $loop)
-    {
+    public function saveVariationCustomFields( $variation_id, $loop) {
         // Save Max Domains.
-        if (isset($_POST['max_domains'][$loop])) {
+        if (isset($_POST['max_domains'][ $loop ])) {
             update_post_meta(
                 $variation_id,
                 'max_domains',
-                absint($_POST['max_domains'][$loop])
+                absint($_POST['max_domains'][ $loop ])
             );
         }
     }
@@ -241,12 +236,11 @@ class Factory
      * Add Variation Data to Cart.
      *
      * @param array $cart_item_data The cart item data.
-     * @param int $product_id The product ID.
-     * @param int $variation_id The variation ID.
+     * @param int   $product_id The product ID.
+     * @param int   $variation_id The variation ID.
      * @return array
      */
-    public function addVariationDataToCart($cart_item_data, $product_id, $variation_id)
-    {
+    public function addVariationDataToCart( $cart_item_data, $product_id, $variation_id) {
         if ($variation_id) {
             $max_domains = get_post_meta($variation_id, 'max_domains', true);
 
@@ -262,14 +256,17 @@ class Factory
      *
      * @return void
      */
-    public function displayVariationCustomFields()
-    {
+    public function displayVariationCustomFields() {
         global $product;
 
         if ($product && $product->is_type('variable')) {
-            View::load('product-variation-custom-fields', [], [
-                'root-path' => trailingslashit(__DIR__),
-            ]);
+            View::load(
+                'product-variation-custom-fields',
+                [],
+                [
+					'root-path' => trailingslashit(__DIR__),
+				]
+            );
         }
     }
 
@@ -279,8 +276,7 @@ class Factory
      * @param array $variationData The variation data.
      * @return array
      */
-    public function addCustomFieldsToVariationData(array $variationData)
-    {
+    public function addCustomFieldsToVariationData( array $variationData) {
         $variationData['max_domains'] = get_post_meta($variationData['variation_id'], 'max_domains', true);
 
         return $variationData;

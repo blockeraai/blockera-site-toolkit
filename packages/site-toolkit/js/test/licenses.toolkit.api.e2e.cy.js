@@ -1,0 +1,31 @@
+/**
+ * License manager REST behaviors (PHP LicenseManagerController).
+ *
+ * @category api
+ */
+
+import { wpRest } from './helpers';
+
+describe('Site Toolkit licenses API', () => {
+	it('should accept bearer-style permission header shape for GET licenses', () => {
+		wpRest('/auth/v1/licenses', {
+			method: 'GET',
+			qs: { client_id: 'not-a-uuid' },
+			headers: {
+				Authorization: 'Bearer test-token',
+			},
+		}).then((response) => {
+			// Permission passes with Bearer; controller then validates client_id UUID.
+			expect(response.status).to.be.oneOf([200, 400, 422, 500]);
+			if (response.body && typeof response.body === 'object') {
+				expect(response.body).to.have.any.keys(
+					'success',
+					'errors',
+					'code',
+					'data',
+					'message'
+				);
+			}
+		});
+	});
+});

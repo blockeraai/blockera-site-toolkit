@@ -9,15 +9,14 @@ use Illuminate\Contracts\Container\BindingResolutionException;
  *
  * @since 1.0.0
  */
-class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider
-{
+class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider {
+
     /**
      * Store the loader identifier.
      *
      * @return string the loader identifier.
      */
-    public function getId(): string
-    {
+    public function getId(): string {
         return 'blockera-site-toolkit-loader';
     }
 
@@ -26,8 +25,7 @@ class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider
      *
      * @return string the handler name.
      */
-    public function getHandler(): string
-    {
+    public function getHandler(): string {
         return '@blockeraai/blockera-site-toolkit';
     }
 
@@ -37,11 +35,14 @@ class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider
      * @throws BindingResolutionException Binding resolution exception error handle.
      * @return void
      */
-    public function boot(): void
-    {
-        add_filter('blockera/wordpress/' . $this->getId() . '/handle/inline-script', [$this, 'getHandler']);
+    public function boot(): void {
+        add_filter('blockera/wordpress/' . $this->getId() . '/handle/inline-script', [ $this, 'getHandler' ]);
 
-        if (str_starts_with($_SERVER['REQUEST_URI'], '/my-account/licenses') || str_starts_with($_SERVER['REQUEST_URI'], '/consent-form')) {
+        if (
+			( function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'licenses' ) )
+			|| str_starts_with( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), '/my-account/licenses' )
+			|| str_starts_with( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), '/consent-form' )
+		) {
             $this->app->make(
                 $this->getId(),
                 [
@@ -57,24 +58,27 @@ class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider
                 ]
             );
 
-            add_action('wp_enqueue_scripts', function () {
-                // Enqueue Gutenberg component styles and scripts.
-                wp_enqueue_script(
-                    'gutenberg-components',
-                    includes_url('/js/dist/components.min.js'),
-                    ['wp-element', 'wp-i18n', 'wp-api-fetch'],
-                    false,
-                    true
-                );
+            add_action(
+                'wp_enqueue_scripts',
+                function () {
+					// Enqueue Gutenberg component styles and scripts.
+					wp_enqueue_script(
+                        'gutenberg-components',
+                        includes_url('/js/dist/components.min.js'),
+                        [ 'wp-element', 'wp-i18n', 'wp-api-fetch' ],
+                        false,
+                        true
+					);
 
-                // Optionally enqueue style dependencies.
-                wp_enqueue_style(
-                    'wp-components-style',
-                    includes_url('/css/dist/components/style.min.css'),
-                    [],
-                    false
-                );
-            });
+					// Optionally enqueue style dependencies.
+					wp_enqueue_style(
+                        'wp-components-style',
+                        includes_url('/css/dist/components/style.min.css'),
+                        [],
+                        false
+					);
+				}
+            );
         }
     }
 
@@ -83,8 +87,7 @@ class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider
      *
      * @return string
      */
-    protected function getURL(): string
-    {
+    protected function getURL(): string {
         return $this->app->getURL();
     }
 
@@ -93,8 +96,7 @@ class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider
      *
      * @return string
      */
-    protected function getPath(): string
-    {
+    protected function getPath(): string {
         return $this->app->getPath();
     }
 
@@ -103,8 +105,7 @@ class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider
 	 *
 	 * @return bool
 	 */
-	protected function getDebugMode(): bool
-	{
+	protected function getDebugMode(): bool {
 		return $this->app->isDebug();
 	}
 
@@ -113,15 +114,15 @@ class AssetsProvider extends \Blockera\Bootstrap\AssetsProvider
      *
      * @return array the assets list to load on page.
      */
-    protected function getAssets(): array
-    {
+    protected function getAssets(): array {
         return [
             'utils',
+			'storage',
             'classnames',
+			'icons',
             'data-editor',
             'env',
-            'icons',
-            'data',
+			'data',
             'controls',
             'bootstrap',
             'site-toolkit',
