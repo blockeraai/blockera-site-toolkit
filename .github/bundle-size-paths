@@ -1,0 +1,6 @@
+packages/site-toolkit/**
+dist/**
+blockera-site-toolkit.php
+package.json
+composer.json
+webpack.config.js

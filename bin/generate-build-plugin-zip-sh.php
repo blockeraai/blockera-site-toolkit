@@ -1,61 +1,63 @@
 #!/usr/bin/env php
 <?php
 /**
- * Generates the production (plugin build) version of `./bin/build-plugin-zip.sh`,
- * containing alternate `define` statements from the development version.
+ * Generates the production (plugin build) version of bin/build-plugin-zip.sh,
+ * injecting vendor/blockera package path patterns for this consumer.
  *
- * @package blockera-build
+ * Discovers packages from:
+ * - Local packages/<name>/php (e.g. site-toolkit)
+ * - blockera/* entries in composer.json require (shared global-packages)
+ *
+ * @package blockera-site-toolkit-build
  */
 
-$f = fopen( dirname( __DIR__ ) . '/bin/build-plugin-zip.sh', 'r' );
+$root = dirname( __DIR__ );
+$f    = fopen( $root . '/bin/build-plugin-zip.sh', 'r' );
 
-$packages = array_map(
-	function ( string $package_name ) {
+$packages = [];
 
-		$core_suffix = '-core';
+foreach ( (array) glob( $root . '/packages/*' ) as $package_path ) {
+	$package_name = str_replace( $root . '/packages/', '', $package_path );
 
-		$package_name = str_replace( dirname( __DIR__ ) . '/packages/', '', $package_name );
+	if ( 'global-packages' === $package_name || preg_match( '/^dev-/', $package_name ) ) {
+		continue;
+	}
 
-		if ( 'blocks' === $package_name ) {
-			$package_name .= '-core';
+	if ( ! is_dir( $package_path . '/php' ) && ! is_dir( $package_path . '/core/php' ) ) {
+		continue;
+	}
+
+	if ( 'blocks' === $package_name ) {
+		$package_name .= '-core';
+	}
+
+	$packages[] = $package_name;
+}
+
+$composer_json = $root . '/composer.json';
+if ( is_readable( $composer_json ) ) {
+	$composer = json_decode( (string) file_get_contents( $composer_json ), true );
+	foreach ( array_keys( (array) ( $composer['require'] ?? [] ) ) as $requirement ) {
+		if ( 0 !== strpos( $requirement, 'blockera/' ) ) {
+			continue;
 		}
 
-		return $package_name;
-	},
+		$packages[] = substr( $requirement, strlen( 'blockera/' ) );
+	}
+}
+
+$packages = array_values( array_unique( $packages ) );
+
+$internal_packages = array_values(
 	array_filter(
-		glob( dirname( __DIR__ ) . '/packages/*' ),
-		function ( string $package_name ): string {
-
-			// filter dev tools packages.
-			if ( preg_match( '/dev-(.*)/', $package_name ) ) {
-
-				return false;
-			}
-
-			// filter invalid packages.
-			if ( ! is_dir( $package_name . '/php' ) && ! is_dir( $package_name . '/core/php' ) ) {
-
-				return false;
-			}
-
-			return true;
+		$packages,
+		static function ( string $package_name ): bool {
+			return ! preg_match( '/-sdk$/', $package_name );
 		}
 	)
 );
 
-$internal_packages = array_filter(
-	$packages,
-	function ( string $package_name ): string {
-
-		if ( preg_match( '/-sdk$/', $package_name ) ) {
-			return false;
-		}
-
-		return true;
-	}
-);
-
-$sdks = array_diff( $packages, $internal_packages );
+$sdks = array_values( array_diff( $packages, $internal_packages ) );
 
 $inside_pattern_block = false;
 
@@ -74,13 +76,18 @@ while ( true ) {
 		case '### BEGIN AUTO-GENERATED VENDOR PACKAGES PATH PATTERN':
 			$inside_pattern_block = true;
 
-			echo implode( PHP_EOL, array_map( function ( string $name ): string {
-
-				return sprintf(
-					'	$(find ./vendor/blockera/%1$s/ -type f \( -name "*.php" -o -name "*.json" \)) \\',
-					$name
-				);
-			}, $internal_packages ) );
+			echo implode(
+				PHP_EOL,
+				array_map(
+					static function ( string $name ): string {
+						return sprintf(
+							'	$(find ./vendor/blockera/%1$s/ -type f ! -path "*/tests/*" \( -name "*.php" -o -name "*.json" \)) \\',
+							$name
+						);
+					},
+					$internal_packages
+				)
+			);
 
 			if ( ! empty( $sdks ) ) {
 				echo PHP_EOL;
@@ -88,13 +95,15 @@ while ( true ) {
 
 			echo implode(
 				PHP_EOL,
-				array_map( function ( string $name ): string {
-
-					return sprintf(
-						'	$(find ./vendor/blockera/%1$s/) \\',
-						$name
-					);
-				}, $sdks )
+				array_map(
+					static function ( string $name ): string {
+						return sprintf(
+							'	$(find ./vendor/blockera/%1$s/ ! -path "*/tests/*") \\',
+							$name
+						);
+					},
+					$sdks
+				)
 			);
 
 			echo PHP_EOL;
@@ -103,7 +112,6 @@ while ( true ) {
 
 		default:
 			if ( ! $inside_pattern_block ) {
-
 				echo $line;
 			}
 			break;

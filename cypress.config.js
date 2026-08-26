@@ -1,74 +1,15 @@
-const { defineConfig } = require('cypress');
-
-let env = {
-	wpUsername: 'admin',
-	wpPassword: 'password',
-	testURL: 'http://localhost:8888',
-	e2e: {
-		specPattern: ['packages/**/*.toolkit.e2e.cy.js'],
-		excludeSpecPattern: [],
-	},
-};
-
-// This is a workaround for localization of the cypress env file.
-try {
-	env = require('./cypress.env.json');
-} catch (error) {
-	console.log(error);
-}
-
-// This is a workaround for pull request cypress env file.
-try {
-	env = {
-		...env,
-		...require('./.pr-cypress.env.json'),
-	};
-} catch (error) {
-	console.log(error);
-}
-
-const setupNodeEvents = (on, config) => {
-	require('./packages/dev-cypress/js/plugins/index.js')(on, config);
-	//Requires and imports the main plugin function from the cypress-image-diff-js NPM package
-	const getCompareSnapshotsPlugin = require('cypress-image-diff-js/plugin');
-	//Calls the plugin's getCompareSnapshotsPlugin function, passing Cypress' on and config objects, to intialize and register the plugin with Cypress
-	getCompareSnapshotsPlugin(on, config);
-
-	return config;
-};
-
-module.exports = defineConfig({
-	chromeWebSecurity: false,
-	defaultCommandTimeout: 15000,
-	e2e: {
-		setupNodeEvents,
-		specPattern: env.e2e.specPattern,
-		excludeSpecPattern: env.e2e.excludeSpecPattern,
-		supportFile: 'packages/dev-cypress/js/support/e2e.js',
-	},
-	env,
-	fixturesFolder: 'packages/dev-cypress/js/fixtures',
-	pageLoadTimeout: 120000,
-	projectId: 'blockera',
-	retries: {
-		openMode: 0,
-		runMode: 0,
-	},
-	coverage: true,
-	screenshotOnRunFailure: false,
-	screenshotsFolder: 'packages/dev-cypress/js/screenshots',
-	videosFolder: 'packages/dev-cypress/js/videos',
-	viewportHeight: 1440,
-	viewportWidth: 2560,
-	component: {
-		setupNodeEvents,
-		devServer: {
-			framework: 'react',
-			bundler: 'webpack',
-		},
-		specPattern: 'packages/**/*.component.cy.js',
-		supportFile: 'packages/dev-cypress/js/support/component.js',
-	},
-	numTestsKeptInMemory: 25,
-	experimentalMemoryManagement: true,
-});
+// Edit packages/global-packages/packages/dev-tools/root-configs/cypress.config.blockera-site-toolkit.js
+// project:bootstrap copies this to the host repo root for --project=blockera-site-toolkit.
+module.exports =
+	require('./packages/global-packages/packages/dev-tools/js/cypress/config')({
+		rootDir: __dirname,
+		projectId: 'blockera-site-toolkit',
+		// Uncategorized: *.toolkit.e2e.cy.js
+		// Categorized (CI matrix): *.toolkit.{category}.e2e.cy.js
+		e2eSpecPattern: [
+			'packages/site-toolkit/**/*.toolkit.e2e.cy.js',
+			'packages/site-toolkit/**/*.toolkit.*.e2e.cy.js',
+		],
+		e2eExcludeSpecPattern: [],
+		alwaysExcludeSpecPattern: ['packages/**/*.build.e2e.js'],
+	});

@@ -2,149 +2,92 @@ name: Create Demo and Attachment Files
 
 on:
     pull_request:
+        types: [opened, synchronize, reopened, closed]
 
-# Cancels all previous workflow runs for pull requests that have not completed.
 concurrency:
-    # The concurrency group contains the workflow name and the branch name for pull requests
-    # or the commit hash for any other events.
     group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
     cancel-in-progress: true
 
+permissions:
+    contents: write
+    pull-requests: read
+
 jobs:
+    pr-workflow-gate:
+        name: PR workflow filter
+        runs-on: ubuntu-latest
+        outputs:
+            run: ${{ steps.gate.outputs.run }}
+        env:
+            BLOCKERA_GLOBAL_PACKAGES_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                  token: ${{ secrets.BLOCKERABOT_PAT }}
+
+            - name: Ensure global-packages submodule
+              uses: ./.github/actions/ensure-global-packages
+
+            - id: gate
+              uses: ./packages/global-packages/packages/dev-tools/github/actions/pr-workflow-gate
+              with:
+                  workflow-file: create-demo-attachments.yml
+
     build:
         name: Create Demo and Attachments
+        needs: pr-workflow-gate
+        if: ${{ needs.pr-workflow-gate.outputs.run == 'true' && (github.event.action != 'closed' && (github.repository == 'blockeraai/blockera-site-toolkit' || github.event_name == 'pull_request')) }}
         runs-on: ubuntu-latest
-        if: |
-            always() && (
-              github.event_name == 'pull_request' ||
-              github.event_name == 'workflow_dispatch' ||
-              github.repository == 'blockeraai/blockera-site-toolkit'
-            )
-
+        timeout-minutes: 30
+        env:
+            BLOCKERA_GLOBAL_PACKAGES_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
+            BLOCKERA_DEMO_META_TITLE_DEFAULT: Blockera Site Toolkit Demo
         steps:
-            - name: Checkout code
-              uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
-            - name: Setup Node.js and install dependencies
-              uses: ./.github/setup-node
-
-            - name: Setup PHP Composer install dependencies
-              uses: ./.github/setup-php
+            - uses: actions/checkout@v5
               with:
+                  token: ${{ secrets.BLOCKERABOT_PAT }}
+
+            - name: Ensure global-packages submodule
+              uses: ./.github/actions/ensure-global-packages
+
+            - uses: ./packages/global-packages/packages/dev-tools/github/actions/setup-node
+
+            - uses: ./packages/global-packages/packages/dev-tools/github/actions/setup-php
+              with:
+                  php-version: '7.4'
                   composer-options: '--no-dev -o --apcu-autoloader -a'
 
-            - name: Build Plugin Zip File
-              uses: ./.github/build-plugin-zip
+            - uses: ./packages/global-packages/packages/dev-tools/github/actions/create-demo-attachments
               with:
+                  repo-token: ${{ secrets.BLOCKERABOT_PAT }}
+                  github-token: ${{ github.token }}
+                  pr-number: ${{ github.event.pull_request.number }}
+                  head-sha: ${{ github.event.pull_request.head.sha }}
+                  run-id: ${{ github.run_id }}-${{ github.run_attempt }}
+                  slug: blockera-site-toolkit
+                  zip-file: blockera-site-toolkit.zip
                   main-file-suffix: '-${{ github.event.pull_request.number }}'
 
-            - name: Upload ZIP to FTP server
-              uses: nerdoza/action-simple-file-upload@v2
+
+    cleanup:
+        name: Remove PR CI Artifact
+        needs: pr-workflow-gate
+        if: ${{ needs.pr-workflow-gate.outputs.run == 'true' && (github.event.action == 'closed' && (github.repository == 'blockeraai/blockera-site-toolkit' || github.event_name == 'pull_request')) }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        env:
+            BLOCKERA_GLOBAL_PACKAGES_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
+            BLOCKERA_DEMO_SLUG: blockera-site-toolkit
+        steps:
+            - uses: actions/checkout@v5
               with:
-                  host: ${{ secrets.FTP_HOST }}
-                  user: ${{ secrets.FTP_USERNAME }}
-                  password: ${{ secrets.FTP_PASSWORD }}
-                  src: blockera-site-toolkit.zip
-                  dest: /domains/cd.blockera.ai/public_html/blockera-site-toolkit-${{ github.event.pull_request.number }}.zip
+                  token: ${{ secrets.BLOCKERABOT_PAT }}
 
-            - name: Echo uploaded file link
-              run: |
-                  echo "uploaded_zip_file=https://${{ secrets.FTP_HOST }}/blockera-${{ gi-site-toolkitthub.event.pull_request.number }}.zip" >> $GITHUB_ENV
+            - name: Ensure global-packages submodule
+              uses: ./.github/actions/ensure-global-packages
 
-            - name: Find existing bot comment
-              id: find_comment
-              run: |
-                  PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-                  COMMENTS_URL="https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments"
-
-                  # Fetch all comments and find if one from blockerabot exists
-                  curl -H "Authorization: token ${{ secrets.BLOCKERABOT_PAT }}" \
-                       -H "Accept: application/vnd.github.v3+json" \
-                       $COMMENTS_URL | jq -r '.[] | select(.user.login == "blockerabot" and (.body | test("Branch Links"; "i"))) | .id' > comment_id.txt
-
-                  # If comment ID is found, set it to environment variable
-                  if [[ -s comment_id.txt ]]; then
-                    COMMENT_ID=$(cat comment_id.txt)
-                    echo "comment_id=${COMMENT_ID}" >> $GITHUB_ENV
-                  fi
-
-            # Step to encode JSON with Base64
-            - name: Encode JSON with Base64
-              id: encode_json
-              run: |
-                  # Load the base JSON configuration from file
-                  if [ -f ".github-playground.json" ]; then
-                    JSON_STRING=$(cat .github-playground.json)
-                  else
-                    echo "Error: .github-playground.json file not found"
-                    exit 1
-                  fi
-
-                  # Check if .pr-github-playground.json exists and merge it with JSON_STRING
-                  if [ -f ".pr-github-playground.json" ]; then
-                    # Read PR playground JSON
-                    PR_JSON=$(cat .pr-github-playground.json)
-                    
-                    # If PR JSON has steps, use them to completely replace base steps
-                    if echo "$PR_JSON" | jq -e 'has("steps")' > /dev/null; then
-                      MERGED_JSON=$(echo "$JSON_STRING" | jq --argjson pr "$PR_JSON" '. * ($pr | del(.steps)) + {steps: $pr.steps}')
-                    else
-                      # Regular merge without steps replacement
-                      MERGED_JSON=$(echo "$JSON_STRING" | jq --argjson pr "$PR_JSON" '. * $pr')
-                    fi
-                    FINAL_JSON="$MERGED_JSON"
-                  else
-                    FINAL_JSON="$JSON_STRING"
-                  fi
-
-                  # Replace URL_PLACEMENT with the newly generated URL
-                  ENCODED_JSON=$(echo "$FINAL_JSON" | jq --arg new_url "${{ env.uploaded_zip_file }}" '.steps[2].pluginData.url = "${{ env.uploaded_zip_file }}"')
-
-                  # Update the blogname to append PR number
-                  ENCODED_JSON=$(echo "$ENCODED_JSON" | jq --arg pr_num "${{ github.event.pull_request.number }}" '.steps[3].options.blogname += " (PR \($pr_num))"')
-
-                  # Base64 encode the updated JSON
-                  BASE64_ENCODED_JSON=$(echo "$ENCODED_JSON" | base64 -w 0)
-
-                  # Generate the final URL with encoded JSON appended
-                  DEMO_URL="https://playground.wordpress.net/#${BASE64_ENCODED_JSON}"
-
-                  # Save the URL as an output for later steps if needed
-                  echo "demo_url=$DEMO_URL" >> $GITHUB_ENV
-
-                  # Print the URL to the GitHub workflow output
-                  echo "Encoded URL: $DEMO_URL"
-
-            # Optional: Output the final URL as a GitHub Action output
-            - name: Set output
-              run: |
-                  echo "demo_url=${{ env.demo_url }}" >> $GITHUB_OUTPUT
-
-            - name: Post or update comment with download link
-              run: |
-                  PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-                  REPO_NAME="${{ github.repository }}"
-                  RUN_ID="${{ github.run_id }}"
-
-                  # Define the comment body following the desired structure
-                  COMMENT_BODY="**Branch Links**\n\n- [**🔗 Playground Demo**](${{ env.demo_url }})\n\n- [**📦 Download Zip** (Build)](${{ env.uploaded_zip_file }})"
-
-                  if [ -z "${{ env.comment_id }}" ]; then
-                      # No existing comment found, create a new one
-                      curl -X POST \
-                        -H "Authorization: token ${{ secrets.BLOCKERABOT_PAT }}" \
-                        -H "Accept: application/vnd.github.v3+json" \
-                        https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments \
-                        -d "{\"body\":\"${COMMENT_BODY}\"}"
-                  else
-                      # Existing comment found, update it
-                      COMMENT_ID=${{ env.comment_id }}
-                      COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/comments/$COMMENT_ID"
-
-                      # Update the existing comment with the new content
-                      curl -X PATCH \
-                        -H "Authorization: token ${{ secrets.BLOCKERABOT_PAT }}" \
-                        -H "Accept: application/vnd.github.v3+json" \
-                        $COMMENT_URL \
-                        -d "{\"body\":\"${COMMENT_BODY}\"}"
-                  fi
+            - run: bash packages/global-packages/packages/dev-tools/github/scripts/jobs/create-demo-attachments/cleanup.sh
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  REPO: ${{ github.repository }}
