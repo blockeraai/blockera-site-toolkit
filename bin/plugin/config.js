@@ -11,7 +11,6 @@ module.exports = createPluginCliConfig({
 	slug: 'blockera-site-toolkit',
 	name: 'Blockera Site Toolkit',
 	team: 'Blockeraai',
-	versionMilestoneFormat: '%(name)s %(major)s.%(minor)s',
 	githubRepositoryOwner: gitRepoOwner,
 	githubRepositoryName: 'blockera-site-toolkit',
 	pluginEntryPoint: 'blockera-site-toolkit.php',
