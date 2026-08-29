@@ -13,6 +13,11 @@ test-results
 # Generated from theme-config/ via npm run theme-json:merge — keep merge output byte-stable.
 theme.json
 
-# Ignore test fixtures
-tests/**/input.html
-tests/**/*.css
+# Snapshot/fixture HTML uses block-markup prettier (npm run block-markup:prettier), not Prettier on save.
+tests/fixtures/**/*.html
+tests/fixtures/**/*.css
+
+# Ignore theme patterns and templates files
+templates/**/*.html
+patterns/**/*.php
+
