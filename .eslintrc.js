@@ -1,11 +1,13 @@
-// Edit packages/global-packages/packages/dev-tools/root-configs/.eslintrc.blockera-site-toolkit.js
-// project:bootstrap copies this to the host repo root for --project=blockera-site-toolkit.
-const base = require('./packages/global-packages/packages/dev-tools/js/eslint/config');
+// Toolkit still uses @wordpress/scripts 31 (ESLint 8). Shared GP eslint/config.js
+// is flat-only for scripts 35. Keep a classic eslintrc until this host upgrades.
+const ignorePatterns = require('./packages/global-packages/packages/dev-tools/js/eslint/ignore');
 
 module.exports = {
-	...base,
+	root: true,
+	ignorePatterns,
+	extends: ['plugin:@wordpress/eslint-plugin/recommended'],
 	rules: {
-		...base.rules,
+		'import/no-extraneous-dependencies': 'off',
 		'@wordpress/i18n-text-domain': [
 			'error',
 			{
