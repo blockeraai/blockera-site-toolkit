@@ -1,12 +1,12 @@
 # Agents — blockera-site-toolkit
 
-WordPress plugin for blockera.ai: licensing, OAuth, downloads, Woo product release tooling. Host package: `packages/site-toolkit`.
+WordPress plugin for blockera.ai: licensing, OAuth, downloads, Woo product release tooling. Package: `packages/global-packages/packages/site-toolkit`.
 
 ## Inspect
 
 - Shared: [`packages/global-packages/packages/dev-tools/ai/index.md`](packages/global-packages/packages/dev-tools/ai/index.md)
 - Product: [`.ai/index.md`](.ai/index.md)
-- PHP HTTP: `packages/site-toolkit/php/Http/`, routes in `php/Routes/`
+- PHP HTTP: `packages/global-packages/packages/site-toolkit/php/Http/`, routes in `php/Routes/`
 - Gutenberg routing is secondary; prefer toolkit PHP/JS and Woo/product APIs when the task is licensing or downloads.
 
 ## Constraints
