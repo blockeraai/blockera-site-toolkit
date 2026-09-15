@@ -5,5 +5,15 @@ const {
 } = require( './packages/global-packages/packages/dev-tools/js/eslint/config' );
 
 module.exports = createConfig( {
+	extraIgnores: [
+		'packages/*-pro/**',
+		'packages/*-pro-*/**',
+		'packages/global-packages/packages/**/*-pro/**',
+		'packages/global-packages/packages/**/*-pro-*/**',
+		'packages/*-one/**',
+		'packages/*-one-*/**',
+		'packages/global-packages/packages/**/*-one/**',
+		'packages/global-packages/packages/**/*-one-*/**',
+	],
 	allowedTextDomains: [ 'blockera', 'blockera-site-toolkit' ],
 } );

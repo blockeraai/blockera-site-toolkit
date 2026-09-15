@@ -14,3 +14,4 @@ WordPress plugin for blockera.ai: licensing, OAuth, downloads, Woo product relea
 - Active product **blockera-site-toolkit**. GP writes: `packages/global-packages/`.
 - Changelog/README: [`…/ai/workflows/changelog-and-readme.md`](packages/global-packages/packages/dev-tools/ai/workflows/changelog-and-readme.md)
 - Scripts from **this** root: `npm run test:e2e`, `test:js`, `test:unit:php` — [`…/ai/workflows/product-scripts-and-deps.md`](packages/global-packages/packages/dev-tools/ai/workflows/product-scripts-and-deps.md)
+- Skip Pro overlay packages (`*-pro`) and One overlay packages (`*-one`) in this product’s tests and lint. They may appear on disk after a GP bump.
