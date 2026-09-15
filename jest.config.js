@@ -1,3 +1,5 @@
+// Edit packages/global-packages/packages/dev-tools/root-configs/jest.config.blockera-site-toolkit.js
+// project:bootstrap copies this to the host repo root for --project=blockera-site-toolkit.
 /**
  * Site-toolkit Jest: only the site-toolkit package under global-packages.
  * Shared package unit tests run in blockera-global-packages / other product consumers.
