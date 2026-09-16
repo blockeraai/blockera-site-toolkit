@@ -68,7 +68,6 @@ jobs:
                   zip-file: blockera-site-toolkit.zip
                   main-file-suffix: '-${{ github.event.pull_request.number }}'
 
-
     cleanup:
         name: Remove PR CI Artifact
         needs: pr-workflow-gate
