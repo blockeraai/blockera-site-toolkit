@@ -44,7 +44,7 @@
 		"icons:indexing": "node packages/global-packages/packages/dev-tools/bin/create-icon-search-index.js",
 		"env": "wp-env",
 		"env:stop": "npm run env stop",
-		"env:start": "node packages/global-packages/packages/dev-tools/github/scripts/setup-wp-env.js && wp-env start",
+		"env:start": "node packages/global-packages/packages/dev-tools/github/scripts/setup-wp-env.js && node packages/global-packages/packages/dev-tools/github/scripts/run-wp-env-start.js",
 		"env:reset": "npm run env:start --update --xdebug",
 		"env:clean": "npm run env reset all",
 		"env:tests-cli:bash": "npm run env run cli bash",
