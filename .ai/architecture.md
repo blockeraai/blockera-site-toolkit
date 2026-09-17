@@ -6,7 +6,7 @@ Front-end account UI: `packages/global-packages/packages/site-toolkit/js/` (my-a
 
 ## Tests
 
-From this plugin root: `npm run test:e2e`, `test:js` (`--passWithNoTests` in this product), `test:unit:php`, `test:snapshots:php`.
+From this plugin root: `npm run test:e2e`, `test:js` (`--passWithNoTests` in this product), `test:unit:php`, `test:snapshots:php`. Package allow-list: [declared-gp-packages.md](declared-gp-packages.md).
 
 ## GP
 
