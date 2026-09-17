@@ -64,7 +64,6 @@
 	},
 	"homepage": "https://github.com/blockeraai/blockera-site-toolkit#readme",
 	"dependencies": {
-		"@blockera/auth": "file:./packages/global-packages/packages/auth",
 		"@blockera/blocks-core": "file:packages/global-packages/packages/blocks-core",
 		"@blockera/bootstrap": "file:./packages/global-packages/packages/bootstrap",
 		"@blockera/classnames": "file:./packages/global-packages/packages/classnames",
