@@ -55,7 +55,6 @@
 # Treated as untyped so declared packages can import them. project:bootstrap rewrites this block.
 <PROJECT_ROOT>/packages/global-packages/packages/auth/.*
 <PROJECT_ROOT>/packages/global-packages/packages/auth-pro/.*
-<PROJECT_ROOT>/packages/global-packages/packages/autoloader-coordinator/.*
 <PROJECT_ROOT>/packages/global-packages/packages/blockera/.*
 <PROJECT_ROOT>/packages/global-packages/packages/blockera-admin/.*
 <PROJECT_ROOT>/packages/global-packages/packages/blockera-one/.*
@@ -66,16 +65,12 @@
 <PROJECT_ROOT>/packages/global-packages/packages/bootstrap/.*
 <PROJECT_ROOT>/packages/global-packages/packages/console-pro/.*
 <PROJECT_ROOT>/packages/global-packages/packages/controls-pro/.*
-<PROJECT_ROOT>/packages/global-packages/packages/dev-phpunit/.*
-<PROJECT_ROOT>/packages/global-packages/packages/dev-playwright/.*
 <PROJECT_ROOT>/packages/global-packages/packages/editor/.*
 <PROJECT_ROOT>/packages/global-packages/packages/editor-pro/.*
-<PROJECT_ROOT>/packages/global-packages/packages/exceptions/.*
 <PROJECT_ROOT>/packages/global-packages/packages/features-core/.*
 <PROJECT_ROOT>/packages/global-packages/packages/features-library/icon/.*
 <PROJECT_ROOT>/packages/global-packages/packages/global-styles-ui/.*
 <PROJECT_ROOT>/packages/global-packages/packages/guard-pro/.*
-<PROJECT_ROOT>/packages/global-packages/packages/http/.*
 <PROJECT_ROOT>/packages/global-packages/packages/interact/.*
 <PROJECT_ROOT>/packages/global-packages/packages/plugin-compatibility/.*
 <PROJECT_ROOT>/packages/global-packages/packages/plugin-compatibility-pro/.*

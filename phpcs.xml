@@ -8,7 +8,7 @@
 
     <config name="text_domain" value="blockera-site-toolkit,blockera,default"/>
     <file>./packages/global-packages/packages</file>
-    <exclude-pattern>./packages/global-packages/packages/(auth|auth-pro|blockera|blockera-admin|blockera-one|blockera-pro|blockera-pro-admin|blocks-core|blocks-pro/core|classnames|console-pro|controls|controls-pro|data|data-editor|dev-cypress|dev-jest|dev-playwright|dev-tools|editor|editor-pro|env|exceptions|features-core|features-library/icon|global-styles-ui|guard-pro|http|icons|interact|plugin-compatibility|plugin-compatibility-pro|storage|telemetry|validator-pro)/*</exclude-pattern>
+    <exclude-pattern>./packages/global-packages/packages/(auth|auth-pro|blockera|blockera-admin|blockera-one|blockera-pro|blockera-pro-admin|blocks-core|blocks-pro/core|classnames|console-pro|controls|controls-pro|data|data-editor|editor|editor-pro|features-core|features-library/icon|global-styles-ui|guard-pro|icons|interact|plugin-compatibility|plugin-compatibility-pro|storage|telemetry|validator-pro)/*</exclude-pattern>
 
     <arg name="cache" value=".cache/phpcs.json"/>
 </ruleset>
