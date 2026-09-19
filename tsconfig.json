@@ -1,5 +1,6 @@
 // Edit packages/global-packages/packages/dev-tools/root-configs/tsconfig.json.template
-// project:bootstrap copies this to the host repo root as tsconfig.json.
+// Extra exclude paths are generated from package.json dependencies (@blockera/* file:).
+// project:bootstrap rewrites this file.
 {
 	"extends": "./packages/global-packages/packages/dev-tools/js/typescript/tsconfig.base.json",
 	"include": [
@@ -12,6 +13,38 @@
 		"build",
 		"dist",
 		"source-codes",
-		"packages/global-packages/packages/dev-playwright"
+		"packages/global-packages/packages/dev-playwright",
+		"packages/global-packages/packages/auth/js",
+		"packages/global-packages/packages/auth-pro/js",
+		"packages/global-packages/packages/autoloader-coordinator/js",
+		"packages/global-packages/packages/blockera/js",
+		"packages/global-packages/packages/blockera-admin/js",
+		"packages/global-packages/packages/blockera-one/js",
+		"packages/global-packages/packages/blockera-pro/js",
+		"packages/global-packages/packages/blockera-pro-admin/js",
+		"packages/global-packages/packages/blocks-core/js",
+		"packages/global-packages/packages/blocks-pro/core/js",
+		"packages/global-packages/packages/bootstrap/js",
+		"packages/global-packages/packages/console-pro/js",
+		"packages/global-packages/packages/controls-pro/js",
+		"packages/global-packages/packages/dev-cypress/js",
+		"packages/global-packages/packages/dev-jest/js",
+		"packages/global-packages/packages/dev-phpunit/js",
+		"packages/global-packages/packages/dev-playwright/js",
+		"packages/global-packages/packages/dev-tools/js",
+		"packages/global-packages/packages/editor/js",
+		"packages/global-packages/packages/editor-pro/js",
+		"packages/global-packages/packages/exceptions/js",
+		"packages/global-packages/packages/features-core/js",
+		"packages/global-packages/packages/features-library/icon/js",
+		"packages/global-packages/packages/global-styles-ui/js",
+		"packages/global-packages/packages/guard-pro/js",
+		"packages/global-packages/packages/http/js",
+		"packages/global-packages/packages/interact/js",
+		"packages/global-packages/packages/plugin-compatibility/js",
+		"packages/global-packages/packages/plugin-compatibility-pro/js",
+		"packages/global-packages/packages/telemetry/js",
+		"packages/global-packages/packages/validator-pro/js",
+		"packages/global-packages/packages/wordpress/js"
 	]
 }
