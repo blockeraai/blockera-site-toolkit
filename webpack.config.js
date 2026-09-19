@@ -38,6 +38,8 @@ function resolvePackageDir(packageName) {
 		);
 	}
 
+	candidates.push(`./node_modules/@blockera/${packageName}`);
+
 	for (const candidate of candidates) {
 		if (
 			fs.existsSync(
@@ -49,7 +51,7 @@ function resolvePackageDir(packageName) {
 	}
 
 	throw new Error(
-		`Cannot find Blockera package "${packageName}" under vendor/blockera, packages/, or packages/global-packages/packages/`
+		`Cannot find Blockera package "${packageName}" under vendor/blockera, packages/, packages/global-packages/packages/, or node_modules/@blockera`
 	);
 }
 
