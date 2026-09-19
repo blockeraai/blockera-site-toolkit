@@ -82,6 +82,7 @@
 		"@fortawesome/free-regular-svg-icons": "^7.3.0",
 		"@fortawesome/free-solid-svg-icons": "^7.3.0",
 		"@fortawesome/react-fontawesome": "^0.2.3",
+		"@playwright/test": "^1.63.0",
 		"@tabler/icons": "^3.44.0",
 		"@untitledui/icons": "^0.0.19",
 		"@wordpress/icons": "^15.3.0",
