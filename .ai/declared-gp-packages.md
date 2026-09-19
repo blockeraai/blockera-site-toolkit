@@ -11,24 +11,16 @@ Autoloader-coordinator and products are always on the PHPUnit/PHPCS list (bootst
 
 ## Jest (`package.json` `dependencies`)
 
-- `@blockera/blocks-core` — `packages/global-packages/packages/blocks-core`
-- `@blockera/bootstrap` — `packages/global-packages/packages/bootstrap`
 - `@blockera/classnames` — `packages/global-packages/packages/classnames`
 - `@blockera/controls` — `packages/global-packages/packages/controls`
 - `@blockera/data` — `packages/global-packages/packages/data`
 - `@blockera/data-editor` — `packages/global-packages/packages/data-editor`
-- `@blockera/editor` — `packages/global-packages/packages/editor`
 - `@blockera/env` — `packages/global-packages/packages/env`
-- `@blockera/feature-icon` — `packages/global-packages/packages/features-library/icon`
-- `@blockera/features-core` — `packages/global-packages/packages/features-core`
-- `@blockera/global-styles-ui` — `packages/global-packages/packages/global-styles-ui`
 - `@blockera/icons` — `packages/global-packages/packages/icons`
 - `@blockera/products` — `packages/global-packages/packages/products`
 - `@blockera/site-toolkit` — `packages/global-packages/packages/site-toolkit`
 - `@blockera/storage` — `packages/global-packages/packages/storage`
-- `@blockera/telemetry` — `packages/global-packages/packages/telemetry`
 - `@blockera/utils` — `packages/global-packages/packages/utils`
-- `@blockera/wordpress` — `packages/global-packages/packages/wordpress`
 
 ## PHPUnit / PHPCS (`composer.json` `require` + coordinator/products)
 
