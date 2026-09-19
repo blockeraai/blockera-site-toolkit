@@ -48,9 +48,11 @@
 <PROJECT_ROOT>/packages/global-packages/packages/[^/]*-one/.*
 <PROJECT_ROOT>/packages/global-packages/packages/[^/]*-one-[^/]+/.*
 
+# Dependencies stay resolvable (imports are `any`) but are not parsed/typechecked.
+[untyped]
 # BEGIN generated:undeclared-npm-packages
-# GP packages not in package.json dependencies (@blockera/* file:).
-# project:bootstrap rewrites this block.
+# GP packages not in package.json dependencies or devDependencies (@blockera/* file:).
+# Treated as untyped so declared packages can import them. project:bootstrap rewrites this block.
 <PROJECT_ROOT>/packages/global-packages/packages/auth/.*
 <PROJECT_ROOT>/packages/global-packages/packages/auth-pro/.*
 <PROJECT_ROOT>/packages/global-packages/packages/autoloader-coordinator/.*
@@ -64,11 +66,8 @@
 <PROJECT_ROOT>/packages/global-packages/packages/bootstrap/.*
 <PROJECT_ROOT>/packages/global-packages/packages/console-pro/.*
 <PROJECT_ROOT>/packages/global-packages/packages/controls-pro/.*
-<PROJECT_ROOT>/packages/global-packages/packages/dev-cypress/.*
-<PROJECT_ROOT>/packages/global-packages/packages/dev-jest/.*
 <PROJECT_ROOT>/packages/global-packages/packages/dev-phpunit/.*
 <PROJECT_ROOT>/packages/global-packages/packages/dev-playwright/.*
-<PROJECT_ROOT>/packages/global-packages/packages/dev-tools/.*
 <PROJECT_ROOT>/packages/global-packages/packages/editor/.*
 <PROJECT_ROOT>/packages/global-packages/packages/editor-pro/.*
 <PROJECT_ROOT>/packages/global-packages/packages/exceptions/.*
@@ -84,9 +83,6 @@
 <PROJECT_ROOT>/packages/global-packages/packages/validator-pro/.*
 <PROJECT_ROOT>/packages/global-packages/packages/wordpress/.*
 # END generated:undeclared-npm-packages
-
-# Dependencies stay resolvable (imports are `any`) but are not parsed/typechecked.
-[untyped]
 <PROJECT_ROOT>/node_modules/.*
 
 [include]

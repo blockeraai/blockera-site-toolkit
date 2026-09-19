@@ -1,5 +1,6 @@
 // Edit packages/global-packages/packages/dev-tools/root-configs/tsconfig.json.template
-// Extra exclude paths are generated from package.json dependencies (@blockera/* file:).
+// Extra exclude paths are generated from package.json dependencies and
+// devDependencies (@blockera/* file:).
 // project:bootstrap rewrites this file.
 {
 	"extends": "./packages/global-packages/packages/dev-tools/js/typescript/tsconfig.base.json",
@@ -27,11 +28,8 @@
 		"packages/global-packages/packages/bootstrap/js",
 		"packages/global-packages/packages/console-pro/js",
 		"packages/global-packages/packages/controls-pro/js",
-		"packages/global-packages/packages/dev-cypress/js",
-		"packages/global-packages/packages/dev-jest/js",
 		"packages/global-packages/packages/dev-phpunit/js",
 		"packages/global-packages/packages/dev-playwright/js",
-		"packages/global-packages/packages/dev-tools/js",
 		"packages/global-packages/packages/editor/js",
 		"packages/global-packages/packages/editor-pro/js",
 		"packages/global-packages/packages/exceptions/js",
