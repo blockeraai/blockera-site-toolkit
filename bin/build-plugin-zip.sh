@@ -152,10 +152,6 @@ build_files=$(
 	ls dist/*/*.{min.js,min.css,asset.php} 2>/dev/null || true
 )
 
-vendor_without_blockera=$(
-  find ./vendor \( -path './vendor/blockera' -o -path './vendor/blockera/*' \) -prune -o -type f -print
-)
-
 main_plugin_file='blockera-site-toolkit.php'
 
 if [ -n "$MAIN_FILE_SUFFIX" ]; then
@@ -171,7 +167,7 @@ fi
 
 # Generate the plugin zip file.
 status "Creating archive... 🎁"
-zip -r -q blockera-site-toolkit.zip \
+zip -r -9 -q blockera-site-toolkit.zip \
 	inc \
 	languages \
 	readme.txt \
@@ -179,9 +175,11 @@ zip -r -q blockera-site-toolkit.zip \
 	$main_plugin_file \
 	composer.json \
 	experimental.config.json \
-	$vendor_without_blockera \
+  ### BEGIN AUTO-GENERATED THIRD-PARTY VENDOR PATH PATTERN
+  ### END AUTO-GENERATED THIRD-PARTY VENDOR PATH PATTERN
   ### BEGIN AUTO-GENERATED VENDOR PACKAGES PATH PATTERN
   ### END AUTO-GENERATED VENDOR PACKAGES PATH PATTERN
+  -x "*.map" "*.scss" "*.zip-build.bak" \
   && echo "blockera-site-toolkit.zip created successfully ✅" || echo "blockera-site-toolkit.zip creation failed ❌"
 
 status "Cleaning up... 🧹"
