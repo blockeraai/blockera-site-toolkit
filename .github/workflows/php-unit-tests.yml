@@ -51,7 +51,6 @@ jobs:
             - id: get-previous-wordpress-version
               run: bash packages/global-packages/packages/dev-tools/github/scripts/jobs/php-snapshots/compute-previous-wordpress-version.sh
 
-
     test-php:
         name: PHP ${{ matrix.php }}${{ matrix.multisite && ' multisite' || '' }}${{ matrix.wordpress != '' && format( ' (WP {0}) ', matrix.wordpress ) || '' }} on ubuntu-latest
         needs: [pr-workflow-gate, compute-previous-wordpress-version]
@@ -76,7 +75,7 @@ jobs:
             BLOCKERA_PHP_UNIT_MULTISITE: ${{ matrix.multisite }}
             # Site-toolkit suite currently has a small dedicated PHP test set.
             BLOCKERA_PHP_UNIT_MIN_TESTS: '2'
-            BLOCKERA_PHP_UNIT_TEST_ROOTS: packages/site-toolkit
+            BLOCKERA_PHP_UNIT_TEST_ROOTS: packages/global-packages/packages/site-toolkit
         steps:
             - uses: actions/checkout@v5
               with:

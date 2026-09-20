@@ -4,62 +4,40 @@
  * Generates the production (plugin build) version of bin/build-plugin-zip.sh,
  * injecting vendor/blockera package path patterns for this consumer.
  *
- * Discovers packages from:
- * - Local packages/<name>/php (e.g. site-toolkit)
- * - blockera/* entries in composer.json require (shared global-packages)
+ * GP packages come from composer.json `require` (`blockera/*`), not every
+ * directory on disk after a submodule bump. Local `packages/<name>/php`
+ * (excluding the GP submodule) can still be packed.
  *
  * @package blockera-site-toolkit-build
  */
 
-$root = dirname( __DIR__ );
-$f    = fopen( $root . '/bin/build-plugin-zip.sh', 'r' );
+$root   = dirname( __DIR__ );
+$helper = __DIR__ . '/declared-vendor-packages.php';
 
-$packages = [];
-
-foreach ( (array) glob( $root . '/packages/*' ) as $package_path ) {
-	$package_name = str_replace( $root . '/packages/', '', $package_path );
-
-	if ( 'global-packages' === $package_name || preg_match( '/^dev-/', $package_name ) ) {
-		continue;
-	}
-
-	if ( ! is_dir( $package_path . '/php' ) && ! is_dir( $package_path . '/core/php' ) ) {
-		continue;
-	}
-
-	if ( 'blocks' === $package_name ) {
-		$package_name .= '-core';
-	}
-
-	$packages[] = $package_name;
+if ( ! is_readable( $helper ) ) {
+	$helper = $root . '/packages/global-packages/packages/dev-tools/php/Zip/DeclaredVendorPackages.php';
 }
 
-$composer_json = $root . '/composer.json';
-if ( is_readable( $composer_json ) ) {
-	$composer = json_decode( (string) file_get_contents( $composer_json ), true );
-	foreach ( array_keys( (array) ( $composer['require'] ?? [] ) ) as $requirement ) {
-		if ( 0 !== strpos( $requirement, 'blockera/' ) ) {
-			continue;
-		}
+require_once $helper;
 
-		$packages[] = substr( $requirement, strlen( 'blockera/' ) );
-	}
-}
+$f = fopen( $root . '/bin/build-plugin-zip.sh', 'r' );
 
-$packages = array_values( array_unique( $packages ) );
-
-$internal_packages = array_values(
-	array_filter(
-		$packages,
-		static function ( string $package_name ): bool {
-			return ! preg_match( '/-sdk$/', $package_name );
-		}
+$packages = array_values(
+	array_unique(
+		array_merge(
+			\Blockera\DevTools\Zip\DeclaredVendorPackages::fromLocalPhpPackages( $root . '/packages' ),
+			\Blockera\DevTools\Zip\DeclaredVendorPackages::fromComposerRequire( $root )
+		)
 	)
 );
+sort( $packages );
 
-$sdks = array_values( array_diff( $packages, $internal_packages ) );
+$split              = \Blockera\DevTools\Zip\DeclaredVendorPackages::partition( $packages );
+$internal_packages = $split['internal'];
+$sdks               = $split['sdks'];
 
-$inside_pattern_block = false;
+$inside_pattern_block      = false;
+$inside_third_party_block = false;
 
 while ( true ) {
 	$line = fgets( $f );
@@ -69,6 +47,15 @@ while ( true ) {
 
 	switch ( trim( $line ) ) {
 
+		case '### END AUTO-GENERATED THIRD-PARTY VENDOR PATH PATTERN':
+			$inside_third_party_block = false;
+			break;
+
+		case '### BEGIN AUTO-GENERATED THIRD-PARTY VENDOR PATH PATTERN':
+			$inside_third_party_block = true;
+			echo implode( PHP_EOL, \Blockera\DevTools\Zip\DeclaredVendorPackages::thirdPartyZipPathLines( $root ) ) . PHP_EOL;
+			break;
+
 		case '### END AUTO-GENERATED VENDOR PACKAGES PATH PATTERN':
 			$inside_pattern_block = false;
 			break;
@@ -76,42 +63,32 @@ while ( true ) {
 		case '### BEGIN AUTO-GENERATED VENDOR PACKAGES PATH PATTERN':
 			$inside_pattern_block = true;
 
-			echo implode(
-				PHP_EOL,
-				array_map(
-					static function ( string $name ): string {
-						return sprintf(
-							'	$(find ./vendor/blockera/%1$s/ -type f ! -path "*/tests/*" \( -name "*.php" -o -name "*.json" \)) \\',
-							$name
-						);
-					},
-					$internal_packages
-				)
-			);
+			$zip_paths = array();
 
-			if ( ! empty( $sdks ) ) {
-				echo PHP_EOL;
+			foreach ( $internal_packages as $name ) {
+				$zip_paths[] = sprintf(
+					'	$(find ./vendor/blockera/%1$s/ -type f ! -path "*/tests/*" \\( -name "*.php" -o -name "*.json" \\)) \\',
+					$name
+				);
 			}
 
-			echo implode(
-				PHP_EOL,
-				array_map(
-					static function ( string $name ): string {
-						return sprintf(
-							'	$(find ./vendor/blockera/%1$s/ ! -path "*/tests/*") \\',
-							$name
-						);
-					},
-					$sdks
-				)
-			);
+			foreach ( $sdks as $name ) {
+				$zip_paths[] = sprintf(
+					'	$(find ./vendor/blockera/%1$s/ ! -path "*/tests/*") \\',
+					$name
+				);
+			}
 
-			echo PHP_EOL;
+			if ( empty( $zip_paths ) ) {
+				$zip_paths[] = '	$(true) \\';
+			}
+
+			echo implode( PHP_EOL, $zip_paths ) . PHP_EOL;
 
 			break;
 
 		default:
-			if ( ! $inside_pattern_block ) {
+			if ( ! $inside_pattern_block && ! $inside_third_party_block ) {
 				echo $line;
 			}
 			break;

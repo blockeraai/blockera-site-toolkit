@@ -45,8 +45,8 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.BLOCKERABOT_PAT }}
             BLOCKERA_BUILD_ZIP_TESTS_SPECS_ROOTS: ./packages
             BLOCKERA_BUILD_ZIP_TESTS_SPECS_PATH: '*toolkit*'
-            BLOCKERA_BUILD_ZIP_TESTS_SPECS_DEST: packages/site-toolkit/js/test
-            BLOCKERA_BUILD_ZIP_TESTS_CYPRESS_SPEC_PATTERN: packages/**/*toolkit*.build.e2e.cy.js,packages/site-toolkit/**/*.build.e2e.cy.js
+            BLOCKERA_BUILD_ZIP_TESTS_SPECS_DEST: packages/global-packages/packages/site-toolkit/js/test
+            BLOCKERA_BUILD_ZIP_TESTS_CYPRESS_SPEC_PATTERN: packages/**/*toolkit*.build.e2e.cy.js,packages/global-packages/packages/site-toolkit/**/*.build.e2e.cy.js
         steps:
             - uses: actions/checkout@v5
               with:
