@@ -3,7 +3,8 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { dependencies } = require('./package');
+const packageJson = require('./package.json');
+const { dependencies } = packageJson;
 const packagesConfig = require('./packages/global-packages/packages/dev-tools/js/webpack/packages');
 const createRootWebpackConfig = require('./packages/global-packages/packages/dev-tools/js/webpack/create-root-config');
 
@@ -56,6 +57,7 @@ function resolvePackageDir(packageName) {
 }
 
 module.exports = createRootWebpackConfig({
+	packageJson,
 	dependencies,
 	packagesConfig,
 	resolvePackageDir,
