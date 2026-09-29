@@ -4,8 +4,9 @@
  * Generates the production (plugin build) version of bin/build-plugin-zip.sh,
  * injecting vendor/blockera package path patterns for this consumer.
  *
- * GP packages come from composer.json `require` (`blockera/*`), not every
- * directory on disk after a submodule bump. Local `packages/<name>/php`
+ * GP packages come from `composer.json` `require` (`blockera/*`) union
+ * `config/assets.php` `list` handles, not every directory on disk after a
+ * submodule bump. Local `packages/<name>/php`
  * (excluding the GP submodule) can still be packed.
  *
  * @package blockera-site-toolkit-build
