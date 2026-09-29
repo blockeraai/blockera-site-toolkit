@@ -2,7 +2,7 @@
 
 Backend toolkit for blockera.ai (not the Site Builder editor). Namespace `BlockeraAI\SiteToolkit`. Bootstrap: `packages/global-packages/packages/site-toolkit/php/Setup.php`, routes `php/Routes/` (web + `api/`), controllers under `php/Http/Controller/`, repositories under `php/Repositories/`.
 
-Front-end account UI: `packages/global-packages/packages/site-toolkit/js/` (my-account, licenses, downloads).
+Front-end account UI: `packages/global-packages/packages/site-toolkit/js/` (my-account, licenses, downloads). Webpack dist for those pages is listed in host `config/assets.php` (`frontend`) and loaded by `AssetsProvider::enqueueConfiguredGroup()`.
 
 ## Tests
 
