@@ -23,7 +23,6 @@
 		"packages/global-packages/packages/blockera-pro-admin/js",
 		"packages/global-packages/packages/blocks-core/js",
 		"packages/global-packages/packages/blocks-pro/core/js",
-		"packages/global-packages/packages/bootstrap/js",
 		"packages/global-packages/packages/console-pro/js",
 		"packages/global-packages/packages/controls-pro/js",
 		"packages/global-packages/packages/editor/js",
@@ -35,6 +34,7 @@
 		"packages/global-packages/packages/interact/js",
 		"packages/global-packages/packages/plugin-compatibility/js",
 		"packages/global-packages/packages/plugin-compatibility-pro/js",
+		"packages/global-packages/packages/products/js",
 		"packages/global-packages/packages/telemetry/js",
 		"packages/global-packages/packages/validator-pro/js",
 		"packages/global-packages/packages/wordpress/js"
