@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "aa27f1811f2a0326df60c5b383bd6ca3",
+    "content-hash": "12e3797edc616d6d946a01ea915263a2",
     "packages": [
         {
             "name": "blockera/bootstrap",
@@ -21,6 +21,29 @@
                 }
             },
             "description": "The initializer blockera any application on wordpress site.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "blockera/data",
+            "version": "1.1.0",
+            "dist": {
+                "type": "path",
+                "url": "packages/global-packages/packages/data",
+                "reference": "8ab2915466f9d9a323c2de96681149d8dddc2195"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Blockera\\Data\\": "php/"
+                },
+                "files": [
+                    "php/functions.php"
+                ]
+            },
+            "description": "Core Data is a data module intended to simplify access and manipulation to core WordPress and entities.",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -1604,6 +1627,34 @@
                 }
             },
             "description": "The development phpunit package of blockera",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "blockera/dev-tools",
+            "version": "8.0.0",
+            "dist": {
+                "type": "path",
+                "url": "packages/global-packages/packages/dev-tools",
+                "reference": "c480fa8d8a90fe74f421e004f0b42aafa5068129"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Blockera\\DevTools\\": "php/"
+                },
+                "files": [
+                    "php/functions.php"
+                ]
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Blockera\\DevTools\\Tests\\": "php/tests/"
+                }
+            },
+            "description": "Blockera DevTools for developers",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -9509,5 +9560,5 @@
     "platform-overrides": {
         "php": "7.4"
     },
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

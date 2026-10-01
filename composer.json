@@ -15,6 +15,7 @@
 	"require": {
 		"php": ">=7.4",
 		"blockera/bootstrap": "*",
+		"blockera/data": "*",
 		"blockera/products": "*",
 		"blockera/site-toolkit": "*",
 		"blockera/utils": "*",
@@ -40,6 +41,7 @@
 		}
 	],
 	"require-dev": {
+		"blockera/dev-tools": "*",
 		"blockera/dev-phpunit": "*",
 		"symfony/dom-crawler": "5.4.x-dev",
 		"symfony/css-selector": "5.4.x-dev",
