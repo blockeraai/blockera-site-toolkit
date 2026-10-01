@@ -7,8 +7,8 @@ module.exports =
 		// Uncategorized: *.toolkit.e2e.cy.js
 		// Categorized (CI matrix): *.toolkit.{category}.e2e.cy.js
 		e2eSpecPattern: [
-			'packages/site-toolkit/**/*.toolkit.e2e.cy.js',
-			'packages/site-toolkit/**/*.toolkit.*.e2e.cy.js',
+			'packages/global-packages/packages/site-toolkit/**/*.toolkit.e2e.cy.js',
+			'packages/global-packages/packages/site-toolkit/**/*.toolkit.*.e2e.cy.js',
 		],
 		e2eExcludeSpecPattern: [],
 		alwaysExcludeSpecPattern: ['packages/**/*.build.e2e.js'],
