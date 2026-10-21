@@ -3,7 +3,8 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { dependencies } = require('./package');
+const packageJson = require('./package.json');
+const { dependencies } = packageJson;
 const packagesConfig = require('./packages/global-packages/packages/dev-tools/js/webpack/packages');
 const createRootWebpackConfig = require('./packages/global-packages/packages/dev-tools/js/webpack/create-root-config');
 
@@ -38,6 +39,8 @@ function resolvePackageDir(packageName) {
 		);
 	}
 
+	candidates.push(`./node_modules/@blockera/${packageName}`);
+
 	for (const candidate of candidates) {
 		if (
 			fs.existsSync(
@@ -49,11 +52,12 @@ function resolvePackageDir(packageName) {
 	}
 
 	throw new Error(
-		`Cannot find Blockera package "${packageName}" under vendor/blockera, packages/, or packages/global-packages/packages/`
+		`Cannot find Blockera package "${packageName}" under vendor/blockera, packages/, packages/global-packages/packages/, or node_modules/@blockera`
 	);
 }
 
 module.exports = createRootWebpackConfig({
+	packageJson,
 	dependencies,
 	packagesConfig,
 	resolvePackageDir,

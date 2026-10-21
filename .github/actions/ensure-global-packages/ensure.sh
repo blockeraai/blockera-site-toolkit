@@ -74,7 +74,12 @@ if [ -n "${TOKEN}" ]; then
 fi
 
 git -C "${SUBMODULE}" sparse-checkout init --no-cone
-git -C "${SUBMODULE}" sparse-checkout set '/packages/'
+# Pass --no-cone on set: Git 2.37+ `set` defaults to cone mode and can drop
+# gitignore-style patterns from init, leaving new package dirs unmaterialized.
+git -C "${SUBMODULE}" sparse-checkout set --no-cone '/packages/' '/packages/**'
+if ! git -C "${SUBMODULE}" sparse-checkout reapply 2>/dev/null; then
+	git -C "${SUBMODULE}" checkout --force HEAD -- packages
+fi
 
 if [ ! -d "${SUBMODULE}/packages/editor" ] && [ ! -d "${SUBMODULE}/packages/blockera" ]; then
 	echo "ensure-global-packages-sparse: expected packages/ under ${SUBMODULE}" >&2
